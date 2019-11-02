@@ -1,4 +1,4 @@
-package cat.poi.ngang
+package cat.poi.ngnga
 
 import android.os.Bundle
 
