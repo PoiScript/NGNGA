@@ -19,7 +19,7 @@ class User {
     return User(
       id: json['uid'],
       username: json['username'],
-      avatars: json['avatar'],
+      avatars: json['avatar']?.split('|'),
       signature: json['signature'],
       postsCount: json['postnum'],
       createdAt: json['regDate'],
