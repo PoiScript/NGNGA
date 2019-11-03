@@ -1,62 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:async_redux/async_redux.dart';
+
+import './screens/home/home.dart';
+import './screens/settings/settings.dart';
+import './screens/category/category.dart';
+import './screens/topic/topic.dart';
+import './screens/user/user.dart';
+import './style.dart';
+import './store/state.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    final store = Store<AppState>(
+      initialState: AppState(
+        isLoading: false,
+        categories: Map(),
+        topics: Map(),
+        users: Map(),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      actionObservers: [Log<AppState>.printer()],
+      modelObserver: DefaultModelObserver(),
+    );
+
+    return StoreProvider<AppState>(
+      store: store,
+      child: MaterialApp(
+        onGenerateRoute: _routes,
+        theme: _theme(),
+      ),
     );
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  Route<dynamic> _routes(RouteSettings settings) {
+    final Map<String, int> arguments = settings.arguments;
+    Widget screen;
+    switch (settings.name) {
+      case "/":
+        screen = HomePage();
+        break;
+      case "/c":
+        screen = CategoryPageConnector(arguments["id"]);
+        break;
+      case "/t":
+        screen = TopicPageConnector(arguments["id"]);
+        break;
+      case "/u":
+        screen = UserPage(id: arguments["id"]);
+        break;
+      case "/s":
+        screen = SettingsPage();
+        break;
+      default:
+        return null;
+    }
+    return MaterialPageRoute(builder: (BuildContext context) => screen);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'poi',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+  ThemeData _theme() {
+    return ThemeData(
+      textTheme: TextTheme(
+        title: TitleTextStyle,
+        subtitle: SubTitleTextStyle,
+        caption: CaptionTextStyle,
+        body1: Body1TextStyle,
       ),
     );
   }
