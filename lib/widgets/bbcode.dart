@@ -1,3 +1,4 @@
+import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -201,11 +202,14 @@ class _BBCodeState extends State<BBCode> {
       }
     }
 
-    return ExpansionTile(
-      title: Text(
-        collapseDescription ?? 'EXPAN',
+    return ExpandablePanel(
+      header: Text(collapseDescription ?? '点击显示隐藏的内容'),
+      expanded: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
       ),
-      children: children,
+      tapHeaderToExpand: true,
+      hasIcon: false,
     );
   }
 
