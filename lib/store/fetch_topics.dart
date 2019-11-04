@@ -2,28 +2,27 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
-
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 
 import '../models/topic.dart';
-import '../models/category.dart';
 import './state.dart';
 import './is_loading.dart';
 
 class FetchTopicsAction extends ReduxAction<AppState> {
-  final Category category;
-  final int page;
+  final int categoryId;
+  final int pageIndex;
 
   FetchTopicsAction({
-    this.category,
-    this.page,
-  });
+    @required this.categoryId,
+    this.pageIndex = 0,
+  }) : assert(categoryId != null && pageIndex != null);
 
   @override
   Future<AppState> reduce() async {
     final uri = Uri.https("nga.178.com", "thread.php", {
-      "stid": category.id.toString(),
-      "page": page.toString(),
+      "stid": categoryId.toString(),
+      "page": pageIndex.toString(),
       "__output": "11",
     });
 
@@ -50,14 +49,14 @@ class FetchTopicsAction extends ReduxAction<AppState> {
       return state.copy(
         categories: Map.of(state.categories)
           ..update(
-            category.id,
+            categoryId,
             (state) => state.copy(
-              category: category,
               topicIds: topicIds,
+              topicsCount: json["data"]["__ROWS"],
             ),
             ifAbsent: () => CategoryState(
-              category: category,
               topicIds: topicIds,
+              topicsCount: json["data"]["__ROWS"],
             ),
           ),
         topics: Map.of(state.topics)
@@ -65,7 +64,7 @@ class FetchTopicsAction extends ReduxAction<AppState> {
             topics.map(
               (topic) => MapEntry(
                 topic.id,
-                TopicState(topic: topic, pages: Map()),
+                TopicState(topic: topic, posts: Map()),
               ),
             ),
           ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 
 import '../models/post.dart';
@@ -11,25 +12,23 @@ import './is_loading.dart';
 import './state.dart';
 
 class FetchPostsAction extends ReduxAction<AppState> {
-  final Topic topic;
-  final int page;
+  final int topicId;
+  final int pageIndex;
 
   FetchPostsAction({
-    this.topic,
-    this.page,
-  });
+    @required this.topicId,
+    this.pageIndex = 0,
+  }) : assert(topicId != null && pageIndex != null);
 
   @override
   Future<AppState> reduce() async {
     final uri = Uri.https("nga.178.com", "read.php", {
-      "tid": topic.id.toString(),
-      "page": page.toString(),
+      "tid": topicId.toString(),
+      "page": pageIndex.toString(),
       "__output": "11",
     });
 
     print(uri);
-
-    print(state.cookies);
 
     final res = await get(uri, headers: {
       "cookie": state.cookies.entries
@@ -43,10 +42,11 @@ class FetchPostsAction extends ReduxAction<AppState> {
 
     final topicObject = json["data"]["__T"];
 
-    var topic1 = Topic.fromJson(topicObject);
+    var topic = Topic.fromJson(topicObject);
 
-    var posts =
-        List.from(postsObject).map((value) => Post.fromJson(value)).toList();
+    var posts = List.from(postsObject)
+        .map((value) => Post.fromJson(value))
+        .map((post) => MapEntry(post.index, post));
 
     return state.copy(
       users: Map.of(state.users)
@@ -58,15 +58,14 @@ class FetchPostsAction extends ReduxAction<AppState> {
         ),
       topics: Map.of(state.topics)
         ..update(
-          topic.id,
-          (state) => state.copy(
-            topic: topic1,
-            pages: state.pages
-              ..update(page, (_) => posts, ifAbsent: () => posts),
+          topicId,
+          (topicState) => topicState.copy(
+            topic: topic,
+            pages: topicState.posts..addEntries(posts),
           ),
           ifAbsent: () => TopicState(
-            topic: topic1,
-            pages: {page: posts},
+            topic: topic,
+            posts: Map.fromEntries(posts),
           ),
         ),
     );

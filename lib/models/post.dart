@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 class Post {
   final int id;
   final int topicId;
@@ -7,19 +9,22 @@ class Post {
   final String content;
   final String client;
 
+  final int index;
+
   final int upVote;
   final int downVote;
 
   Post({
-    this.id,
-    this.topicId,
-    this.userId,
-    this.replyTo,
-    this.createdAt,
-    this.content,
-    this.client,
-    this.upVote,
-    this.downVote,
+    @required this.id,
+    @required this.topicId,
+    @required this.userId,
+    @required this.replyTo,
+    @required this.createdAt,
+    @required this.content,
+    @required this.client,
+    @required this.upVote,
+    @required this.downVote,
+    @required this.index,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -28,12 +33,14 @@ class Post {
       topicId: json['tid'],
       userId: json['authorid'],
       replyTo: json['reply_to'],
-      createdAt:
-          DateTime.fromMillisecondsSinceEpoch(json['postdatetimestamp'] * 1000),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        json['postdatetimestamp'] * 1000,
+      ),
       content: json['content'],
       client: json['from_client'],
       upVote: json["score"],
       downVote: json["score_2"],
+      index: json['lou'],
     );
   }
 }

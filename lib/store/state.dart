@@ -1,7 +1,9 @@
-import '../models/post.dart';
-import '../models/user.dart';
-import '../models/topic.dart';
+import 'package:flutter/material.dart';
+
 import '../models/category.dart';
+import '../models/post.dart';
+import '../models/topic.dart';
+import '../models/user.dart';
 
 class CategoryState {
   final Category category;
@@ -9,10 +11,12 @@ class CategoryState {
   final int topicsCount;
 
   CategoryState({
-    this.category,
-    this.topicIds,
-    this.topicsCount,
-  });
+    @required this.category,
+    this.topicIds = const [],
+    this.topicsCount = 0,
+  })  : assert(category != null),
+        assert(topicIds != null),
+        assert(topicsCount != null);
 
   CategoryState copy({
     Category category,
@@ -29,19 +33,23 @@ class CategoryState {
 
 class TopicState {
   final Topic topic;
-  final Map<int, List<Post>> pages;
+  final Map<int, Post> posts;
 
   int get maxPage => topic.postsCount ~/ 20;
 
-  TopicState({this.topic, this.pages});
+  TopicState({
+    @required this.topic,
+    @required this.posts,
+  })  : assert(topic != null),
+        assert(posts != null);
 
   TopicState copy({
-    Topic topic,
-    Map<int, List<Post>> pages,
+    @required Topic topic,
+    @required Map<int, Post> pages,
   }) {
     return TopicState(
       topic: topic ?? this.topic,
-      pages: pages ?? this.pages,
+      posts: pages ?? this.posts,
     );
   }
 }
@@ -58,12 +66,16 @@ class AppState {
   Map<String, String> cookies;
 
   AppState({
-    this.cookies,
-    this.isLoading,
-    this.users,
-    this.topics,
-    this.categories,
-  });
+    this.cookies = const {},
+    this.isLoading = false,
+    this.users = const {},
+    this.topics = const {},
+    this.categories = const {},
+  })  : assert(cookies != null),
+        assert(isLoading != null),
+        assert(users != null),
+        assert(topics != null),
+        assert(categories != null);
 
   AppState copy({
     Map<int, CategoryState> categories,
@@ -80,17 +92,4 @@ class AppState {
       isLoading: isLoading ?? this.isLoading,
     );
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AppState &&
-          users == other.users &&
-          topics == other.topics &&
-          categories == other.categories &&
-          cookies == other.cookies;
-
-  @override
-  int get hashCode =>
-      users.hashCode ^ topics.hashCode ^ categories.hashCode ^ cookies.hashCode;
 }
