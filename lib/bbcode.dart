@@ -45,51 +45,67 @@ enum BBCodeTagType {
   // [align] or [/align]
   Align,
   Text,
+  Paragraph,
 }
 
 RegExp boldRegExp = RegExp(
   r"\[b\](.*?)\[/b\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp italicsRegExp = RegExp(
   r"\[i\](.*?)\[/i\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp deleteRegExp = RegExp(
   r"\[del\](.*?)\[/del\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp underlineRegExp = RegExp(
   r"\[u\](.*?)\[/u\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp headingRegExp = RegExp(
   r"\[h\](.*?)\[/h\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp colorRegExp = RegExp(
   r"\[color=([^\s\]]*)?\](.*?)\[/color\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp sizeRegExp = RegExp(
   r"\[size=([^\s\]]*)?\](.*?)\[/size\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp quoteRegExp = RegExp(
   r"\[quote\](.*?)\[/quote\]",
   multiLine: true,
+  dotAll: true,
 );
 
 RegExp tableRegExp = RegExp(
   r"\[table\](.*?)\[/table\]",
   multiLine: true,
+  dotAll: true,
+);
+
+RegExp collapseRegExp = RegExp(
+  r"\[collapse(=[^\s\]]*)?\](.*?)\[/collapse\]",
+  multiLine: true,
+  dotAll: true,
 );
 
 RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
@@ -129,8 +145,7 @@ class BBCodeTag extends LinkedListEntry<BBCodeTag> {
   BBCodeTag.fontEnd() : this.end(BBCodeTagType.Font);
   BBCodeTag.headingBeg() : this.beg(BBCodeTagType.Heading);
   BBCodeTag.headingEnd() : this.end(BBCodeTagType.Heading);
-  BBCodeTag.imageBeg() : this.beg(BBCodeTagType.Image);
-  BBCodeTag.imageEnd() : this.end(BBCodeTagType.Image);
+  BBCodeTag.image(String content) : this.leaf(BBCodeTagType.Image, content);
   BBCodeTag.italicsBeg() : this.beg(BBCodeTagType.Italics);
   BBCodeTag.italicsEnd() : this.end(BBCodeTagType.Italics);
   BBCodeTag.metions(String content) : this.leaf(BBCodeTagType.Metions, content);
@@ -148,11 +163,13 @@ class BBCodeTag extends LinkedListEntry<BBCodeTag> {
       : this.leaf(BBCodeTagType.PlainLink, content);
   BBCodeTag.linkBeg(String content) : this.beg(BBCodeTagType.Link, content);
   BBCodeTag.linkEnd() : this.end(BBCodeTagType.Link);
-  BBCodeTag.text(String content) : this.leaf(BBCodeTagType.Text, content);
   BBCodeTag.rule() : this.leaf(BBCodeTagType.Rule);
   BBCodeTag.uidBeg(String content) : this.beg(BBCodeTagType.Uid, content);
   BBCodeTag.uidEnd() : this.end(BBCodeTagType.Uid);
   BBCodeTag.pid(String content) : this.leaf(BBCodeTagType.Pid, content);
+  BBCodeTag.text(String content) : this.leaf(BBCodeTagType.Text, content);
+  BBCodeTag.paragraphBeg() : this.beg(BBCodeTagType.Paragraph);
+  BBCodeTag.paragraphEnd() : this.end(BBCodeTagType.Paragraph);
 
   bool operator ==(t) {
     return t is BBCodeTag &&
@@ -171,381 +188,299 @@ class BBCodeTag extends LinkedListEntry<BBCodeTag> {
   }
 }
 
-class BBCodeParser {
-  LinkedList<BBCodeTag> tags;
+LinkedList<BBCodeTag> parseBBCode(String content) {
+  LinkedList<BBCodeTag> tags = LinkedList();
 
-  BBCodeTag _previous;
+  _parseBlock(content, tags);
 
-  BBCodeParser._(this.tags, this._previous);
+  var _pre = tags.first;
 
-  factory BBCodeParser(String content) {
-    LinkedList<BBCodeTag> list = LinkedList();
-    BBCodeTag tag = BBCodeTag.text(content);
-    list.add(tag);
-    return BBCodeParser._(list, tag);
+  while (_pre != null) {
+    var pre = _pre.next;
+    if (_pre.type == BBCodeTagType.Text) {
+      _parseInlines(_pre.content, _pre);
+    }
+    _pre = pre;
   }
 
-  LinkedList<BBCodeTag> parse() {
-    _applyParser(_parseCollapse);
-    _applyParser(_parseQuote);
-    _applyParser(_parseTable);
-    _applyParser(_parseHeading);
+  return tags;
+}
 
-    _applyParser(_parseLink);
-    _applyParser(_parseInlines);
-    _applyParser(_parseFont);
-    _applyParser(_parseImage);
-    _applyParser(_parseMetions);
-    _applyParser(_parseSticker);
-    return tags;
+_parseBlock(String content, LinkedList<BBCodeTag> tags) {
+  List<_TagWithPosition> _tags = List();
+
+  for (RegExpMatch match in quoteRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.quoteBeg(),
+      match.start,
+      match.start + "[quote]".length,
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.quoteEnd(),
+      match.end - "[/quote]".length,
+      match.end,
+    ));
   }
 
-  _insert(BBCodeTag tag) {
-    _previous.insertAfter(tag);
-    _previous = tag;
+  for (RegExpMatch match in collapseRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.collapseBeg(),
+      match.start,
+      match.start + "[collapse]".length + (match[1]?.length ?? 0),
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.collapseEnd(),
+      match.end - "[/collapse]".length,
+      match.end,
+    ));
   }
 
-  _applyParser(bool parseFn(String content)) {
-    var tag = tags.first;
-    while (tag != null) {
-      var next = tag.next;
-      if (tag.type == BBCodeTagType.Text) {
-        _previous = tag;
-        if (tag.content != null) {
-          if (parseFn(tag.content)) {
-            tag.unlink();
-          }
+  for (RegExpMatch match in boldRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.boldBeg(),
+      match.start,
+      match.start + "[b]".length,
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.boldEnd(),
+      match.end - "[/b]".length,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in italicsRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.italicsBeg(),
+      match.start,
+      match.start + "[i]".length,
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.italicsEnd(),
+      match.end - "[/i]".length,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in deleteRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.deleteBeg(),
+      match.start,
+      match.start + "[del]".length,
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.deleteEnd(),
+      match.end - "[/del]".length,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in underlineRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.deleteBeg(),
+      match.start,
+      match.start + "[u]".length,
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.deleteEnd(),
+      match.end - "[/u]".length,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in sizeRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sizeBeg(match[1]),
+      match.start,
+      match.start + "[size=]".length + (match[1]?.length ?? 0),
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sizeEnd(),
+      match.end - "[/size]".length,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in colorRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sizeBeg(match[1]),
+      match.start,
+      match.start + "[color=]".length + (match[1]?.length ?? 0),
+    ));
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sizeEnd(),
+      match.end - "[/color]".length,
+      match.end,
+    ));
+  }
+
+  if (_tags.isEmpty) {
+    tags.add(BBCodeTag.paragraphBeg());
+    tags.add(BBCodeTag.text(content));
+    tags.add(BBCodeTag.paragraphEnd());
+  } else {
+    _tags.sort((a, b) => a.start.compareTo(b.start));
+
+    int lastEnd = 0;
+    bool openingParagraph = false;
+
+    for (_TagWithPosition tagWihtPosition in _tags) {
+      if (tagWihtPosition.start != lastEnd) {
+        if (!openingParagraph) {
+          tags.add(BBCodeTag.paragraphBeg());
+          openingParagraph = true;
         }
+        tags.add(
+          BBCodeTag.text(content.substring(lastEnd, tagWihtPosition.start)),
+        );
       }
-      tag = next;
-    }
-  }
+      lastEnd = tagWihtPosition.end;
 
-  bool _parseQuote(String content) {
-    int lastEnd = 0;
-
-    for (var match in quoteRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.quoteBeg());
-      _insert(BBCodeTag.text(match[1]));
-      _insert(BBCodeTag.quoteEnd());
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseTable(String content) {
-    int lastEnd = 0;
-
-    for (var match in tableRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-
-      // print(match[0]);
-
-      _insert(BBCodeTag.tableBeg());
-      _insert(BBCodeTag.text(match.group(1)));
-      _insert(BBCodeTag.tableEnd());
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
+      switch (tagWihtPosition.tag.type) {
+        case BBCodeTagType.Collapse:
+        case BBCodeTagType.Align:
+        case BBCodeTagType.Table:
+        case BBCodeTagType.Quote:
+          if (openingParagraph) {
+            tags.add(BBCodeTag.paragraphEnd());
+            openingParagraph = false;
+          }
+          break;
+        default: // inlines
+          if (!openingParagraph) {
+            tags.add(BBCodeTag.paragraphBeg());
+            openingParagraph = true;
+          }
+          break;
       }
 
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  static RegExp collapseRegExp = RegExp(
-    r"\[collapse(=[^\s\]]*)?\](.*?)\[/collapse\]",
-    multiLine: true,
-    dotAll: true,
-    unicode: true,
-  );
-
-  bool _parseCollapse(String content) {
-    int lastEnd = 0;
-
-    for (var match in collapseRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-
-      // print(match[0]);
-
-      if (match[1] != null) {
-        _insert(BBCodeTag.collapseBeg(match[1].substring(1)));
-      } else {
-        _insert(BBCodeTag.collapseBeg());
-      }
-      _insert(BBCodeTag.text(match[2]));
-      _insert(BBCodeTag.collapseEnd());
+      tags.add(tagWihtPosition.tag);
     }
 
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseInlines(String content) {
-    List<_InlineMatch> matches = [];
-
-    for (var match in boldRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(BBCodeTagType.Bold, match.start, 3));
-      matches.add(_InlineMatch.end(BBCodeTagType.Bold, match.end, 4));
-    }
-
-    for (var match in italicsRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(BBCodeTagType.Italics, match.start, 3));
-      matches.add(_InlineMatch.end(BBCodeTagType.Italics, match.end, 4));
-    }
-
-    for (var match in deleteRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(BBCodeTagType.Delete, match.start, 5));
-      matches.add(_InlineMatch.end(BBCodeTagType.Delete, match.end, 6));
-    }
-
-    for (var match in underlineRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(BBCodeTagType.Underline, match.start, 5));
-      matches.add(_InlineMatch.end(BBCodeTagType.Underline, match.end, 6));
-    }
-
-    for (var match in sizeRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(
-        BBCodeTagType.Size,
-        match.start,
-        7 + match[1].length,
-        content: match[1],
-      ));
-      matches.add(_InlineMatch.end(BBCodeTagType.Size, match.end, 7));
-    }
-
-    for (var match in colorRegExp.allMatches(content)) {
-      matches.add(_InlineMatch.beg(
-        BBCodeTagType.Color,
-        match.start,
-        8 + match[1].length,
-        content: match[1],
-      ));
-      matches.add(_InlineMatch.end(BBCodeTagType.Color, match.end, 8));
-    }
-
-    if (matches.isEmpty) {
-      return false;
-    }
-
-    matches.sort((a, b) => a.start.compareTo(b.start));
-
-    int lastEnd = 0;
-
-    for (var match in matches) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag._(match.type, match.begin, match.content));
-    }
-
-    if (lastEnd != content.length) {
-      _insert(BBCodeTag.text(content.substring(lastEnd)));
-    }
-
-    return true;
-  }
-
-  bool _parseHeading(String content) {
-    int lastEnd = 0;
-
-    for (var match in headingRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.headingBeg());
-      _insert(BBCodeTag.text(match.group(1)));
-      _insert(BBCodeTag.headingEnd());
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseImage(String content) {
-    int lastEnd = 0;
-
-    for (var match in imageRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.imageBeg());
-      _insert(BBCodeTag.text(match.group(1)));
-      _insert(BBCodeTag.imageEnd());
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseSticker(String content) {
-    int lastEnd = 0;
-
-    for (var match in stickerRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.sticker(match.group(1)));
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseLink(String content) {
-    int lastEnd = 0;
-
-    for (var match in linkRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      if (match[1] == null) {
-        _insert(BBCodeTag.plainLink(match[2]));
-      } else {
-        _insert(BBCodeTag.linkBeg(match[1]));
-        _insert(BBCodeTag.text(match[2]));
-        _insert(BBCodeTag.linkEnd());
-      }
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseFont(String content) {
-    int lastEnd = 0;
-
-    for (var match in fontRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.fontBeg(match.group(1)));
-      _insert(BBCodeTag.text(match.group(2)));
-      _insert(BBCodeTag.fontEnd());
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool _parseMetions(String content) {
-    int lastEnd = 0;
-
-    for (var match in metionsRegExp.allMatches(content)) {
-      if (match.start != lastEnd) {
-        _insert(BBCodeTag.text(content.substring(lastEnd, match.start)));
-      }
-      lastEnd = match.end;
-      _insert(BBCodeTag.metions(match.group(1)));
-    }
-
-    if (lastEnd != 0) {
-      if (lastEnd != content.length) {
-        _insert(BBCodeTag.text(content.substring(lastEnd)));
-      }
-
-      return true;
-    } else {
-      return false;
+    if (openingParagraph) {
+      tags.add(BBCodeTag.paragraphEnd());
     }
   }
 }
 
-class _InlineMatch {
-  final BBCodeTagType type;
-  final int start;
-  final int end;
-  final String content;
-  final bool begin;
+_parseInlines(String content, BBCodeTag previous) {
+  List<_TagWithPosition> _tags = List();
 
-  _InlineMatch._(this.type, this.begin, this.start, this.end, {this.content});
+  for (RegExpMatch match in linkRegExp.allMatches(content)) {
+    if (match[1] == null) {
+      _tags.add(_TagWithPosition(
+        BBCodeTag.plainLink(match[2]),
+        match.start,
+        match.end,
+      ));
+    } else {
+      _tags.add(_TagWithPosition(
+        BBCodeTag.linkBeg(match[1]),
+        match.start,
+        match.start + "[url]".length + match[1].length,
+      ));
+      _tags.add(_TagWithPosition(
+        BBCodeTag.text(match[2]),
+        match.start + "[url]".length + match[1].length,
+        match.end - "[/url]".length,
+      ));
+      _tags.add(_TagWithPosition(
+        BBCodeTag.linkEnd(),
+        match.end - "[/url]".length,
+        match.end,
+      ));
+    }
+  }
 
-  _InlineMatch.beg(BBCodeTagType type, int start, int len, {String content})
-      : this._(type, true, start, start + len, content: content);
-  _InlineMatch.end(BBCodeTagType type, int end, int len, {String content})
-      : this._(type, false, end - len, end, content: content);
+  for (RegExpMatch match in metionsRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.metions(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in stickerRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sticker(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in imageRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.image(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  if (_tags.isNotEmpty) {
+    _tags.sort((a, b) => a.start.compareTo(b.start));
+
+    var _pre = previous;
+    int lastEnd = 0;
+
+    for (_TagWithPosition tagWihtPosition in _tags) {
+      if (tagWihtPosition.start != lastEnd) {
+        var tag =
+            BBCodeTag.text(content.substring(lastEnd, tagWihtPosition.start));
+        _pre.insertAfter(tag);
+        _pre = tag;
+      }
+      lastEnd = tagWihtPosition.end;
+      _pre.insertAfter(tagWihtPosition.tag);
+      _pre = tagWihtPosition.tag;
+    }
+
+    previous.unlink();
+  }
 }
 
-class _BlockMatch {
-  final BBCodeTagType type;
+_parseLinkContent(String content, BBCodeTag previous) {
+  List<_TagWithPosition> _tags = List();
+
+  for (RegExpMatch match in metionsRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.metions(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in stickerRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.sticker(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  for (RegExpMatch match in imageRegExp.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      BBCodeTag.image(match[1]),
+      match.start,
+      match.end,
+    ));
+  }
+
+  if (_tags.isNotEmpty) {
+    _tags.sort((a, b) => a.start.compareTo(b.start));
+
+    var _pre = previous;
+    var iter = _tags.iterator;
+
+    while (iter.moveNext()) {
+      _pre.insertAfter(iter.current.tag);
+      _pre = iter.current.tag;
+    }
+  }
+}
+
+class _TagWithPosition {
+  final BBCodeTag tag;
   final int start;
   final int end;
-  final String content;
-  final bool begin;
 
-  _BlockMatch._(this.type, this.begin, this.start, this.end, {this.content});
-  _BlockMatch.beg(BBCodeTagType type, int start, int len, {String content})
-      : this._(type, true, start, start + len, content: content);
-  _BlockMatch.end(BBCodeTagType type, int end, int len, {String content})
-      : this._(type, false, end - len, end, content: content);
+  _TagWithPosition(this.tag, this.start, this.end);
 }

@@ -6,25 +6,69 @@ import '../lib/bbcode.dart';
 void main() {
   test("BBCode parser", () {
     assert(listEquals(
-      BBCodeParser("foo,bar,baz").parse().toList(),
+      parseBBCode("foo,bar,baz").toList(),
       [
+        BBCodeTag.paragraphBeg(),
         BBCodeTag.text("foo,bar,baz"),
+        BBCodeTag.paragraphEnd(),
       ],
     ));
 
     assert(listEquals(
-      BBCodeParser("[b]bold[/b]").parse().toList(),
+      parseBBCode("[b]bold[/b]").toList(),
       [
+        BBCodeTag.paragraphBeg(),
         BBCodeTag.boldBeg(),
         BBCodeTag.text("bold"),
         BBCodeTag.boldEnd(),
+        BBCodeTag.paragraphEnd(),
       ],
     ));
 
     assert(listEquals(
-      BBCodeParser("[b]bold[b]").parse().toList(),
+      parseBBCode("[b]bold[b]").toList(),
       [
+        BBCodeTag.paragraphBeg(),
         BBCodeTag.text("[b]bold[b]"),
+        BBCodeTag.paragraphEnd(),
+      ],
+    ));
+
+    assert(listEquals(
+      parseBBCode("A[b][quote]content[/quote]B[/b]").toList(),
+      [
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("A"),
+        BBCodeTag.boldBeg(),
+        BBCodeTag.paragraphEnd(),
+        BBCodeTag.quoteBeg(),
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("content"),
+        BBCodeTag.paragraphEnd(),
+        BBCodeTag.quoteEnd(),
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("B"),
+        BBCodeTag.boldEnd(),
+        BBCodeTag.paragraphEnd(),
+      ],
+    ));
+
+    assert(listEquals(
+      parseBBCode("A[b][quote]content[/quote]B[/b]").toList(),
+      [
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("A"),
+        BBCodeTag.boldBeg(),
+        BBCodeTag.paragraphEnd(),
+        BBCodeTag.quoteBeg(),
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("content"),
+        BBCodeTag.paragraphEnd(),
+        BBCodeTag.quoteEnd(),
+        BBCodeTag.paragraphBeg(),
+        BBCodeTag.text("B"),
+        BBCodeTag.boldEnd(),
+        BBCodeTag.paragraphEnd(),
       ],
     ));
   });
