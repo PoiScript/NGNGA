@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import '../models/category.dart';
@@ -7,25 +9,25 @@ import '../models/user.dart';
 
 class CategoryState {
   final Category category;
-  final List<int> topicIds;
+  final List<Topic> topics;
   final int topicsCount;
 
   CategoryState({
     @required this.category,
-    this.topicIds = const [],
-    this.topicsCount = 0,
+    @required this.topics,
+    @required this.topicsCount,
   })  : assert(category != null),
-        assert(topicIds != null),
+        assert(topics != null),
         assert(topicsCount != null);
 
   CategoryState copy({
     Category category,
-    List<int> topicIds,
+    List<Topic> topics,
     int topicsCount,
   }) {
     return CategoryState(
       category: category ?? this.category,
-      topicIds: topicIds ?? this.topicIds,
+      topics: topics ?? this.topics,
       topicsCount: topicsCount ?? this.topicsCount,
     );
   }
@@ -33,23 +35,20 @@ class CategoryState {
 
 class TopicState {
   final Topic topic;
-  final Map<int, Post> posts;
-
-  int get maxPage => topic.postsCount ~/ 20;
+  final ListQueue<Post> posts;
 
   TopicState({
     @required this.topic,
     @required this.posts,
-  })  : assert(topic != null),
-        assert(posts != null);
+  }) : assert(topic != null && posts != null);
 
   TopicState copy({
-    @required Topic topic,
-    @required Map<int, Post> pages,
+    Topic topic,
+    ListQueue<Post> posts,
   }) {
     return TopicState(
       topic: topic ?? this.topic,
-      posts: pages ?? this.posts,
+      posts: posts ?? this.posts,
     );
   }
 }
