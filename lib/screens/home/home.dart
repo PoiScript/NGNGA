@@ -1,54 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:async_redux/async_redux.dart';
 
-import '../../models/category.dart';
 import './category_row.dart';
+import '../../models/category.dart';
+import '../../store/state.dart';
+
+const kExpandedHeight = 200.0;
 
 class HomePage extends StatelessWidget {
-  final List<Category> categories = [
-    Category(
-      id: 16907081,
-      title: "Hololive 讨论合集",
-      lastPostedAt: 0,
-      postsCount: 0,
-    ),
-  ];
+  final List<Category> categories;
+
+  HomePage({
+    @required this.categories,
+  }) : assert(categories != null);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 20.0),
-            child: Text(
-              "NGNGA",
-              style: Theme.of(context).textTheme.headline.copyWith(
-                    fontWeight: FontWeight.bold,
-                    // fontSize: 50.0,
-                  ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            expandedHeight: kExpandedHeight,
+            floating: false,
+            pinned: true,
+            backgroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                "NGNGA",
+                style: Theme.of(context)
+                    .textTheme
+                    .title
+                    .copyWith(fontWeight: FontWeight.w900),
+              ),
+              titlePadding: EdgeInsets.all(0.0),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: categories.length,
-              itemBuilder: (context, index) =>
-                  _itemBuilder(context, categories[index]),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => GestureDetector(
+                onTap: () => _onTap(context, categories[index].id),
+                child: CategoryRow(categories[index]),
+              ),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 
-  Widget _itemBuilder(BuildContext context, Category category) {
-    return GestureDetector(
-      onTap: () => _onTap(context, category.id),
-      child: CategoryRow(category),
-    );
-  }
-
   _onTap(BuildContext context, int categoryId) {
     Navigator.pushNamed(context, "/c", arguments: {"id": categoryId});
+  }
+}
+
+class HomePageConnector extends StatelessWidget {
+  HomePageConnector();
+
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<AppState, ViewModel>(
+      model: ViewModel(),
+      builder: (BuildContext context, ViewModel vm) => HomePage(
+        categories: vm.categories,
+      ),
+    );
+  }
+}
+
+class ViewModel extends BaseModel<AppState> {
+  List<Category> categories;
+
+  ViewModel();
+
+  ViewModel.build({
+    @required this.categories,
+  }) : super(equals: [categories]);
+
+  @override
+  ViewModel fromStore() {
+    return ViewModel.build(
+      categories:
+          state.categories.values.map((state) => state.category).toList(),
+    );
   }
 }

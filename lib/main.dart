@@ -8,6 +8,7 @@ import './screens/topic/topic.dart';
 import './screens/user/user.dart';
 import './style.dart';
 import './store/state.dart';
+import './models/category.dart';
 
 void main() => runApp(MyApp());
 
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
     Widget screen;
     switch (settings.name) {
       case "/":
-        screen = HomePage();
+        screen = HomePageConnector();
         break;
       case "/c":
         screen = CategoryPageConnector(arguments["id"]);
