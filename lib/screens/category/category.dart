@@ -44,6 +44,7 @@ class CategoryPage extends StatelessWidget {
         footer: ClassicalFooter(),
         onRefresh: onRefresh,
         onLoad: onLoad,
+        semanticChildCount: topics.length,
         slivers: <Widget>[
           SliverAppBar(
             expandedHeight: kExpandedHeight,
@@ -75,20 +76,26 @@ class CategoryPage extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => GestureDetector(
-                onTap: () => _onTap(context, topics[index].id),
-                child: TopicRow(topics[index]),
-              ),
-              childCount: topics.length,
+              (context, index) {
+                final int itemIndex = index ~/ 2;
+                if (index.isEven) {
+                  final topic = topics[itemIndex];
+                  return TopicRow(topic);
+                }
+                return Divider(height: 16.0, color: Colors.grey);
+              },
+              semanticIndexCallback: (Widget widget, int localIndex) {
+                if (localIndex.isEven) {
+                  return localIndex ~/ 2;
+                }
+                return null;
+              },
+              childCount: topics.length * 2,
             ),
           ),
         ],
       ),
     );
-  }
-
-  _onTap(BuildContext context, int topicId) {
-    Navigator.pushNamed(context, "/t", arguments: {"id": topicId, "page": 0});
   }
 }
 
