@@ -53,6 +53,55 @@ Future<_FetchTopicResponse> _fetchTopic(
   return _FetchTopicResponse.fromJson(json);
 }
 
+class FetchPreviousPostsAction extends ReduxAction<AppState> {
+  final int topicId;
+
+  FetchPreviousPostsAction(this.topicId) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    var firstPage = state.topics[topicId].posts.first.index ~/ 20;
+
+    if (firstPage == 0) {
+      var response = await _fetchTopic(topicId, 0, state.cookies);
+
+      return state.copy(
+        users: state.users..addEntries(response.users),
+        topics: state.topics
+          ..update(
+            topicId,
+            (topicState) => topicState.copy(
+              topic: response.topic,
+              posts: ListQueue.of(response.posts)
+                ..addAll(
+                  topicState.posts
+                    ..removeWhere((post) => post.index ~/ 20 == 0),
+                ),
+            ),
+          ),
+      );
+    } else {
+      var response = await _fetchTopic(topicId, firstPage - 1, state.cookies);
+
+      return state.copy(
+        users: state.users..addEntries(response.users),
+        topics: state.topics
+          ..update(
+            topicId,
+            (topicState) => topicState.copy(
+              topic: response.topic,
+              posts: ListQueue.of(response.posts)..addAll(topicState.posts),
+            ),
+          ),
+      );
+    }
+  }
+
+  void before() => dispatch(IsLoadingAction(true));
+
+  void after() => dispatch(IsLoadingAction(false));
+}
+
 class FetchNextPostsAction extends ReduxAction<AppState> {
   final int topicId;
 
@@ -86,12 +135,14 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
 
 class FetchPostsAction extends ReduxAction<AppState> {
   final int topicId;
+  final int pageIndex;
 
-  FetchPostsAction(this.topicId) : assert(topicId != null);
+  FetchPostsAction(this.topicId, this.pageIndex)
+      : assert(topicId != null && pageIndex != null && pageIndex >= 0);
 
   @override
   Future<AppState> reduce() async {
-    var response = await _fetchTopic(topicId, 0, state.cookies);
+    var response = await _fetchTopic(topicId, pageIndex, state.cookies);
 
     return state.copy(
       users: state.users..addEntries(response.users),
