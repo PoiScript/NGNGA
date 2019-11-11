@@ -1,6 +1,7 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 
 import './sticker.dart';
 import '../bbcode.dart';
@@ -86,14 +87,13 @@ class _BBCodeState extends State<BBCode> {
   }
 
   Widget _buildParagraph(Iterator<BBCodeTag> iter) {
-    assert(iter.current.type == BBCodeTagType.Paragraph &&
-        iter.current.beg == true);
+    assert(iter.current.type == BBCodeTagType.Paragraph);
+    assert(iter.current.beg == true);
 
     List<InlineSpan> _spans = [];
 
     outerloop:
     while (iter.moveNext()) {
-      // assert(iter.current.beg != false);
       switch (iter.current.type) {
         case BBCodeTagType.Paragraph:
           assert(iter.current.beg == false, 'Nested paragraph is not allowed');
@@ -146,14 +146,12 @@ class _BBCodeState extends State<BBCode> {
       }
     }
 
-    return Container(
-      child: RichText(text: TextSpan(children: _spans)),
-    );
+    return RichText(text: TextSpan(children: _spans));
   }
 
   Widget _buildCollapse(Iterator<BBCodeTag> iter) {
-    assert(iter.current.type == BBCodeTagType.Collapse &&
-        iter.current.beg == true);
+    assert(iter.current.type == BBCodeTagType.Collapse);
+    assert(iter.current.beg == true);
 
     String _description = iter.current.content;
     List<Widget> _children = [];
@@ -223,8 +221,8 @@ class _BBCodeState extends State<BBCode> {
   }
 
   Widget _buildQuote(Iterator<BBCodeTag> iter) {
-    assert(
-        iter.current.type == BBCodeTagType.Quote && iter.current.beg == true);
+    assert(iter.current.type == BBCodeTagType.Quote);
+    assert(iter.current.beg == true);
 
     List<Widget> _children = [];
 
@@ -297,12 +295,33 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  TextSpan _buildImage(Iterator<BBCodeTag> iter) {
+  WidgetSpan _buildImage(Iterator<BBCodeTag> iter) {
     assert(iter.current.type == BBCodeTagType.Image);
 
-    // TODO:
+    // FIXME: better way to resolve attachmet url
+    var uri = Uri.https("img.nga.178.com", "")
+        .resolve("attachments/${iter.current.content}");
+    var imgUrl = uri.toString();
 
-    return TextSpan(text: "IMAGE", style: TextStyle(color: Colors.red));
+    return WidgetSpan(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HeroPhotoViewWrapper(
+                imageProvider: NetworkImage(imgUrl),
+              ),
+            ),
+          );
+        },
+        child: Hero(
+          // FIXME: better way to create unique tag
+          tag: "tag${DateTime.now().toString()}",
+          child: Image.network(imgUrl),
+        ),
+      ),
+    );
   }
 
   WidgetSpan _buildSticker(Iterator<BBCodeTag> iter) {
@@ -406,5 +425,24 @@ class _BBCodeState extends State<BBCode> {
       default:
         break;
     }
+  }
+}
+
+class HeroPhotoViewWrapper extends StatelessWidget {
+  const HeroPhotoViewWrapper({@required this.imageProvider});
+
+  final ImageProvider imageProvider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints.expand(
+        height: MediaQuery.of(context).size.height,
+      ),
+      child: PhotoView(
+        imageProvider: imageProvider,
+        heroAttributes: const PhotoViewHeroAttributes(tag: "someTag"),
+      ),
+    );
   }
 }

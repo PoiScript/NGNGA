@@ -103,7 +103,7 @@ RegExp tableRegExp = RegExp(
 );
 
 RegExp collapseRegExp = RegExp(
-  r"\[collapse(=[^\s\]]*)?\](.*?)\[/collapse\]",
+  r"\[collapse(=[^\]]*)?\](.*?)\[/collapse\]",
   multiLine: true,
   dotAll: true,
 );
@@ -354,6 +354,14 @@ _parseBlock(String content, LinkedList<BBCodeTag> tags) {
       }
 
       tags.add(tagWihtPosition.tag);
+    }
+
+    if (lastEnd < content.length) {
+      if (!openingParagraph) {
+        tags.add(BBCodeTag.paragraphBeg());
+        openingParagraph = true;
+      }
+      tags.add(BBCodeTag.text(content.substring(lastEnd)));
     }
 
     if (openingParagraph) {
