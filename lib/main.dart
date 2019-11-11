@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
 
+import './models/category.dart';
+import './screens/category/category.dart';
+import './screens/editor/editor.dart';
 import './screens/home/home.dart';
 import './screens/settings/settings.dart';
-import './screens/category/category.dart';
 import './screens/topic/topic.dart';
 import './screens/user/user.dart';
-import './style.dart';
 import './store/state.dart';
-import './models/category.dart';
+import './style.dart';
 
 void main() => runApp(MyApp());
 
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
       store: store,
       child: MaterialApp(
         onGenerateRoute: _routes,
-        theme: _theme(),
+        theme: _theme,
       ),
     );
   }
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
         screen = CategoryPageConnector(arguments["id"]);
         break;
       case "/t":
-        screen = TopicPageConnector(arguments["id"]);
+        screen = TopicPageConnector(arguments["id"], arguments["page"]);
         break;
       case "/u":
         screen = UserPage(id: arguments["id"]);
@@ -54,20 +55,21 @@ class MyApp extends StatelessWidget {
       case "/s":
         screen = SettingsPage();
         break;
+      case "/e":
+        screen = EditorPage();
+        break;
       default:
         return null;
     }
-    return MaterialPageRoute(builder: (BuildContext context) => screen);
+    return MaterialPageRoute(builder: (context) => screen);
   }
 
-  ThemeData _theme() {
-    return ThemeData(
-      textTheme: TextTheme(
-        title: TitleTextStyle,
-        subtitle: SubTitleTextStyle,
-        caption: CaptionTextStyle,
-        body1: Body1TextStyle,
-      ),
-    );
-  }
+  final ThemeData _theme = ThemeData(
+    textTheme: TextTheme(
+      title: TitleTextStyle,
+      subtitle: SubTitleTextStyle,
+      caption: CaptionTextStyle,
+      body1: Body1TextStyle,
+    ),
+  );
 }
