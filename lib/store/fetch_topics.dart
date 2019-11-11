@@ -35,7 +35,7 @@ Future<_FetchTopicsResponse> _fetchTopics(
 ) async {
   final uri = Uri.https("nga.178.com", "thread.php", {
     "stid": categoryId.toString(),
-    "page": pageIndex.toString(),
+    "page": (pageIndex + 1).toString(),
     "__output": "11",
   });
 
@@ -54,13 +54,11 @@ Future<_FetchTopicsResponse> _fetchTopics(
 class FetchTopicsAction extends ReduxAction<AppState> {
   final int categoryId;
 
-  FetchTopicsAction({
-    @required this.categoryId,
-  }) : assert(categoryId != null);
+  FetchTopicsAction(this.categoryId) : assert(categoryId != null);
 
   @override
   Future<AppState> reduce() async {
-    final response = await _fetchTopics(categoryId, 1, state.cookies);
+    final response = await _fetchTopics(categoryId, 0, state.cookies);
 
     return state.copy(
       categories: state.categories
@@ -69,6 +67,7 @@ class FetchTopicsAction extends ReduxAction<AppState> {
           (categoryState) => categoryState.copy(
             topics: List.of(response.topics),
             topicsCount: response.topicCount,
+            lastPage: 0,
           ),
         ),
     );
@@ -82,20 +81,16 @@ class FetchTopicsAction extends ReduxAction<AppState> {
 class FetchNextTopicsAction extends ReduxAction<AppState> {
   final int categoryId;
 
-  FetchNextTopicsAction({
-    @required this.categoryId,
-  }) : assert(categoryId != null);
+  FetchNextTopicsAction(this.categoryId) : assert(categoryId != null);
 
   @override
   Future<AppState> reduce() async {
-    // page index starts at 1, not 0
-    final lastPage = state.categories[categoryId].topics.length ~/ 20 + 1;
-    final maxPage = state.categories[categoryId].topicsCount ~/ 20 + 1;
-    final response = await _fetchTopics(
-      categoryId,
-      lastPage < maxPage ? lastPage : maxPage,
-      state.cookies,
-    );
+    final lastPage = state.categories[categoryId].lastPage;
+
+    assert(lastPage <= (state.categories[categoryId].topicsCount / 35).ceil());
+
+    final response =
+        await _fetchTopics(categoryId, lastPage + 1, state.cookies);
 
     return state.copy(
       categories: state.categories
@@ -104,6 +99,7 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
           (categoryState) => categoryState.copy(
             topics: categoryState.topics..addAll(response.topics),
             topicsCount: response.topicCount,
+            lastPage: lastPage + 1,
           ),
         ),
     );

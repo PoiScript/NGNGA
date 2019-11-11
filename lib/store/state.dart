@@ -11,24 +11,29 @@ class CategoryState {
   final Category category;
   final List<Topic> topics;
   final int topicsCount;
+  final int lastPage;
 
   CategoryState({
     @required this.category,
     @required this.topics,
     @required this.topicsCount,
+    @required this.lastPage,
   })  : assert(category != null),
         assert(topics != null),
-        assert(topicsCount != null);
+        assert(topicsCount != null),
+        assert(lastPage != null);
 
   CategoryState copy({
     Category category,
     List<Topic> topics,
     int topicsCount,
+    int lastPage,
   }) {
     return CategoryState(
       category: category ?? this.category,
       topics: topics ?? this.topics,
       topicsCount: topicsCount ?? this.topicsCount,
+      lastPage: lastPage ?? this.lastPage,
     );
   }
 }
@@ -55,14 +60,11 @@ class TopicState {
 
 class AppState {
   Map<int, User> users;
-
   Map<int, CategoryState> categories;
-
   Map<int, TopicState> topics;
+  Map<String, String> cookies;
 
   bool isLoading;
-
-  Map<String, String> cookies;
 
   AppState({
     this.cookies = const {},
@@ -70,11 +72,11 @@ class AppState {
     this.users = const {},
     this.topics = const {},
     this.categories = const {},
-  })  : assert(cookies != null),
+  })  : assert(categories != null),
+        assert(cookies != null),
         assert(isLoading != null),
-        assert(users != null),
         assert(topics != null),
-        assert(categories != null);
+        assert(users != null);
 
   AppState copy({
     Map<int, CategoryState> categories,
