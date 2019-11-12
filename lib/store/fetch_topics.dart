@@ -19,10 +19,9 @@ class _FetchTopicsResponse {
   }) : assert(topics != null && topicCount != null);
 
   factory _FetchTopicsResponse.fromJson(Map<String, dynamic> json) {
-    var topics = json["data"]["__T"];
     return _FetchTopicsResponse(
-      topics: (topics is List ? List.from(topics) : Map.from(topics).values)
-          .map((value) => Topic.fromJson(value)),
+      topics:
+          List.from(json["data"]["__T"]).map((value) => Topic.fromJson(value)),
       topicCount: json["data"]["__ROWS"],
     );
   }
@@ -31,13 +30,17 @@ class _FetchTopicsResponse {
 Future<_FetchTopicsResponse> _fetchTopics(
   int categoryId,
   int pageIndex,
+  bool isSubcategory,
   Map<String, String> cookies,
 ) async {
-  final uri = Uri.https("nga.178.com", "thread.php", {
-    "stid": categoryId.toString(),
-    "page": (pageIndex + 1).toString(),
-    "__output": "11",
-  });
+  final uri = Uri.https(
+    "nga.178.com",
+    "thread.php",
+    {
+      "page": (pageIndex + 1).toString(),
+      "__output": "11",
+    }..putIfAbsent(isSubcategory ? "stid" : "fid", () => categoryId.toString()),
+  );
 
   print(uri);
 
@@ -58,7 +61,12 @@ class FetchTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final response = await _fetchTopics(categoryId, 0, state.cookies);
+    final response = await _fetchTopics(
+      categoryId,
+      0,
+      state.categories[categoryId].category.isSubcategory,
+      state.cookies,
+    );
 
     return state.copy(
       categories: state.categories
@@ -89,8 +97,12 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
 
     assert(lastPage <= (state.categories[categoryId].topicsCount / 35).ceil());
 
-    final response =
-        await _fetchTopics(categoryId, lastPage + 1, state.cookies);
+    final response = await _fetchTopics(
+      categoryId,
+      lastPage + 1,
+      state.categories[categoryId].category.isSubcategory,
+      state.cookies,
+    );
 
     return state.copy(
       categories: state.categories

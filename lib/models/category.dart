@@ -1,16 +1,11 @@
 class Category {
   final int id;
   final String title;
+  final bool isSubcategory;
 
   Category({
     this.id,
     this.title,
+    this.isSubcategory,
   });
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['tid'],
-      title: json['subject'],
-    );
-  }
 }
