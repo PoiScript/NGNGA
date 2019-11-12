@@ -59,26 +59,33 @@ class TopicState {
 }
 
 class AppState {
-  Map<int, User> users;
-  Map<int, CategoryState> categories;
-  Map<int, TopicState> topics;
-  Map<String, String> cookies;
-
-  bool isLoading;
+  final List<Topic> favorTopics;
+  final List<Category> savedCategories;
+  final Map<int, User> users;
+  final Map<int, CategoryState> categories;
+  final Map<int, TopicState> topics;
+  final Map<String, String> cookies;
+  final bool isLoading;
 
   AppState({
-    this.cookies = const {},
-    this.isLoading = false,
-    this.users = const {},
-    this.topics = const {},
-    this.categories = const {},
+    @required this.isLoading,
+    @required this.favorTopics,
+    @required this.savedCategories,
+    @required this.cookies,
+    @required this.users,
+    @required this.topics,
+    @required this.categories,
   })  : assert(categories != null),
         assert(cookies != null),
+        assert(favorTopics != null),
+        assert(savedCategories != null),
         assert(isLoading != null),
         assert(topics != null),
         assert(users != null);
 
   AppState copy({
+    List<Topic> favorTopics,
+    List<Category> savedCategories,
     Map<int, CategoryState> categories,
     Map<int, TopicState> topics,
     Map<int, User> users,
@@ -86,6 +93,8 @@ class AppState {
     bool isLoading,
   }) {
     return AppState(
+      savedCategories: savedCategories ?? this.savedCategories,
+      favorTopics: favorTopics ?? this.favorTopics,
       categories: categories ?? this.categories,
       topics: topics ?? this.topics,
       users: users ?? this.users,

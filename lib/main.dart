@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
 
-import './models/category.dart';
 import './screens/category/category.dart';
 import './screens/editor/editor.dart';
 import './screens/home/home.dart';
@@ -22,6 +21,8 @@ class MyApp extends StatelessWidget {
         categories: Map(),
         topics: Map(),
         users: Map(),
+        savedCategories: List(),
+        favorTopics: List(),
       ),
       actionObservers: [Log<AppState>.printer()],
       modelObserver: DefaultModelObserver(),
