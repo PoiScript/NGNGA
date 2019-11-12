@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-
-const nameToPath = {
+const stickerNameToPath = {
   "ac:blink": "assets/stickers/ac0.png",
   "ac:goodjob": "assets/stickers/ac1.png",
   "ac:上": "assets/stickers/ac2.png",
@@ -206,16 +204,3 @@ const nameToPath = {
   "pg:响指": "assets/stickers/pg14.png",
   "pg:转身": "assets/stickers/pg15.png",
 };
-
-class Sticker extends StatelessWidget {
-  final String path;
-
-  Sticker._(this.path);
-
-  Sticker(String name) : this._(nameToPath[name]);
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(path, width: 30.0);
-  }
-}

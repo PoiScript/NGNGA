@@ -1,74 +1,75 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/bbcode.dart';
+import '../lib/bbcode/parser.dart';
+import '../lib/bbcode/tag.dart';
 
 void main() {
   test("BBCode parser", () {
     assert(listEquals(
       parseBBCode("foo,bar,baz").toList(),
       [
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("foo,bar,baz"),
-        BBCodeTag.paragraphEnd(),
+        ParagraphStart(),
+        Text("foo,bar,baz"),
+        ParagraphEnd(),
       ],
     ));
 
     assert(listEquals(
       parseBBCode("[b]bold[/b]").toList(),
       [
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.boldBeg(),
-        BBCodeTag.text("bold"),
-        BBCodeTag.boldEnd(),
-        BBCodeTag.paragraphEnd(),
+        ParagraphStart(),
+        BoldStart(),
+        Text("bold"),
+        BoldEnd(),
+        ParagraphEnd(),
       ],
     ));
 
     assert(listEquals(
       parseBBCode("[b]bold[b]").toList(),
       [
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("[b]bold[b]"),
-        BBCodeTag.paragraphEnd(),
+        ParagraphStart(),
+        Text("[b]bold[b]"),
+        ParagraphEnd(),
       ],
     ));
 
     assert(listEquals(
       parseBBCode("A[b][quote]content[/quote]B[/b]").toList(),
       [
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("A"),
-        BBCodeTag.boldBeg(),
-        BBCodeTag.paragraphEnd(),
-        BBCodeTag.quoteBeg(),
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("content"),
-        BBCodeTag.paragraphEnd(),
-        BBCodeTag.quoteEnd(),
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("B"),
-        BBCodeTag.boldEnd(),
-        BBCodeTag.paragraphEnd(),
+        ParagraphStart(),
+        Text("A"),
+        BoldStart(),
+        ParagraphEnd(),
+        QuoteStart(),
+        ParagraphStart(),
+        Text("content"),
+        ParagraphEnd(),
+        QuoteEnd(),
+        ParagraphStart(),
+        Text("B"),
+        BoldEnd(),
+        ParagraphEnd(),
       ],
     ));
 
     assert(listEquals(
       parseBBCode("A[b][quote]content[/quote]B[/b]").toList(),
       [
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("A"),
-        BBCodeTag.boldBeg(),
-        BBCodeTag.paragraphEnd(),
-        BBCodeTag.quoteBeg(),
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("content"),
-        BBCodeTag.paragraphEnd(),
-        BBCodeTag.quoteEnd(),
-        BBCodeTag.paragraphBeg(),
-        BBCodeTag.text("B"),
-        BBCodeTag.boldEnd(),
-        BBCodeTag.paragraphEnd(),
+        ParagraphStart(),
+        Text("A"),
+        BoldStart(),
+        ParagraphEnd(),
+        QuoteStart(),
+        ParagraphStart(),
+        Text("content"),
+        ParagraphEnd(),
+        QuoteEnd(),
+        ParagraphStart(),
+        Text("B"),
+        BoldEnd(),
+        ParagraphEnd(),
       ],
     ));
   });

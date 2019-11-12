@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
 import '../../models/post.dart';
-import '../../widgets/bbcode.dart';
+import '../../bbcode/render.dart';
 import '../../utils/duration_to_now.dart';
 import '../../models/user.dart';
 
@@ -17,7 +17,7 @@ class PostRow extends StatefulWidget {
 }
 
 class _PostRowState extends State<PostRow> {
-  DisplayMode _displayMode = DisplayMode.richText;
+  DisplayMode _displayMode = DisplayMode.RichText;
 
   @override
   Widget build(BuildContext context) {
@@ -59,32 +59,30 @@ class _PostRowState extends State<PostRow> {
                       size: 20.0,
                     ),
                     itemBuilder: (context) => [
-                      PopupMenuItem<Choice>(
-                        value: Choice.displayInBBCode,
-                        child: Text(
-                          "Display in BBCode",
-                          style: Theme.of(context).textTheme.body1,
-                        ),
-                      ),
-                      PopupMenuItem<Choice>(
-                        value: Choice.dispalyRichText,
-                        child: Text(
-                          "Display in RichText",
-                          style: Theme.of(context).textTheme.body1,
-                        ),
-                      ),
-                    ],
+                      _displayMode != DisplayMode.BBCode
+                          ? PopupMenuItem<Choice>(
+                              value: Choice.DisplayInBBCode,
+                              child: Text(
+                                "Display in BBCode",
+                                style: Theme.of(context).textTheme.body1,
+                              ),
+                            )
+                          : null,
+                      _displayMode != DisplayMode.RichText
+                          ? PopupMenuItem<Choice>(
+                              value: Choice.DispalyRichText,
+                              child: Text(
+                                "Display in RichText",
+                                style: Theme.of(context).textTheme.body1,
+                              ),
+                            )
+                          : null,
+                    ]..removeWhere((item) => item == null),
                     onSelected: _onMenuSelected,
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.only(
-                  top: 8.0,
-                  bottom: 8.0,
-                ),
-                child: _buildContent(),
-              ),
+              _buildContent(),
               Row(
                 children: <Widget>[
                   const Spacer(),
@@ -124,14 +122,14 @@ class _PostRowState extends State<PostRow> {
 
   _onMenuSelected(Choice choice) {
     switch (choice) {
-      case Choice.displayInBBCode:
+      case Choice.DisplayInBBCode:
         setState(() {
-          _displayMode = DisplayMode.bbCode;
+          _displayMode = DisplayMode.BBCode;
         });
         break;
-      case Choice.dispalyRichText:
+      case Choice.DispalyRichText:
         setState(() {
-          _displayMode = DisplayMode.richText;
+          _displayMode = DisplayMode.RichText;
         });
         break;
     }
@@ -140,10 +138,10 @@ class _PostRowState extends State<PostRow> {
   Widget _buildContent() {
     var content;
     switch (_displayMode) {
-      case DisplayMode.bbCode:
+      case DisplayMode.BBCode:
         content = SelectableText(widget.post.content);
         break;
-      case DisplayMode.richText:
+      case DisplayMode.RichText:
         content = BBCode(widget.post.content);
         break;
     }
@@ -152,11 +150,11 @@ class _PostRowState extends State<PostRow> {
 }
 
 enum Choice {
-  displayInBBCode,
-  dispalyRichText,
+  DisplayInBBCode,
+  DispalyRichText,
 }
 
 enum DisplayMode {
-  bbCode,
-  richText,
+  BBCode,
+  RichText,
 }
