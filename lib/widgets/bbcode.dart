@@ -16,8 +16,6 @@ class BBCode extends StatefulWidget {
 }
 
 class _BBCodeState extends State<BBCode> {
-  final List<GestureRecognizer> _recognizers = <GestureRecognizer>[];
-
   TextStyle style;
 
   @override
@@ -28,10 +26,8 @@ class _BBCodeState extends State<BBCode> {
 
     List<Widget> _children = [];
 
-    iter.moveNext();
-
-    while (iter.current != null) {
-      assert(iter.current.beg != false);
+    while (iter.moveNext()) {
+      assert(iter.current.beg != false, "Excepted start or empty element.");
       switch (iter.current.type) {
         case BBCodeTagType.Bold:
         case BBCodeTagType.Color:
@@ -42,6 +38,8 @@ class _BBCodeState extends State<BBCode> {
           _applyStyle(iter.current);
           break;
         case BBCodeTagType.Paragraph:
+          _children.add(_buildParagraph(iter));
+          break;
         case BBCodeTagType.Image:
         case BBCodeTagType.Sticker:
         case BBCodeTagType.Metions:
@@ -51,7 +49,7 @@ class _BBCodeState extends State<BBCode> {
         case BBCodeTagType.Link:
         case BBCodeTagType.Pid:
         case BBCodeTagType.Uid:
-          _children.add(_buildParagraph(iter));
+          throw "Execpted block element, fount ${iter.current.type}.";
           break;
         case BBCodeTagType.Collapse:
           _children.add(_buildCollapse(iter));
@@ -67,8 +65,7 @@ class _BBCodeState extends State<BBCode> {
           break;
         case BBCodeTagType.TableRow:
         case BBCodeTagType.TableCell:
-          // TODO:
-          iter.moveNext();
+          throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case BBCodeTagType.Rule:
           _children.add(_buildRule(iter));
@@ -96,8 +93,7 @@ class _BBCodeState extends State<BBCode> {
     while (iter.moveNext()) {
       switch (iter.current.type) {
         case BBCodeTagType.Paragraph:
-          assert(iter.current.beg == false, 'Nested paragraph is not allowed');
-          iter.moveNext();
+          assert(iter.current.beg == false, "Nested paragraph is not allowed");
           break outerloop;
         case BBCodeTagType.Bold:
         case BBCodeTagType.Italics:
@@ -133,20 +129,24 @@ class _BBCodeState extends State<BBCode> {
           // TODO: Handle this case.
           break;
         case BBCodeTagType.Align:
-          // TODO: Handle this case.
-          break;
         case BBCodeTagType.Rule:
         case BBCodeTagType.Quote:
         case BBCodeTagType.Collapse:
         case BBCodeTagType.Table:
+        case BBCodeTagType.Heading:
+          throw "Execpted inline element, fount ${iter.current.type}.";
+          break;
         case BBCodeTagType.TableRow:
         case BBCodeTagType.TableCell:
-        case BBCodeTagType.Heading:
+          throw "TableRow and TableCell are not allowed outside of Table.";
           break;
       }
     }
 
-    return RichText(text: TextSpan(children: _spans));
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      child: RichText(text: TextSpan(children: _spans)),
+    );
   }
 
   Widget _buildCollapse(Iterator<BBCodeTag> iter) {
@@ -160,8 +160,7 @@ class _BBCodeState extends State<BBCode> {
     while (iter.moveNext()) {
       switch (iter.current.type) {
         case BBCodeTagType.Collapse:
-          assert(iter.current.beg == false, 'Nested collapse is not allowed');
-          iter.moveNext();
+          assert(iter.current.beg == false, "Nested collapse is not allowed");
           break outerloop;
         case BBCodeTagType.Italics:
         case BBCodeTagType.Delete:
@@ -173,6 +172,8 @@ class _BBCodeState extends State<BBCode> {
           _applyStyle(iter.current);
           break;
         case BBCodeTagType.Paragraph:
+          _children.add(_buildParagraph(iter));
+          break;
         case BBCodeTagType.Image:
         case BBCodeTagType.Text:
         case BBCodeTagType.PlainLink:
@@ -181,14 +182,14 @@ class _BBCodeState extends State<BBCode> {
         case BBCodeTagType.Metions:
         case BBCodeTagType.Pid:
         case BBCodeTagType.Uid:
-          _children.add(_buildParagraph(iter));
+          throw "Execpted block element, fount ${iter.current.type}.";
           break;
         case BBCodeTagType.Quote:
-          assert(iter.current.beg == true);
+          assert(iter.current.beg == true, "Expected start quote tag.");
           _children.add(_buildQuote(iter));
           break;
         case BBCodeTagType.Table:
-          assert(iter.current.beg == true);
+          assert(iter.current.beg == true, "Expected end quote tag.");
           _children.add(_buildTable(iter));
           break;
         case BBCodeTagType.Heading:
@@ -196,6 +197,7 @@ class _BBCodeState extends State<BBCode> {
           break;
         case BBCodeTagType.TableRow:
         case BBCodeTagType.TableCell:
+          throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case BBCodeTagType.Rule:
           _children.add(_buildRule(iter));
@@ -231,7 +233,6 @@ class _BBCodeState extends State<BBCode> {
       switch (iter.current.type) {
         case BBCodeTagType.Quote:
           if (iter.current.beg == false) {
-            iter.moveNext();
             break outerloop;
           }
           _children.add(_buildQuote(iter));
@@ -253,6 +254,8 @@ class _BBCodeState extends State<BBCode> {
         case BBCodeTagType.Metions:
         case BBCodeTagType.Pid:
         case BBCodeTagType.Uid:
+          throw "Execpted block element, fount ${iter.current.type}.";
+          break;
         case BBCodeTagType.Paragraph:
           _children.add(_buildParagraph(iter));
           break;
@@ -269,6 +272,7 @@ class _BBCodeState extends State<BBCode> {
           break;
         case BBCodeTagType.TableRow:
         case BBCodeTagType.TableCell:
+          throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case BBCodeTagType.Rule:
           _children.add(_buildRule(iter));
@@ -286,7 +290,7 @@ class _BBCodeState extends State<BBCode> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.only(left: 16.0),
+        padding: EdgeInsets.only(left: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: _children,
@@ -333,28 +337,23 @@ class _BBCodeState extends State<BBCode> {
   TextSpan _buildLink(Iterator<BBCodeTag> iter) {
     assert(iter.current.type == BBCodeTagType.Link);
 
-    final TapGestureRecognizer recognizer = TapGestureRecognizer()
-      ..onTap = () {};
-    _recognizers.add(recognizer);
-
     return TextSpan(
       text: "LINK",
       style: TextStyle(color: Colors.red),
-      recognizer: recognizer,
+      recognizer: TapGestureRecognizer()..onTap = () {},
     );
   }
 
   TextSpan _buildPlainLink(Iterator<BBCodeTag> iter) {
     assert(iter.current.type == BBCodeTagType.PlainLink);
 
-    final TapGestureRecognizer recognizer = TapGestureRecognizer();
-    recognizer.onTap = () {};
-    _recognizers.add(recognizer);
-
     return TextSpan(
       text: iter.current.content,
       style: TextStyle(color: Colors.blue),
-      recognizer: recognizer,
+      recognizer: TapGestureRecognizer()
+        ..onTap = () {
+          launch(iter.current.content);
+        },
     );
   }
 

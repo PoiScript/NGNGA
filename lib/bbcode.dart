@@ -108,6 +108,7 @@ RegExp collapseRegExp = RegExp(
   dotAll: true,
 );
 
+RegExp uidRegExp = RegExp(r"\[uid=(\d*)?\](.*?)\[/uid\]");
 RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
 RegExp fontRegExp = RegExp(r"\[font(=[^\s\]]*)?\](.*?)\[/font\]");
 RegExp imageRegExp = RegExp(r"\[img\](.*?)\[/img\]");
@@ -330,7 +331,8 @@ _parseBlock(String content, LinkedList<BBCodeTag> tags) {
           openingParagraph = true;
         }
         tags.add(
-          BBCodeTag.text(content.substring(lastEnd, tagWihtPosition.start)),
+          BBCodeTag.text(
+              content.substring(lastEnd, tagWihtPosition.start).trim()),
         );
       }
       lastEnd = tagWihtPosition.end;
@@ -361,7 +363,7 @@ _parseBlock(String content, LinkedList<BBCodeTag> tags) {
         tags.add(BBCodeTag.paragraphBeg());
         openingParagraph = true;
       }
-      tags.add(BBCodeTag.text(content.substring(lastEnd)));
+      tags.add(BBCodeTag.text(content.substring(lastEnd).trim()));
     }
 
     if (openingParagraph) {
@@ -439,6 +441,10 @@ _parseInlines(String content, BBCodeTag previous) {
       lastEnd = tagWihtPosition.end;
       _pre.insertAfter(tagWihtPosition.tag);
       _pre = tagWihtPosition.tag;
+    }
+
+    if (lastEnd != content.length) {
+      _pre.insertAfter(BBCodeTag.text(content.substring(lastEnd)));
     }
 
     previous.unlink();
