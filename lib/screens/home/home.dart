@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' as prefix0;
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -10,6 +11,7 @@ import '../../models/topic.dart';
 import '../../store/state.dart';
 import '../../store/fetch_favor.dart';
 import '../../screens/category/topic_row.dart';
+import '../../store/ensure_exists.dart';
 
 const kExpandedHeight = 200.0;
 
@@ -18,16 +20,19 @@ class HomePage extends StatelessWidget {
   final List<Topic> topics;
   final bool isLoading;
   final Future<void> Function() onRefresh;
+  final void Function(Category) ensureCategoryExists;
 
   HomePage({
     @required this.categories,
     @required this.topics,
     @required this.isLoading,
     @required this.onRefresh,
+    @required this.ensureCategoryExists,
   })  : assert(categories != null),
         assert(isLoading != null),
         assert(topics != null),
-        assert(onRefresh != null);
+        assert(onRefresh != null),
+        assert(ensureCategoryExists != null);
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +77,24 @@ class HomePage extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => GestureDetector(
-                onTap: () => _onTap(context, categories[index].id),
-                child: CategoryRow(categories[index]),
-              ),
+              (context, index) {
+                var category = categories[index];
+                return GestureDetector(
+                  onTap: () {
+                    ensureCategoryExists(category);
+                    Navigator.pushNamed(context, "/c", arguments: {
+                      "id": category.id,
+                    });
+                  },
+                  child: CategoryRow(category),
+                );
+              },
               childCount: categories.length,
             ),
           ),
         ],
       ),
     );
-  }
-
-  _onTap(BuildContext context, int categoryId) {
-    Navigator.pushNamed(context, "/c", arguments: {"id": categoryId});
   }
 }
 
@@ -102,6 +111,7 @@ class HomePageConnector extends StatelessWidget {
         topics: vm.topics,
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
+        ensureCategoryExists: vm.ensureCategoryExists,
       ),
     );
   }
@@ -112,6 +122,7 @@ class ViewModel extends BaseModel<AppState> {
   List<Topic> topics;
   bool isLoading;
   Future<void> Function() onRefresh;
+  void Function(Category) ensureCategoryExists;
 
   ViewModel();
 
@@ -120,6 +131,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topics,
     @required this.isLoading,
     @required this.onRefresh,
+    @required this.ensureCategoryExists,
   }) : super(equals: [categories, topics, isLoading]);
 
   @override
@@ -129,6 +141,8 @@ class ViewModel extends BaseModel<AppState> {
       topics: state.favorTopics,
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchFavorTopicsAction()),
+      ensureCategoryExists: (category) =>
+          dispatch(EnsureCategoryExistsAction(category)),
     );
   }
 }

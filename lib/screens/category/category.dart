@@ -6,6 +6,7 @@ import '../../models/topic.dart';
 import '../../models/category.dart';
 import '../../store/state.dart';
 import '../../store/fetch_topics.dart';
+import '../../store/ensure_exists.dart';
 
 import 'topic_row.dart';
 
@@ -19,6 +20,7 @@ class CategoryPage extends StatelessWidget {
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
+  final void Function(Topic) ensureTopicExists;
 
   CategoryPage({
     @required this.topics,
@@ -27,11 +29,14 @@ class CategoryPage extends StatelessWidget {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.ensureTopicExists,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
         assert(isLoading != null),
-        assert(onRefresh != null);
+        assert(onRefresh != null),
+        assert(onLoad != null),
+        assert(ensureTopicExists != null);
 
   Widget build(BuildContext context) {
     if (isLoading && topics.isEmpty) {
@@ -116,6 +121,7 @@ class CategoryPageConnector extends StatelessWidget {
         topicsCount: vm.topicsCount,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
+        ensureTopicExists: vm.ensureTopicExists,
       ),
     );
   }
@@ -130,6 +136,7 @@ class ViewModel extends BaseModel<AppState> {
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
+  void Function(Topic) ensureTopicExists;
 
   ViewModel(this.categoryId);
 
@@ -141,6 +148,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topicsCount,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.ensureTopicExists,
   }) : super(equals: [isLoading, topics, category, topicsCount]);
 
   @override
@@ -154,6 +162,7 @@ class ViewModel extends BaseModel<AppState> {
       topicsCount: category?.topicsCount,
       onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
+      ensureTopicExists: (topic) => dispatch(EnsureTopicExistsAction(topic)),
     );
   }
 }

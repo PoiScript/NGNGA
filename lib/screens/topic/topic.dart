@@ -28,8 +28,12 @@ class TopicPage extends StatelessWidget {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
-  })  : assert(isLoading != null),
-        assert(onRefresh != null);
+  })  : assert(topic != null),
+        assert(posts != null),
+        assert(users != null),
+        assert(isLoading != null),
+        assert(onRefresh != null),
+        assert(onLoad != null);
 
   @override
   Widget build(BuildContext context) {
