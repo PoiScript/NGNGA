@@ -187,7 +187,9 @@ class _BBCodeState extends State<BBCode> {
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: RichText(text: TextSpan(children: _spans)),
+      child: RichText(
+        text: TextSpan(children: _spans),
+      ),
     );
   }
 
@@ -373,6 +375,92 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
+  TextSpan _buildLink(Iterator<Tag> iter) {
+    assert(iter.current.type == TagType.LinkStart);
+
+    var url = (iter.current as LinkStart).url;
+    List<InlineSpan> _spans = [];
+
+    outerloop:
+    while (iter.moveNext()) {
+      switch (iter.current.type) {
+        case TagType.LinkStart:
+        case TagType.PlainLink:
+          throw "Nested Link is not allowed.";
+          break;
+        case TagType.LinkEnd:
+          break outerloop;
+        case TagType.ItalicStart:
+        case TagType.ItalicEnd:
+        case TagType.DeleteStart:
+        case TagType.DeleteEnd:
+        case TagType.BoldStart:
+        case TagType.BoldEnd:
+        case TagType.FontStart:
+        case TagType.FontEnd:
+        case TagType.ColorStart:
+        case TagType.ColorEnd:
+        case TagType.SizeStart:
+        case TagType.SizeEnd:
+        case TagType.UnderlineStart:
+        case TagType.UnderlineEnd:
+          _applyStyle(iter.current);
+          break;
+        case TagType.Text:
+          _spans.add(TextSpan(
+            text: (iter.current as Text).content,
+            style: style,
+          ));
+          break;
+        case TagType.Image:
+          _spans.add(_buildImage(iter.current as Image));
+          break;
+        case TagType.Sticker:
+          _spans.add(_buildSticker(iter.current as Sticker));
+          break;
+        case TagType.Metions:
+          _spans.add(_buildMetions(iter.current as Metions));
+          break;
+        case TagType.Pid:
+          _spans.add(_buildPid(iter.current as Pid));
+          break;
+        case TagType.Uid:
+          _spans.add(_buildUid(iter.current as Uid));
+          break;
+        case TagType.AlignStart:
+        case TagType.AlignEnd:
+        case TagType.Rule:
+        case TagType.QuoteStart:
+        case TagType.QuoteEnd:
+        case TagType.CollapseStart:
+        case TagType.CollapseEnd:
+        case TagType.TableStart:
+        case TagType.TableEnd:
+        case TagType.HeadingStart:
+        case TagType.HeadingEnd:
+        case TagType.ParagraphStart:
+        case TagType.ParagraphEnd:
+          throw "Execpted inline element, fount ${iter.current.type}.";
+          break;
+        case TagType.TableRowStart:
+        case TagType.TableRowEnd:
+        case TagType.TableCellStart:
+        case TagType.TableCellEnd:
+          throw "TableRow and TableCell are not allowed outside of Table.";
+          break;
+      }
+    }
+
+    return TextSpan(
+      style: TextStyle(color: Colors.red),
+      recognizer: TapGestureRecognizer()
+        ..onTap = () {
+          launch(url);
+        },
+      children: _spans,
+    );
+  }
+
   WidgetSpan _buildImage(Image image) {
     // FIXME: better way to resolve attachmet url
     var url =
@@ -421,16 +509,6 @@ class _BBCodeState extends State<BBCode> {
   TextSpan _buildUid(Uid uid) {
     return TextSpan(
       text: uid.username,
-      style: TextStyle(color: Colors.red),
-      recognizer: TapGestureRecognizer()..onTap = () {},
-    );
-  }
-
-  TextSpan _buildLink(Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.LinkStart);
-
-    return TextSpan(
-      text: "LINK",
       style: TextStyle(color: Colors.red),
       recognizer: TapGestureRecognizer()..onTap = () {},
     );
