@@ -44,61 +44,65 @@ class CategoryPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: EasyRefresh.custom(
-        header: ClassicalHeader(bgColor: Theme.of(context).backgroundColor),
+      body: EasyRefresh.builder(
+        header: ClassicalHeader(),
         footer: ClassicalFooter(),
         onRefresh: onRefresh,
         onLoad: onLoad,
-        semanticChildCount: topics.length,
-        slivers: <Widget>[
-          SliverAppBar(
-            expandedHeight: kExpandedHeight,
-            floating: false,
-            pinned: true,
-            leading: const BackButton(color: Colors.black),
-            backgroundColor: Theme.of(context).backgroundColor,
-            actions: <Widget>[
-              IconButton(
-                color: Colors.black,
-                icon: Icon(Icons.more_vert),
-                onPressed: () {},
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Container(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.symmetric(horizontal: 58.0),
-                height: kToolbarHeight,
-                child: Text(
-                  category.title,
-                  style: Theme.of(context).textTheme.subhead,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+        builder: (context, physics, header, footer) => CustomScrollView(
+          physics: physics,
+          semanticChildCount: topics.length,
+          slivers: <Widget>[
+            SliverAppBar(
+              expandedHeight: kExpandedHeight,
+              floating: false,
+              pinned: true,
+              leading: const BackButton(color: Colors.black),
+              backgroundColor: Theme.of(context).backgroundColor,
+              actions: <Widget>[
+                IconButton(
+                  color: Colors.black,
+                  icon: Icon(Icons.more_vert),
+                  onPressed: () {},
                 ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                title: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.symmetric(horizontal: 58.0),
+                  height: kToolbarHeight,
+                  child: Text(
+                    category.title,
+                    style: Theme.of(context).textTheme.subhead,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                titlePadding: EdgeInsets.all(0.0),
               ),
-              titlePadding: EdgeInsets.all(0.0),
             ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final int itemIndex = index ~/ 2;
-                if (index.isEven) {
-                  final topic = topics[itemIndex];
-                  return TopicRow(topic);
-                }
-                return Divider(height: 16.0, color: Colors.grey);
-              },
-              semanticIndexCallback: (Widget widget, int localIndex) {
-                if (localIndex.isEven) {
-                  return localIndex ~/ 2;
-                }
-                return null;
-              },
-              childCount: topics.length * 2,
+            header,
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final int itemIndex = index ~/ 2;
+                  if (index.isEven) {
+                    return TopicRow(topics[itemIndex], ensureTopicExists);
+                  }
+                  return Divider(height: 16.0, color: Colors.grey);
+                },
+                semanticIndexCallback: (Widget widget, int localIndex) {
+                  if (localIndex.isEven) {
+                    return localIndex ~/ 2;
+                  }
+                  return null;
+                },
+                childCount: topics.length * 2,
+              ),
             ),
-          ),
-        ],
+            footer,
+          ],
+        ),
       ),
     );
   }

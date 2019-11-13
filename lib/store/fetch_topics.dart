@@ -20,8 +20,11 @@ class _FetchTopicsResponse {
 
   factory _FetchTopicsResponse.fromJson(Map<String, dynamic> json) {
     return _FetchTopicsResponse(
-      topics:
-          List.from(json["data"]["__T"]).map((value) => Topic.fromJson(value)),
+      topics: (json["data"]["__T"] is List)
+          ? List.from(json["data"]["__T"]).map((value) => Topic.fromJson(value))
+          : Map.from(json["data"]["__T"])
+              .values
+              .map((value) => Topic.fromJson(value)),
       topicCount: json["data"]["__ROWS"],
     );
   }

@@ -5,37 +5,38 @@ import '../../utils/duration_to_now.dart';
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
+  final void Function(Topic) ensureTopicExists;
 
-  TopicRow(this.topic);
+  TopicRow(this.topic, this.ensureTopicExists)
+      : assert(topic != null),
+        assert(ensureTopicExists != null);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(right: 40),
-          child: GestureDetector(
+          padding: EdgeInsets.only(left: 8.0, right: 48.0),
+          child: InkWell(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   topic.title,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
                   style: Theme.of(context).textTheme.body1,
                 ),
                 Text(
-                  "${topic.createdAt.toString()} · ${topic.postsCount} posts",
+                  "${topic.createdAt.toString()}",
                   style: Theme.of(context).textTheme.caption,
                 ),
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(
-                context,
-                "/t",
-                arguments: {"id": topic.id, "page": 0},
-              );
+              ensureTopicExists(topic);
+              Navigator.pushNamed(context, "/t", arguments: {
+                "id": topic.id,
+                "page": 0,
+              });
             },
           ),
         ),
@@ -43,28 +44,34 @@ class TopicRow extends StatelessWidget {
           right: 0,
           top: 0,
           bottom: 0,
-          width: 40,
-          child: GestureDetector(
+          width: 48,
+          child: InkWell(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                Text(
-                  topic.postsCount.toString(),
-                  style: Theme.of(context).textTheme.caption,
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      topic.postsCount.toString(),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ),
                 ),
-                Text(
-                  durationToNow(topic.lastPostedAt),
-                  style: Theme.of(context).textTheme.caption,
+                Center(
+                  child: Text(
+                    durationToNow(topic.lastPostedAt),
+                    style: Theme.of(context).textTheme.caption,
+                  ),
                 ),
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(
-                context,
-                "/t",
-                arguments: {"id": topic.id, "page": topic.postsCount ~/ 20},
-              );
+              ensureTopicExists(topic);
+              Navigator.pushNamed(context, "/t", arguments: {
+                "id": topic.id,
+                "page": topic.postsCount ~/ 20,
+              });
             },
           ),
         ),

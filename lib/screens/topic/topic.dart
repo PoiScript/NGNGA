@@ -42,49 +42,53 @@ class TopicPage extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          topic.title,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.subhead,
-        ),
-        titleSpacing: 0.0,
-        leading: const BackButton(color: Colors.black),
-        actions: <Widget>[
-          IconButton(
-            color: Colors.black,
-            icon: Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: EasyRefresh.custom(
+      body: EasyRefresh.builder(
         header: ClassicalHeader(),
         footer: ClassicalFooter(),
         onRefresh: onRefresh,
-        onLoad: (posts.last.index ~/ 20) == (topic.postsCount ~/ 20)
-            ? null
-            : onLoad,
-        semanticChildCount: posts.length,
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final int itemIndex = index ~/ 2;
-                if (index.isEven) {
-                  final post = posts.elementAt(itemIndex);
-                  return PostRow(post, users[post.userId]);
-                }
-                return Divider(height: 0, color: Colors.grey);
-              },
-              semanticIndexCallback: (widget, localIndex) =>
-                  localIndex.isEven ? localIndex ~/ 2 : null,
-              childCount: posts.length * 2,
+        onLoad: onLoad,
+        builder: (context, physics, header, footer) => CustomScrollView(
+          physics: physics,
+          semanticChildCount: posts.length,
+          slivers: <Widget>[
+            SliverAppBar(
+              backgroundColor: Colors.white,
+              title: Text(
+                topic.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.subhead,
+              ),
+              floating: true,
+              titleSpacing: 0.0,
+              leading: const BackButton(color: Colors.black),
+              actions: <Widget>[
+                IconButton(
+                  color: Colors.black,
+                  icon: Icon(Icons.more_vert),
+                  onPressed: () {},
+                ),
+              ],
             ),
-          ),
-        ],
+            header,
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final int itemIndex = index ~/ 2;
+                  if (index.isEven) {
+                    final post = posts.elementAt(itemIndex);
+                    return PostRow(post, users[post.userId]);
+                  }
+                  return Divider(height: 0, color: Colors.grey);
+                },
+                semanticIndexCallback: (widget, localIndex) =>
+                    localIndex.isEven ? localIndex ~/ 2 : null,
+                childCount: posts.length * 2,
+              ),
+            ),
+            footer,
+          ],
+        ),
       ),
     );
   }

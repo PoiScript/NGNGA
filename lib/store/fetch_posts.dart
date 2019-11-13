@@ -111,21 +111,38 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     var lastPage = state.topics[topicId].posts.last.index ~/ 20;
 
-    assert(lastPage < state.topics[topicId].topic.postsCount ~/ 20);
+    if (lastPage < state.topics[topicId].topic.postsCount ~/ 20) {
+      var response = await _fetchTopic(topicId, lastPage + 1, state.cookies);
 
-    var response = await _fetchTopic(topicId, lastPage + 1, state.cookies);
-
-    return state.copy(
-      users: state.users..addEntries(response.users),
-      topics: state.topics
-        ..update(
-          topicId,
-          (topicState) => topicState.copy(
-            topic: response.topic,
-            posts: topicState.posts..addAll(response.posts),
+      return state.copy(
+        users: state.users..addEntries(response.users),
+        topics: state.topics
+          ..update(
+            topicId,
+            (topicState) => topicState.copy(
+              topic: response.topic,
+              posts: topicState.posts..addAll(response.posts),
+            ),
           ),
-        ),
-    );
+      );
+    } else {
+      var response = await _fetchTopic(topicId, lastPage, state.cookies);
+      var firstIndex = response.posts.first.index;
+
+      return state.copy(
+        users: state.users..addEntries(response.users),
+        topics: state.topics
+          ..update(
+            topicId,
+            (topicState) => topicState.copy(
+              topic: response.topic,
+              posts: topicState.posts
+                ..removeWhere((post) => post.index >= firstIndex)
+                ..addAll(response.posts),
+            ),
+          ),
+      );
+    }
   }
 
   void before() => dispatch(IsLoadingAction(true));
