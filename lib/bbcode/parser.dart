@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import './tag.dart';
+import 'tag.dart';
 
 RegExp boldRegExp = RegExp(
   r"\[b\](.*?)\[/b\]",
@@ -62,8 +62,9 @@ RegExp collapseRegExp = RegExp(
   dotAll: true,
 );
 
-RegExp uidRegExp = RegExp(r"\[uid=(\d*)\](.*?)\[/uid\]");
-RegExp pidRegExp = RegExp(r"\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
+RegExp uidRegExp = RegExp(r"(Post by )?\[uid=(\d*)\](.*?)\[/uid\]");
+RegExp pidRegExp =
+    RegExp(r"(Reply to )?\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
 RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
 RegExp fontRegExp = RegExp(r"\[font(=[^\s\]]*)?\](.*?)\[/font\]");
 RegExp imageRegExp = RegExp(r"\[img\](.*?)\[/img\]");
@@ -316,7 +317,7 @@ _parseInlines(String content, Tag previous) {
 
   for (RegExpMatch match in uidRegExp.allMatches(content)) {
     _tags.add(_TagWithPosition(
-      Uid(int.parse(match[1]), match[2]),
+      Uid(int.parse(match[2]), match[3]),
       match.start,
       match.end,
     ));
@@ -325,10 +326,10 @@ _parseInlines(String content, Tag previous) {
   for (RegExpMatch match in pidRegExp.allMatches(content)) {
     _tags.add(_TagWithPosition(
       Pid(
-        int.parse(match[1]),
         int.parse(match[2]),
         int.parse(match[3]),
-        match[4],
+        int.parse(match[4]),
+        match[5],
       ),
       match.start,
       match.end,

@@ -1,25 +1,38 @@
+import 'dart:math';
+
 import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' hide Text, Image;
 import 'package:photo_view/photo_view.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../widgets/sticker.dart';
+import 'parser.dart';
+import 'sticker.dart';
+import 'tag.dart';
 
-import './tag.dart';
-import './parser.dart';
-
-class BBCode extends StatefulWidget {
+class BBCodeRender extends StatefulWidget {
   final String data;
 
-  BBCode(String data) : this.data = data.replaceAll("<br/>", "\n");
+  final void Function(int, int, int) openPost;
+  final void Function(int) openUser;
+  final void Function(String) openLink;
+
+  BBCodeRender({
+    @required String data,
+    @required this.openPost,
+    @required this.openUser,
+    @required this.openLink,
+  })  : assert(data != null),
+        assert(openPost != null),
+        assert(openUser != null),
+        assert(openLink != null),
+        this.data = data.replaceAll("<br/>", "\n");
 
   @override
-  _BBCodeState createState() => _BBCodeState();
+  _BBCodeRenderState createState() => _BBCodeRenderState();
 }
 
-class _BBCodeState extends State<BBCode> {
+class _BBCodeRenderState extends State<BBCodeRender> {
   TextStyle style;
 
   @override
@@ -38,10 +51,10 @@ class _BBCodeState extends State<BBCode> {
         case TagType.FontStart:
         case TagType.ItalicStart:
         case TagType.SizeStart:
-          _applyStyle(iter.current);
+          _applyStyle(context, iter.current);
           break;
         case TagType.ParagraphStart:
-          _children.add(_buildParagraph(iter));
+          _children.add(_buildParagraph(context, iter));
           break;
         case TagType.Image:
         case TagType.Sticker:
@@ -55,23 +68,23 @@ class _BBCodeState extends State<BBCode> {
           throw "Execpted block element, fount ${iter.current.type}.";
           break;
         case TagType.CollapseStart:
-          _children.add(_buildCollapse(iter));
+          _children.add(_buildCollapse(context, iter));
           break;
         case TagType.QuoteStart:
-          _children.add(_buildQuote(iter));
+          _children.add(_buildQuote(context, iter));
           break;
         case TagType.TableStart:
-          _children.add(_buildTable(iter));
+          _children.add(_buildTable(context, iter));
           break;
         case TagType.HeadingStart:
-          _children.add(_buildHeading(iter));
+          _children.add(_buildHeading(context, iter));
           break;
         case TagType.TableRowStart:
         case TagType.TableCellStart:
           throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case TagType.Rule:
-          _children.add(_buildRule());
+          _children.add(_buildRule(context));
           break;
         case TagType.AlignStart:
           // TODO:
@@ -104,7 +117,7 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  Widget _buildParagraph(Iterator<Tag> iter) {
+  Widget _buildParagraph(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.ParagraphStart);
 
     List<InlineSpan> _spans = [];
@@ -131,37 +144,34 @@ class _BBCodeState extends State<BBCode> {
         case TagType.ColorEnd:
         case TagType.SizeStart:
         case TagType.SizeEnd:
-          _applyStyle(iter.current);
+          _applyStyle(context, iter.current);
           break;
         case TagType.Text:
-          _spans.add(TextSpan(
-            text: (iter.current as Text).content,
-            style: style,
-          ));
+          _spans.add(_buildText(context, iter.current as Text));
           break;
         case TagType.Image:
-          _spans.add(_buildImage(iter.current as Image));
+          _spans.add(_buildImage(context, iter.current as Image));
           break;
         case TagType.PlainLink:
-          _spans.add(_buildPlainLink(iter.current as PlainLink));
+          _spans.add(_buildPlainLink(context, iter.current as PlainLink));
           break;
         case TagType.LinkStart:
-          _spans.add(_buildLink(iter));
+          _spans.add(_buildLink(context, iter));
           break;
         case TagType.LinkEnd:
           throw "Unexpected end element ${iter.current.type}.";
           break;
         case TagType.Sticker:
-          _spans.add(_buildSticker(iter.current as Sticker));
+          _spans.add(_buildSticker(context, iter.current as Sticker));
           break;
         case TagType.Metions:
-          _spans.add(_buildMetions(iter.current as Metions));
+          _spans.add(_buildMetions(context, iter.current as Metions));
           break;
         case TagType.Pid:
-          _spans.add(_buildPid(iter.current as Pid));
+          _spans.add(_buildPid(context, iter.current as Pid));
           break;
         case TagType.Uid:
-          _spans.add(_buildUid(iter.current as Uid));
+          _spans.add(_buildUid(context, iter.current as Uid));
           break;
         case TagType.AlignStart:
         case TagType.AlignEnd:
@@ -193,7 +203,7 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  Widget _buildCollapse(Iterator<Tag> iter) {
+  Widget _buildCollapse(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.CollapseStart);
 
     String _description = (iter.current as CollapseStart).description;
@@ -220,10 +230,10 @@ class _BBCodeState extends State<BBCode> {
         case TagType.SizeEnd:
         case TagType.UnderlineStart:
         case TagType.UnderlineEnd:
-          _applyStyle(iter.current);
+          _applyStyle(context, iter.current);
           break;
         case TagType.ParagraphStart:
-          _children.add(_buildParagraph(iter));
+          _children.add(_buildParagraph(context, iter));
           break;
         case TagType.Image:
         case TagType.Text:
@@ -237,13 +247,13 @@ class _BBCodeState extends State<BBCode> {
           throw "Execpted block element, fount ${iter.current.type}.";
           break;
         case TagType.QuoteStart:
-          _children.add(_buildQuote(iter));
+          _children.add(_buildQuote(context, iter));
           break;
         case TagType.TableStart:
-          _children.add(_buildTable(iter));
+          _children.add(_buildTable(context, iter));
           break;
         case TagType.HeadingStart:
-          _children.add(_buildHeading(iter));
+          _children.add(_buildHeading(context, iter));
           break;
         case TagType.TableRowStart:
         case TagType.TableRowEnd:
@@ -252,7 +262,7 @@ class _BBCodeState extends State<BBCode> {
           throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case TagType.Rule:
-          _children.add(_buildRule());
+          _children.add(_buildRule(context));
           break;
         case TagType.AlignStart:
           // TODO: Handle this case.
@@ -285,7 +295,7 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  Widget _buildQuote(Iterator<Tag> iter) {
+  Widget _buildQuote(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.QuoteStart);
 
     List<Widget> _children = [];
@@ -294,7 +304,7 @@ class _BBCodeState extends State<BBCode> {
     while (iter.moveNext()) {
       switch (iter.current.type) {
         case TagType.QuoteStart:
-          _children.add(_buildQuote(iter));
+          _children.add(_buildQuote(context, iter));
           break;
         case TagType.QuoteEnd:
           break outerloop;
@@ -312,7 +322,7 @@ class _BBCodeState extends State<BBCode> {
         case TagType.SizeEnd:
         case TagType.UnderlineStart:
         case TagType.UnderlineEnd:
-          _applyStyle(iter.current);
+          _applyStyle(context, iter.current);
           break;
         case TagType.Text:
         case TagType.Image:
@@ -326,16 +336,16 @@ class _BBCodeState extends State<BBCode> {
           throw "Execpted block element, fount ${iter.current.type}.";
           break;
         case TagType.ParagraphStart:
-          _children.add(_buildParagraph(iter));
+          _children.add(_buildParagraph(context, iter));
           break;
         case TagType.CollapseStart:
-          _children.add(_buildCollapse(iter));
+          _children.add(_buildCollapse(context, iter));
           break;
         case TagType.TableStart:
-          _children.add(_buildTable(iter));
+          _children.add(_buildTable(context, iter));
           break;
         case TagType.HeadingStart:
-          _children.add(_buildHeading(iter));
+          _children.add(_buildHeading(context, iter));
           break;
         case TagType.TableRowStart:
         case TagType.TableCellStart:
@@ -344,7 +354,7 @@ class _BBCodeState extends State<BBCode> {
           throw "TableRow and TableCell are not allowed outside of Table.";
           break;
         case TagType.Rule:
-          _children.add(_buildRule());
+          _children.add(_buildRule(context));
           break;
         case TagType.AlignStart:
           // TODO: Handle this case.
@@ -359,23 +369,25 @@ class _BBCodeState extends State<BBCode> {
       }
     }
 
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
         border: Border(
-          left: BorderSide(width: 5.0, color: Colors.grey.shade300),
+          left: BorderSide(
+            width: 5.0,
+            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+          ),
         ),
+        color: Color.fromARGB(255, 0xf9, 0xf9, 0xf9),
       ),
-      child: Padding(
-        padding: EdgeInsets.only(left: 8.0 + 5.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: _children,
-        ),
+      padding: EdgeInsets.only(left: 8.0 + 5.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: _children,
       ),
     );
   }
 
-  TextSpan _buildLink(Iterator<Tag> iter) {
+  TextSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.LinkStart);
 
     var url = (iter.current as LinkStart).url;
@@ -404,7 +416,7 @@ class _BBCodeState extends State<BBCode> {
         case TagType.SizeEnd:
         case TagType.UnderlineStart:
         case TagType.UnderlineEnd:
-          _applyStyle(iter.current);
+          _applyStyle(context, iter.current);
           break;
         case TagType.Text:
           _spans.add(TextSpan(
@@ -413,19 +425,19 @@ class _BBCodeState extends State<BBCode> {
           ));
           break;
         case TagType.Image:
-          _spans.add(_buildImage(iter.current as Image));
+          _spans.add(_buildImage(context, iter.current as Image));
           break;
         case TagType.Sticker:
-          _spans.add(_buildSticker(iter.current as Sticker));
+          _spans.add(_buildSticker(context, iter.current as Sticker));
           break;
         case TagType.Metions:
-          _spans.add(_buildMetions(iter.current as Metions));
+          _spans.add(_buildMetions(context, iter.current as Metions));
           break;
         case TagType.Pid:
-          _spans.add(_buildPid(iter.current as Pid));
+          _spans.add(_buildPid(context, iter.current as Pid));
           break;
         case TagType.Uid:
-          _spans.add(_buildUid(iter.current as Uid));
+          _spans.add(_buildUid(context, iter.current as Uid));
           break;
         case TagType.AlignStart:
         case TagType.AlignEnd:
@@ -453,15 +465,12 @@ class _BBCodeState extends State<BBCode> {
 
     return TextSpan(
       style: TextStyle(color: Colors.red),
-      recognizer: TapGestureRecognizer()
-        ..onTap = () {
-          launch(url);
-        },
+      recognizer: TapGestureRecognizer()..onTap = () => widget.openLink(url),
       children: _spans,
     );
   }
 
-  WidgetSpan _buildImage(Image image) {
+  WidgetSpan _buildImage(BuildContext context, Image image) {
     // FIXME: better way to resolve attachmet url
     var url =
         Uri.https("img.nga.178.com", "").resolve("attachments/${image.url}");
@@ -488,9 +497,9 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  WidgetSpan _buildSticker(Sticker sticker) {
+  WidgetSpan _buildSticker(BuildContext context, Sticker sticker) {
     return WidgetSpan(
-      alignment: material.PlaceholderAlignment.middle,
+      alignment: PlaceholderAlignment.middle,
       child: material.Image.asset(
         stickerNameToPath[sticker.name],
         width: 32.0,
@@ -498,38 +507,84 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  TextSpan _buildPid(Pid pid) {
-    return TextSpan(
-      text: pid.content,
-      style: TextStyle(color: Colors.red),
-      recognizer: TapGestureRecognizer()..onTap = () {},
+  WidgetSpan _buildPid(BuildContext context, Pid pid) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: InkWell(
+        onTap: () => widget.openPost(pid.topicId, pid.page, pid.postId),
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.rotationY(pi),
+          child: Icon(
+            Icons.reply,
+            color: Colors.grey[500],
+          ),
+        ),
+      ),
     );
   }
 
-  TextSpan _buildUid(Uid uid) {
-    return TextSpan(
-      text: uid.username,
-      style: TextStyle(color: Colors.red),
-      recognizer: TapGestureRecognizer()..onTap = () {},
+  WidgetSpan _buildUid(BuildContext context, Uid uid) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: InkWell(
+        onTap: () => widget.openUser(uid.id),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 2.0,
+            vertical: 1.0,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4.0),
+            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+          ),
+          child: material.Text(
+            "@${uid.username}",
+            style: Theme.of(context)
+                .textTheme
+                .body2
+                .copyWith(color: Color.fromARGB(255, 0x64, 0x64, 0x64)),
+          ),
+        ),
+      ),
     );
   }
 
-  TextSpan _buildPlainLink(PlainLink link) {
+  TextSpan _buildPlainLink(BuildContext context, PlainLink link) {
     return TextSpan(
       text: link.url,
       style: TextStyle(color: Colors.blue),
       recognizer: TapGestureRecognizer()
-        ..onTap = () {
-          launch(link.url);
-        },
+        ..onTap = () => widget.openLink(link.url),
     );
   }
 
-  TextSpan _buildMetions(Metions metions) {
+  TextSpan _buildMetions(BuildContext context, Metions metions) {
     return TextSpan(text: "METIONS", style: TextStyle(color: Colors.red));
   }
 
-  Widget _buildRule() {
+  static RegExp timestampRegExp = RegExp(
+    r"\(\d{4}-\d{2}-\d{2} \d{2}:\d{2}\):?",
+  );
+
+  TextSpan _buildText(BuildContext context, Text text) {
+    // a hack...
+    if (timestampRegExp.hasMatch(text.content.trim())) {
+      return TextSpan(
+        text: "${text.content}\n\n",
+        style: Theme.of(context).textTheme.caption,
+      );
+    } else {
+      return TextSpan(
+        text: text.content,
+        style: style,
+      );
+    }
+  }
+
+  Widget _buildRule(
+    BuildContext context,
+  ) {
     return DecoratedBox(
       child: const SizedBox(),
       decoration: BoxDecoration(
@@ -540,7 +595,7 @@ class _BBCodeState extends State<BBCode> {
     );
   }
 
-  Widget _buildTable(Iterator<Tag> iter) {
+  Widget _buildTable(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.TableStart);
 
     // TODO:
@@ -548,7 +603,7 @@ class _BBCodeState extends State<BBCode> {
     return material.Text("TABLE", style: TextStyle(color: Colors.red));
   }
 
-  Widget _buildHeading(Iterator<Tag> iter) {
+  Widget _buildHeading(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.HeadingStart);
 
     // TODO:
@@ -556,10 +611,10 @@ class _BBCodeState extends State<BBCode> {
     return material.Text("HEADING", style: TextStyle(color: Colors.red));
   }
 
-  _applyStyle(Tag tag) {
+  _applyStyle(BuildContext context, Tag tag) {
     switch (tag.type) {
       case TagType.BoldStart:
-        style = style.copyWith(fontWeight: FontWeight.bold);
+        style = style.copyWith(fontWeight: FontWeight.w500);
         break;
       case TagType.BoldEnd:
         style = style.copyWith(fontWeight: FontWeight.normal);
