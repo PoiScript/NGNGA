@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../models/topic.dart';
 import '../../utils/duration_to_now.dart';
 
+final formatter = NumberFormat("#,###");
+
 class TopicRow extends StatelessWidget {
   final Topic topic;
-  final void Function(Topic) ensureTopicExists;
 
-  TopicRow(this.topic, this.ensureTopicExists)
+  final void Function(Topic, int) navigateToTopic;
+
+  TopicRow(this.topic, this.navigateToTopic)
       : assert(topic != null),
-        assert(ensureTopicExists != null);
+        assert(navigateToTopic != null);
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +35,7 @@ class TopicRow extends StatelessWidget {
                 ),
               ],
             ),
-            onTap: () {
-              ensureTopicExists(topic);
-              Navigator.pushNamed(context, "/t", arguments: {
-                "id": topic.id,
-                "page": 0,
-              });
-            },
+            onTap: () => navigateToTopic(topic, 0),
           ),
         ),
         Positioned(
@@ -53,7 +51,7 @@ class TopicRow extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      topic.postsCount.toString(),
+                      formatter.format(topic.postsCount),
                       style: Theme.of(context).textTheme.caption,
                     ),
                   ),
@@ -66,13 +64,7 @@ class TopicRow extends StatelessWidget {
                 ),
               ],
             ),
-            onTap: () {
-              ensureTopicExists(topic);
-              Navigator.pushNamed(context, "/t", arguments: {
-                "id": topic.id,
-                "page": topic.postsCount ~/ 20,
-              });
-            },
+            onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
           ),
         ),
       ],

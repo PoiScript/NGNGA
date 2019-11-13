@@ -147,8 +147,8 @@ class ViewModel extends BaseModel<AppState> {
     var topic = state.topics[topicId];
     return ViewModel.build(
       topicId: topicId,
-      posts: topic?.posts,
-      topic: topic?.topic,
+      posts: topic.posts,
+      topic: topic.topic,
       users: state.users,
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),

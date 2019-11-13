@@ -10,7 +10,7 @@ import '../../models/topic.dart';
 import '../../store/state.dart';
 import '../../store/fetch_favor.dart';
 import '../../screens/category/topic_row.dart';
-import '../../store/ensure_exists.dart';
+import '../../store/router.dart';
 
 const kExpandedHeight = 200.0;
 
@@ -20,22 +20,22 @@ class HomePage extends StatelessWidget {
   final bool isLoading;
 
   final Future<void> Function() onRefresh;
-  final void Function(Category) ensureCategoryExists;
-  final void Function(Topic) ensureTopicExists;
+  final void Function(Category) navigateToCategory;
+  final void Function(Topic, int) navigateToTopic;
 
   HomePage({
     @required this.categories,
     @required this.topics,
     @required this.isLoading,
     @required this.onRefresh,
-    @required this.ensureCategoryExists,
-    @required this.ensureTopicExists,
+    @required this.navigateToCategory,
+    @required this.navigateToTopic,
   })  : assert(categories != null),
         assert(isLoading != null),
         assert(topics != null),
         assert(onRefresh != null),
-        assert(ensureCategoryExists != null),
-        assert(ensureTopicExists != null);
+        assert(navigateToCategory != null),
+        assert(navigateToTopic != null);
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
             header,
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => TopicRow(topics[index], ensureTopicExists),
+                (context, index) => TopicRow(topics[index], navigateToTopic),
                 childCount: topics.length,
               ),
             ),
@@ -86,12 +86,7 @@ class HomePage extends StatelessWidget {
                 (context, index) {
                   var category = categories[index];
                   return InkWell(
-                    onTap: () {
-                      ensureCategoryExists(category);
-                      Navigator.pushNamed(context, "/c", arguments: {
-                        "id": category.id,
-                      });
-                    },
+                    onTap: () => navigateToCategory(category),
                     child: CategoryRow(category),
                   );
                 },
@@ -118,8 +113,8 @@ class HomePageConnector extends StatelessWidget {
         topics: vm.topics,
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
-        ensureCategoryExists: vm.ensureCategoryExists,
-        ensureTopicExists: vm.ensureTopicExists,
+        navigateToCategory: vm.navigateToCategory,
+        navigateToTopic: vm.navigateToTopic,
       ),
     );
   }
@@ -131,8 +126,8 @@ class ViewModel extends BaseModel<AppState> {
   bool isLoading;
 
   Future<void> Function() onRefresh;
-  void Function(Category) ensureCategoryExists;
-  void Function(Topic) ensureTopicExists;
+  void Function(Category) navigateToCategory;
+  void Function(Topic, int) navigateToTopic;
 
   ViewModel();
 
@@ -141,8 +136,8 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topics,
     @required this.isLoading,
     @required this.onRefresh,
-    @required this.ensureCategoryExists,
-    @required this.ensureTopicExists,
+    @required this.navigateToCategory,
+    @required this.navigateToTopic,
   }) : super(equals: [categories, topics, isLoading]);
 
   @override
@@ -152,9 +147,10 @@ class ViewModel extends BaseModel<AppState> {
       topics: state.favorTopics,
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchFavorTopicsAction()),
-      ensureCategoryExists: (category) =>
-          dispatch(EnsureCategoryExistsAction(category)),
-      ensureTopicExists: (topic) => dispatch(EnsureTopicExistsAction(topic)),
+      navigateToCategory: (category) =>
+          dispatch(NavigateToCategoryAction(category)),
+      navigateToTopic: (topic, page) =>
+          dispatch(NavigateToTopicAction(topic, page)),
     );
   }
 }

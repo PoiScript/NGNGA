@@ -6,10 +6,10 @@ import '../models/category.dart';
 import '../models/topic.dart';
 import './state.dart';
 
-class EnsureCategoryExistsAction extends ReduxAction<AppState> {
+class NavigateToCategoryAction extends ReduxAction<AppState> {
   final Category category;
 
-  EnsureCategoryExistsAction(this.category) : assert(category != null);
+  NavigateToCategoryAction(this.category) : assert(category != null);
 
   @override
   AppState reduce() {
@@ -26,12 +26,18 @@ class EnsureCategoryExistsAction extends ReduxAction<AppState> {
         ),
     );
   }
+
+  void after() =>
+      dispatch(NavigateAction.pushNamed("/c", arguments: {"id": category.id}));
 }
 
-class EnsureTopicExistsAction extends ReduxAction<AppState> {
+class NavigateToTopicAction extends ReduxAction<AppState> {
   final Topic topic;
+  final int page;
 
-  EnsureTopicExistsAction(this.topic) : assert(topic != null);
+  NavigateToTopicAction(this.topic, this.page)
+      : assert(topic != null),
+        assert(page != null);
 
   @override
   AppState reduce() {
@@ -46,4 +52,7 @@ class EnsureTopicExistsAction extends ReduxAction<AppState> {
         ),
     );
   }
+
+  void after() => dispatch(NavigateAction.pushNamed("/t",
+      arguments: {"id": topic.id, "page": page}));
 }

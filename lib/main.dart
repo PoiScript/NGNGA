@@ -15,7 +15,11 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final store = Store<AppState>(
+    final _navigatorKey = GlobalKey<NavigatorState>();
+
+    NavigateAction.setNavigatorKey(_navigatorKey);
+
+    final _store = Store<AppState>(
       initialState: AppState(
         isLoading: false,
         categories: Map(),
@@ -29,9 +33,10 @@ class MyApp extends StatelessWidget {
     );
 
     return StoreProvider<AppState>(
-      store: store,
+      store: _store,
       child: MaterialApp(
         onGenerateRoute: _routes,
+        navigatorKey: _navigatorKey,
         theme: _theme,
       ),
     );
