@@ -2,11 +2,11 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/topic.dart';
-import '../../models/category.dart';
-import '../../store/state.dart';
-import '../../store/fetch_topics.dart';
-import '../../store/router.dart';
+import 'package:ngnga/models/category.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/store/fetch_topics.dart';
+import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/state.dart';
 
 import 'topic_row.dart';
 

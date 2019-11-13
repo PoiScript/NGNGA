@@ -2,10 +2,10 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
-import '../models/category.dart';
-import '../models/post.dart';
-import '../models/topic.dart';
-import '../models/user.dart';
+import 'package:ngnga/models/category.dart';
+import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/user.dart';
 
 class CategoryState {
   final Category category;

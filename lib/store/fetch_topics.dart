@@ -5,9 +5,10 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 
-import '../models/topic.dart';
-import './state.dart';
-import './is_loading.dart';
+import 'package:ngnga/models/topic.dart';
+
+import 'state.dart';
+import 'is_loading.dart';
 
 class _FetchTopicsResponse {
   final Iterable<Topic> topics;

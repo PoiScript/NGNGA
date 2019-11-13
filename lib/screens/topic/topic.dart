@@ -4,11 +4,11 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/user.dart';
-import '../../models/topic.dart';
-import '../../models/post.dart';
-import '../../store/state.dart';
-import '../../store/fetch_posts.dart';
+import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/user.dart';
+import 'package:ngnga/store/fetch_posts.dart';
+import 'package:ngnga/store/state.dart';
 
 import 'post_row.dart';
 

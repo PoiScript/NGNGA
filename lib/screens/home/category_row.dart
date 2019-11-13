@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/category.dart';
+import 'package:ngnga/models/category.dart';
 
 class CategoryRow extends StatelessWidget {
   final Category category;

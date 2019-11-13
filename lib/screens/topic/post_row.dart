@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
-import '../../models/post.dart';
-import '../../bbcode/render.dart';
-import '../../utils/duration_to_now.dart';
-import '../../models/user.dart';
+import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/user.dart';
+import 'package:ngnga/utils/duration_to_now.dart';
+import 'package:ngnga/widgets/link_dialog.dart';
+import 'package:ngnga/widgets/post_dialog.dart';
+import 'package:ngnga/widgets/user_dialog.dart';
 
 class PostRow extends StatefulWidget {
   final Post post;

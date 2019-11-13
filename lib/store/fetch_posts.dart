@@ -5,11 +5,12 @@ import 'dart:convert';
 import 'package:async_redux/async_redux.dart';
 import 'package:http/http.dart';
 
-import '../models/post.dart';
-import '../models/topic.dart';
-import '../models/user.dart';
-import './is_loading.dart';
-import './state.dart';
+import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/user.dart';
+
+import 'is_loading.dart';
+import 'state.dart';
 
 class _FetchTopicResponse {
   final Topic topic;

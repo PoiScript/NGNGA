@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/topic.dart';
-import '../../utils/duration_to_now.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/utils/duration_to_now.dart';
 
 final formatter = NumberFormat("#,###");
 

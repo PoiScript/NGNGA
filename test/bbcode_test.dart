@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/bbcode/parser.dart';
-import '../lib/bbcode/tag.dart';
+import 'package:ngnga/bbcode/parser.dart';
+import 'package:ngnga/bbcode/tag.dart';
 
 void main() {
   test("BBCode parser", () {

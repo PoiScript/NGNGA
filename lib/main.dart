@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
 
-import './screens/category/category.dart';
-import './screens/editor/editor.dart';
-import './screens/home/home.dart';
-import './screens/settings/settings.dart';
-import './screens/topic/topic.dart';
-import './screens/user/user.dart';
-import './store/state.dart';
-import './style.dart';
+import 'package:ngnga/models/category.dart';
+import 'package:ngnga/screens/category/category.dart';
+import 'package:ngnga/screens/editor/editor.dart';
+import 'package:ngnga/screens/home/home.dart';
+import 'package:ngnga/screens/settings/settings.dart';
+import 'package:ngnga/screens/topic/topic.dart';
+import 'package:ngnga/screens/user/user.dart';
+import 'package:ngnga/store/state.dart';
+import 'package:ngnga/style.dart';
 
 void main() => runApp(MyApp());
 

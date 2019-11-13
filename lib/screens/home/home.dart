@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:flutter/material.dart';
 
-import './category_row.dart';
-import './header.dart';
-import './popup_menu.dart';
-import '../../models/category.dart';
-import '../../models/topic.dart';
-import '../../store/state.dart';
-import '../../store/fetch_favor.dart';
-import '../../screens/category/topic_row.dart';
-import '../../store/router.dart';
+import 'package:ngnga/models/category.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/screens/category/topic_row.dart';
+import 'package:ngnga/store/fetch_favor.dart';
+import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/state.dart';
+
+import 'category_row.dart';
+import 'header.dart';
+import 'popup_menu.dart';
 
 const kExpandedHeight = 200.0;
 
