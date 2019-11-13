@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -66,6 +67,11 @@ class AppState {
   final Map<int, TopicState> topics;
   final Map<String, String> cookies;
   final bool isLoading;
+
+  final StreamController<DateTime> everyMinutes = StreamController.broadcast()
+    ..addStream(
+      Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
+    );
 
   AppState({
     @required this.isLoading,

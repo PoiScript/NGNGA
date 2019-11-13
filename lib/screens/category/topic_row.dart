@@ -8,12 +8,14 @@ final formatter = NumberFormat("#,###");
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
+  final Stream<DateTime> everyMinutes;
 
   final void Function(Topic, int) navigateToTopic;
 
-  TopicRow(this.topic, this.navigateToTopic)
+  TopicRow(this.topic, this.navigateToTopic, this.everyMinutes)
       : assert(topic != null),
-        assert(navigateToTopic != null);
+        assert(navigateToTopic != null),
+        assert(everyMinutes != null);
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +59,13 @@ class TopicRow extends StatelessWidget {
                   ),
                 ),
                 Center(
-                  child: Text(
-                    durationToNow(topic.lastPostedAt),
-                    style: Theme.of(context).textTheme.caption,
+                  child: StreamBuilder<DateTime>(
+                    initialData: DateTime.now(),
+                    stream: everyMinutes,
+                    builder: (context, snapshot) => Text(
+                      duration(snapshot.data, topic.lastPostedAt),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
                   ),
                 ),
               ],

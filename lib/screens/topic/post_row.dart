@@ -13,10 +13,12 @@ import 'package:ngnga/widgets/user_dialog.dart';
 class PostRow extends StatefulWidget {
   final Post post;
   final User user;
+  final Stream<DateTime> everyMinutes;
 
-  PostRow(this.post, this.user)
+  PostRow(this.post, this.user, this.everyMinutes)
       : assert(post != null),
-        assert(user != null);
+        assert(user != null),
+        assert(everyMinutes != null);
 
   @override
   _PostRowState createState() => _PostRowState();
@@ -68,8 +70,16 @@ class _PostRowState extends State<PostRow> {
                   ),
                   const Spacer(),
                   Text(
-                    "#${widget.post.index} ${durationToNow(widget.post.createdAt)}",
+                    "#${widget.post.index} ",
                     style: Theme.of(context).textTheme.caption,
+                  ),
+                  StreamBuilder<DateTime>(
+                    initialData: DateTime.now(),
+                    stream: widget.everyMinutes,
+                    builder: (context, snapshot) => Text(
+                      duration(snapshot.data, widget.post.createdAt),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
                   ),
                   PopupMenuButton<Choice>(
                     child: const Icon(

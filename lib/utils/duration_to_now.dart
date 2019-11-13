@@ -1,35 +1,33 @@
-import 'package:flutter/material.dart';
-
-String durationToNow(DateTime datetime) {
-  Duration difference = DateTime.now().difference(datetime);
+String duration(DateTime left, DateTime right) {
+  Duration difference = left.difference(right);
   if (difference.inDays > 7) {
-    switch (datetime.month) {
+    switch (left.month) {
       case DateTime.january:
-        return "Jan '${datetime.day}";
+        return "Jan '${left.day}";
       case DateTime.february:
-        return "Feb '${datetime.day}";
+        return "Feb '${left.day}";
       case DateTime.march:
-        return "Mar '${datetime.day}";
+        return "Mar '${left.day}";
       case DateTime.april:
-        return "Apr '${datetime.day}";
+        return "Apr '${left.day}";
       case DateTime.may:
-        return "May '${datetime.day}";
+        return "May '${left.day}";
       case DateTime.june:
-        return "Jun '${datetime.day}";
+        return "Jun '${left.day}";
       case DateTime.july:
-        return "Jul '${datetime.day}";
+        return "Jul '${left.day}";
       case DateTime.august:
-        return "Aug '${datetime.day}";
+        return "Aug '${left.day}";
       case DateTime.september:
-        return "Sep '${datetime.day}";
+        return "Sep '${left.day}";
       case DateTime.october:
-        return "Oct '${datetime.day}";
+        return "Oct '${left.day}";
       case DateTime.november:
-        return "Nov '${datetime.day}";
+        return "Nov '${left.day}";
       case DateTime.december:
-        return "Dec '${datetime.day}";
+        return "Dec '${left.day}";
     }
-    return "${datetime.day}";
+    return "${left.day}";
   } else if (difference.inDays > 0) {
     return "${difference.inDays}d";
   } else if (difference.inHours > 0) {

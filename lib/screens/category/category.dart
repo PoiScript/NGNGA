@@ -21,6 +21,7 @@ class CategoryPage extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
   final void Function(Topic, int) navigateToTopic;
+  final Stream<DateTime> everyMinutes;
 
   CategoryPage({
     @required this.topics,
@@ -30,13 +31,15 @@ class CategoryPage extends StatelessWidget {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
+    @required this.everyMinutes,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
         assert(isLoading != null),
         assert(onRefresh != null),
         assert(onLoad != null),
-        assert(navigateToTopic != null);
+        assert(navigateToTopic != null),
+        assert(everyMinutes != null);
 
   Widget build(BuildContext context) {
     if (isLoading && topics.isEmpty) {
@@ -87,7 +90,11 @@ class CategoryPage extends StatelessWidget {
                 (context, index) {
                   final int itemIndex = index ~/ 2;
                   if (index.isEven) {
-                    return TopicRow(topics[itemIndex], navigateToTopic);
+                    return TopicRow(
+                      topics[itemIndex],
+                      navigateToTopic,
+                      everyMinutes,
+                    );
                   }
                   return Divider(height: 16.0, color: Colors.grey);
                 },
@@ -126,6 +133,7 @@ class CategoryPageConnector extends StatelessWidget {
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
+        everyMinutes: vm.everyMinutes,
       ),
     );
   }
@@ -141,6 +149,7 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
   void Function(Topic, int) navigateToTopic;
+  Stream<DateTime> everyMinutes;
 
   ViewModel(this.categoryId);
 
@@ -153,6 +162,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
+    @required this.everyMinutes,
   }) : super(equals: [isLoading, topics, category, topicsCount]);
 
   @override
@@ -168,6 +178,7 @@ class ViewModel extends BaseModel<AppState> {
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
+      everyMinutes: state.everyMinutes.stream,
     );
   }
 }

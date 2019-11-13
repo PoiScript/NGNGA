@@ -19,6 +19,7 @@ class HomePage extends StatelessWidget {
   final List<Category> categories;
   final List<Topic> topics;
   final bool isLoading;
+  final Stream<DateTime> everyMinutes;
 
   final Future<void> Function() onRefresh;
   final void Function(Category) navigateToCategory;
@@ -31,12 +32,14 @@ class HomePage extends StatelessWidget {
     @required this.onRefresh,
     @required this.navigateToCategory,
     @required this.navigateToTopic,
+    @required this.everyMinutes,
   })  : assert(categories != null),
         assert(isLoading != null),
         assert(topics != null),
         assert(onRefresh != null),
         assert(navigateToCategory != null),
-        assert(navigateToTopic != null);
+        assert(navigateToTopic != null),
+        assert(everyMinutes != null);
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +67,15 @@ class HomePage extends StatelessWidget {
                 titlePadding: EdgeInsetsDirectional.only(bottom: 16),
               ),
               actions: <Widget>[
+                IconButton(
+                  icon: const Icon(
+                    Icons.settings,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/s");
+                  },
+                ),
                 PopupMenu(),
               ],
             ),
@@ -74,7 +86,8 @@ class HomePage extends StatelessWidget {
             header,
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => TopicRow(topics[index], navigateToTopic),
+                (context, index) =>
+                    TopicRow(topics[index], navigateToTopic, everyMinutes),
                 childCount: topics.length,
               ),
             ),
@@ -116,6 +129,7 @@ class HomePageConnector extends StatelessWidget {
         onRefresh: vm.onRefresh,
         navigateToCategory: vm.navigateToCategory,
         navigateToTopic: vm.navigateToTopic,
+        everyMinutes: vm.everyMinutes,
       ),
     );
   }
@@ -129,6 +143,7 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() onRefresh;
   void Function(Category) navigateToCategory;
   void Function(Topic, int) navigateToTopic;
+  Stream<DateTime> everyMinutes;
 
   ViewModel();
 
@@ -139,6 +154,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onRefresh,
     @required this.navigateToCategory,
     @required this.navigateToTopic,
+    @required this.everyMinutes,
   }) : super(equals: [categories, topics, isLoading]);
 
   @override
@@ -152,6 +168,7 @@ class ViewModel extends BaseModel<AppState> {
           dispatch(NavigateToCategoryAction(category)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
+      everyMinutes: state.everyMinutes.stream,
     );
   }
 }
