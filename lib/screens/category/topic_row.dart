@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/topic.dart';
-import 'package:ngnga/utils/duration_to_now.dart';
+import 'package:ngnga/utils/duration.dart';
 
 final formatter = NumberFormat("#,###");
 

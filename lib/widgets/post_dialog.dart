@@ -8,7 +8,7 @@ import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/duration_to_now.dart';
+import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 
 import 'link_dialog.dart';
@@ -18,6 +18,7 @@ class PostDialog extends StatefulWidget {
   final Map<int, User> users;
   final Map<int, TopicState> topics;
   final Map<String, String> cookies;
+  final Stream<DateTime> everyMinutes;
 
   PostDialog({
     @required this.topicId,
@@ -25,11 +26,13 @@ class PostDialog extends StatefulWidget {
     @required this.users,
     @required this.topics,
     @required this.cookies,
+    @required this.everyMinutes,
   })  : assert(topicId != null),
         assert(postId != null),
         assert(users != null),
         assert(topics != null),
-        assert(cookies != null);
+        assert(cookies != null),
+        assert(everyMinutes != null);
 
   @override
   _PostDialogState createState() => _PostDialogState();
@@ -57,7 +60,6 @@ class _PostDialogState extends State<PostDialog> {
       child: Container(
         constraints: BoxConstraints(maxHeight: 600.0, minHeight: 300.0),
         padding: EdgeInsets.all(16.0),
-        // height: ,
         decoration: new BoxDecoration(
           color: Colors.white,
           shape: BoxShape.rectangle,
@@ -88,9 +90,13 @@ class _PostDialogState extends State<PostDialog> {
                           style: Theme.of(context).textTheme.caption,
                         ),
                         const Spacer(),
-                        Text(
-                          durationToNow(post.createdAt),
-                          style: Theme.of(context).textTheme.caption,
+                        StreamBuilder<DateTime>(
+                          initialData: DateTime.now(),
+                          stream: widget.everyMinutes,
+                          builder: (context, snapshot) => Text(
+                            duration(snapshot.data, post.createdAt),
+                            style: Theme.of(context).textTheme.caption,
+                          ),
                         ),
                       ],
                     ),
@@ -138,8 +144,7 @@ class _PostDialogState extends State<PostDialog> {
         return post.first;
       }
     }
-    var response = await _fetchOnePost(topicId, postId, widget.cookies);
-    return response.post;
+    return await _fetchOnePost(topicId, postId, widget.cookies);
   }
 }
 
@@ -160,6 +165,7 @@ class PostDialogConnector extends StatelessWidget {
         topics: vm.topics,
         users: vm.users,
         cookies: vm.cookies,
+        everyMinutes: vm.everyMinutes,
         topicId: topicId,
         postId: postId,
       ),
@@ -167,19 +173,7 @@ class PostDialogConnector extends StatelessWidget {
   }
 }
 
-class _FetchPostResponse {
-  final Post post;
-
-  _FetchPostResponse({this.post});
-
-  factory _FetchPostResponse.fromJson(Map<String, dynamic> json) {
-    return _FetchPostResponse(
-      post: Post.fromJson(json["data"]["__R"].first),
-    );
-  }
-}
-
-Future<_FetchPostResponse> _fetchOnePost(
+Future<Post> _fetchOnePost(
   int topicId,
   int postId,
   Map<String, String> cookies,
@@ -199,13 +193,14 @@ Future<_FetchPostResponse> _fetchOnePost(
 
   final json = jsonDecode(res.body);
 
-  return _FetchPostResponse.fromJson(json);
+  return Post.fromJson(json["data"]["__R"].first);
 }
 
 class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
   Map<int, TopicState> topics;
   Map<String, String> cookies;
+  Stream<DateTime> everyMinutes;
 
   ViewModel();
 
@@ -213,6 +208,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topics,
     @required this.users,
     @required this.cookies,
+    @required this.everyMinutes,
   }) : super(equals: [topics, users, cookies]);
 
   @override
@@ -221,6 +217,7 @@ class ViewModel extends BaseModel<AppState> {
       topics: state.topics,
       users: state.users,
       cookies: state.cookies,
+      everyMinutes: state.everyMinutes.stream,
     );
   }
 }
