@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
@@ -26,20 +27,33 @@ class _PostRowState extends State<PostRow> {
 
   @override
   Widget build(BuildContext context) {
+    var letterAvatar = CircleAvatar(
+      radius: 16,
+      child: Text(
+        widget.user.username[0].toUpperCase(),
+        style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
+      ),
+      backgroundColor: numberToHslColor(widget.user.id),
+    );
+
     return Stack(
       children: <Widget>[
         Positioned(
           left: 8.0,
           top: 8.0,
           child: widget.user.avatars.isNotEmpty
-              ? CircleAvatar(
-                  radius: 16,
-                  backgroundImage: NetworkImage(widget.user.avatars[0]),
+              ? CachedNetworkImage(
+                  // user can have mulitples avatars, so we randomly pick one of them to display
+                  imageUrl: widget.user
+                      .avatars[widget.post.index % widget.user.avatars.length],
+                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                    radius: 16,
+                    backgroundImage: imageProvider,
+                  ),
+                  placeholder: (context, url) => letterAvatar,
+                  errorWidget: (context, url, error) => letterAvatar,
                 )
-              : CircleAvatar(
-                  radius: 16,
-                  child: Text(widget.user.username[0].toUpperCase()),
-                ),
+              : letterAvatar,
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 8.0),
@@ -123,6 +137,18 @@ class _PostRowState extends State<PostRow> {
         )
       ],
     );
+  }
+
+  Color numberToHslColor(int number) {
+    var hash = 0;
+
+    for (var rune in number.toString().runes) {
+      hash = rune + ((hash << 5) - hash);
+    }
+
+    var h = hash % 360;
+
+    return HSLColor.fromAHSL(1.0, h.toDouble(), 0.3, 0.8).toColor();
   }
 
   _onMenuSelected(Choice choice) {
