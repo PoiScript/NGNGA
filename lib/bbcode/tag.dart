@@ -282,20 +282,20 @@ class SizeStart extends Tag {
 }
 
 class Sticker extends Tag {
-  final String name;
+  final String path;
 
-  Sticker(this.name)
-      : assert(name != null),
+  Sticker(this.path)
+      : assert(path != null),
         super(TagType.Sticker);
 
-  bool operator ==(t) => t is Sticker && t.type == type && t.name == name;
+  bool operator ==(t) => t is Sticker && t.type == type && t.path == path;
 
   int get hashCode {
-    return type.hashCode ^ name.hashCode;
+    return type.hashCode ^ path.hashCode;
   }
 
   @override
-  String toString() => "$type($name)";
+  String toString() => "$type($path)";
 }
 
 class TableCellEnd extends Tag {

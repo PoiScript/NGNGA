@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'tag.dart';
+import 'sticker.dart';
 
 RegExp boldRegExp = RegExp(
   r"\[b\](.*?)\[/b\]",
@@ -300,11 +301,14 @@ _parseInlines(String content, Tag previous) {
   }
 
   for (RegExpMatch match in stickerRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Sticker(match[1]),
-      match.start,
-      match.end,
-    ));
+    var path = stickerNameToPath[match[1]];
+    if (path != null) {
+      _tags.add(_TagWithPosition(
+        Sticker(path),
+        match.start,
+        match.end,
+      ));
+    }
   }
 
   for (RegExpMatch match in imageRegExp.allMatches(content)) {

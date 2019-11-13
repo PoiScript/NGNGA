@@ -2,12 +2,12 @@ import 'dart:math';
 
 import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart' as material;
+// import Text and Image widget under the material namespace
+import 'package:flutter/material.dart' as material show Text, Image;
 import 'package:flutter/material.dart' hide Text, Image;
 import 'package:photo_view/photo_view.dart';
 
 import 'parser.dart';
-import 'sticker.dart';
 import 'tag.dart';
 
 class BBCodeRender extends StatefulWidget {
@@ -500,9 +500,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   WidgetSpan _buildSticker(BuildContext context, Sticker sticker) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
-      child: material.Image.asset(
-        stickerNameToPath[sticker.name],
-        width: 32.0,
+      child: Container(
+        margin: EdgeInsets.all(2.0),
+        child: material.Image.asset(sticker.path, width: 32.0),
       ),
     );
   }
