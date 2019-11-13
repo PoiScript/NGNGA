@@ -10,7 +10,9 @@ class PostRow extends StatefulWidget {
   final Post post;
   final User user;
 
-  PostRow(this.post, this.user);
+  PostRow(this.post, this.user)
+      : assert(post != null),
+        assert(user != null);
 
   @override
   _PostRowState createState() => _PostRowState();
@@ -142,7 +144,28 @@ class _PostRowState extends State<PostRow> {
         content = SelectableText(widget.post.content);
         break;
       case DisplayMode.RichText:
-        content = BBCode(widget.post.content);
+        content = BBCodeRender(
+          data: widget.post.content,
+          openUser: (userId) {
+            showDialog(
+              context: context,
+              builder: (context) => UserDialog(userId),
+            );
+          },
+          openLink: (url) {
+            showDialog(
+              context: context,
+              builder: (context) => LinkDialog(url),
+            );
+          },
+          openPost: (topicId, page, postId) {
+            showDialog(
+              context: context,
+              builder: (context) =>
+                  PostDialogConnector(topicId: topicId, postId: postId),
+            );
+          },
+        );
         break;
     }
     return content;
