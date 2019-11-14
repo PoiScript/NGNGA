@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
         screen = UserPage(id: arguments["id"]);
         break;
       case "/s":
-        screen = SettingsPage();
+        screen = SettingsPageConnector();
         break;
       case "/e":
         screen = EditorPage();
