@@ -1,19 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/material.dart';
 
-import 'package:ngnga/models/category.dart';
 import 'package:ngnga/screens/category/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/screens/home/home.dart';
+import 'package:ngnga/screens/new/new.dart';
 import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
-void main() => runApp(MyApp());
+void main() async => runApp(MyApp(await initState()));
 
 class MyApp extends StatelessWidget {
+  final AppState state;
+
+  MyApp(this.state);
+
   @override
   Widget build(BuildContext context) {
     final _navigatorKey = GlobalKey<NavigatorState>();
@@ -21,16 +25,9 @@ class MyApp extends StatelessWidget {
     NavigateAction.setNavigatorKey(_navigatorKey);
 
     final _store = Store<AppState>(
-      initialState: AppState(
-        isLoading: false,
-        categories: Map(),
-        topics: Map(),
-        users: Map(),
-        savedCategories: List(),
-        favorTopics: List(),
-      ),
-      actionObservers: [Log<AppState>.printer()],
-      modelObserver: DefaultModelObserver(),
+      initialState: state,
+      // actionObservers: [Log<AppState>.printer()],
+      // modelObserver: DefaultModelObserver(),
     );
 
     return StoreProvider<AppState>(
@@ -39,6 +36,8 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: _routes,
         navigatorKey: _navigatorKey,
         theme: _theme,
+        // use "new" instead of "/new" to make sure it's a top-level route
+        initialRoute: state.cookies.isEmpty ? "new" : "/",
       ),
     );
   }
@@ -64,6 +63,9 @@ class MyApp extends StatelessWidget {
         break;
       case "/e":
         screen = EditorPage();
+        break;
+      case "new":
+        screen = NewPage();
         break;
       default:
         return null;
