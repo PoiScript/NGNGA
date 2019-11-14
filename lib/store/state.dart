@@ -82,7 +82,6 @@ class AppState {
     @required this.topics,
     @required this.categories,
   })  : assert(categories != null),
-        assert(cookies != null),
         assert(favorTopics != null),
         assert(savedCategories != null),
         assert(isLoading != null),
