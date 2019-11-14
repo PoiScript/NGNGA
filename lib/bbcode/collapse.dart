@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class Collapse extends StatefulWidget {
@@ -16,53 +13,28 @@ class Collapse extends StatefulWidget {
   _CollapseState createState() => _CollapseState();
 }
 
-class _CollapseState extends State<Collapse>
-    with SingleTickerProviderStateMixin {
+class _CollapseState extends State<Collapse> {
   bool _expanded = false;
-  AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-        duration: const Duration(milliseconds: 500), vsync: this);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      // mainAxisAlignment: MainAxis,
       children: <Widget>[
         GestureDetector(
           child: Container(
             height: 24.0,
             child: Row(
               children: <Widget>[
-                AnimatedBuilder(
-                  animation: _animationController,
-                  child: Icon(Icons.arrow_right),
-                  builder: (context, widget) {
-                    return Transform.rotate(
-                      angle: _animationController.value * pi,
-                      child: widget,
-                    );
-                  },
-                ),
+                _expanded
+                    ? Icon(Icons.arrow_drop_down)
+                    : Icon(Icons.arrow_right),
                 Text(widget.description),
               ],
             ),
           ),
           onTap: () {
             setState(() {
-              if (_expanded) {
-                _animationController.reverse();
-              } else {
-                _animationController.repeat();
-              }
-              Timer(const Duration(milliseconds: 500), () {
-                _animationController.stop();
-              });
               _expanded = !_expanded;
             });
           },

@@ -383,7 +383,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       ),
       padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: _children,
       ),
     );
@@ -614,7 +614,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       child: Row(
         children: [
           Icon(
-            Icons.reply,
+            Icons.subdirectory_arrow_right,
             color: Colors.grey[500],
           ),
           material.Text(
