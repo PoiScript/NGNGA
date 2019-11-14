@@ -18,7 +18,7 @@ class PostDialog extends StatefulWidget {
   final int topicId, postId;
   final Map<int, User> users;
   final Map<int, TopicState> topics;
-  final Map<String, String> cookies;
+  final List<String> cookies;
   final Stream<DateTime> everyMinutes;
 
   final void Function(Iterable<MapEntry<int, User>>) updateUsers;
@@ -46,6 +46,7 @@ class PostDialog extends StatefulWidget {
 class _PostDialogState extends State<PostDialog> {
   final List<Future<Post>> posts = [];
   final List<int> postIds = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -64,7 +65,7 @@ class _PostDialogState extends State<PostDialog> {
       backgroundColor: Colors.transparent,
       child: Container(
         constraints: BoxConstraints(maxHeight: 600.0, minHeight: 300.0),
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(8.0),
         decoration: new BoxDecoration(
           color: Colors.white,
           shape: BoxShape.rectangle,
@@ -80,53 +81,60 @@ class _PostDialogState extends State<PostDialog> {
         child: ListView.separated(
           reverse: true,
           itemCount: posts.length,
-          separatorBuilder: (context, index) => Divider(),
-          itemBuilder: (context, index) => FutureBuilder<Post>(
-            future: posts[index],
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                var post = snapshot.data;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          widget.users[post.userId].username,
-                          style: Theme.of(context).textTheme.caption,
+          controller: _scrollController,
+          separatorBuilder: (context, index) => Divider(height: 0.0),
+          itemBuilder: (context, index) => Container(
+            padding: EdgeInsets.all(8.0),
+            child: FutureBuilder<Post>(
+              future: posts[index],
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var post = snapshot.data;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          children: <Widget>[
+                            Text(
+                              widget.users[post.userId].username,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                            const Spacer(),
+                            StreamBuilder<DateTime>(
+                              initialData: DateTime.now(),
+                              stream: widget.everyMinutes,
+                              builder: (context, snapshot) => Text(
+                                duration(snapshot.data, post.createdAt),
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        StreamBuilder<DateTime>(
-                          initialData: DateTime.now(),
-                          stream: widget.everyMinutes,
-                          builder: (context, snapshot) => Text(
-                            duration(snapshot.data, post.createdAt),
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                    BBCodeRender(
-                      data: post.content,
-                      openLink: (url) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => LinkDialog(url),
-                        );
-                      },
-                      openUser: (userId) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => UserDialog(userId),
-                        );
-                      },
-                      openPost: _openPost,
-                    ),
-                  ],
-                );
-              }
-              return Center(child: CircularProgressIndicator());
-            },
+                      ),
+                      BBCodeRender(
+                        data: post.content,
+                        openLink: (url) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => LinkDialog(url),
+                          );
+                        },
+                        openUser: (userId) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => UserDialog(userId),
+                          );
+                        },
+                        openPost: _openPost,
+                      ),
+                    ],
+                  );
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
           ),
         ),
       ),
@@ -202,7 +210,7 @@ class _FetchPostResponse {
 Future<_FetchPostResponse> _fetchOnePost(
   int topicId,
   int postId,
-  Map<String, String> cookies,
+  List<String> cookies,
 ) async {
   final uri = Uri.https("nga.178.com", "read.php", {
     "pid": postId.toString(),
@@ -212,10 +220,7 @@ Future<_FetchPostResponse> _fetchOnePost(
 
   print(uri);
 
-  final res = await get(uri, headers: {
-    "cookie":
-        cookies.entries.map((entry) => "${entry.key}=${entry.value}").join(";")
-  });
+  final res = await get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 
@@ -225,7 +230,7 @@ Future<_FetchPostResponse> _fetchOnePost(
 class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
   Map<int, TopicState> topics;
-  Map<String, String> cookies;
+  List<String> cookies;
   Stream<DateTime> everyMinutes;
   void Function(Iterable<MapEntry<int, User>>) updateUsers;
 

@@ -35,7 +35,7 @@ class _FetchTopicResponse {
 Future<_FetchTopicResponse> _fetchTopic(
   int topicId,
   int page,
-  Map<String, String> cookies,
+  List<String> cookies,
 ) async {
   final uri = Uri.https("nga.178.com", "read.php", {
     "tid": topicId.toString(),
@@ -45,9 +45,7 @@ Future<_FetchTopicResponse> _fetchTopic(
 
   print(uri);
 
-  final res = await get(uri, headers: {
-    "cookie": cookies.entries.map((e) => "${e.key}=${e.value}").join(";")
-  });
+  final res = await get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 

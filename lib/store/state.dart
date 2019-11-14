@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
@@ -65,7 +66,7 @@ class AppState {
   final Map<int, User> users;
   final Map<int, CategoryState> categories;
   final Map<int, TopicState> topics;
-  final Map<String, String> cookies;
+  final List<String> cookies;
   final bool isLoading;
 
   final StreamController<DateTime> everyMinutes = StreamController.broadcast()
@@ -94,7 +95,7 @@ class AppState {
     Map<int, CategoryState> categories,
     Map<int, TopicState> topics,
     Map<int, User> users,
-    Map<String, String> cookies,
+    List<String> cookies,
     bool isLoading,
   }) {
     return AppState(
@@ -107,4 +108,43 @@ class AppState {
       isLoading: isLoading ?? this.isLoading,
     );
   }
+
+  factory AppState.empty() {
+    return AppState(
+      cookies: List(),
+      savedCategories: List(),
+      isLoading: false,
+      categories: Map(),
+      topics: Map(),
+      users: Map(),
+      favorTopics: List(),
+    );
+  }
+}
+
+Future<AppState> initState() async {
+  var state = AppState.empty();
+
+  final prefs = await SharedPreferences.getInstance();
+
+  List<String> cookies;
+
+  try {
+    cookies = prefs.getStringList("cookies");
+  } catch (_) {}
+
+  List<Category> savedCategories;
+
+  try {
+    savedCategories = prefs
+        .getStringList("savedCategories")
+        .map((string) => Category.fromString(string))
+        .where((category) => category != null)
+        .toList();
+  } catch (_) {}
+
+  return state.copy(
+    cookies: cookies,
+    savedCategories: savedCategories,
+  );
 }

@@ -5,12 +5,10 @@ import 'package:ngnga/store/state.dart';
 import 'cookies_editor.dart';
 
 class SettingsPage extends StatelessWidget {
-  final Map<String, String> cookies;
-  final void Function(Map<String, String>) updateCookies;
+  final int cookieCount;
 
   SettingsPage({
-    @required this.cookies,
-    @required this.updateCookies,
+    @required this.cookieCount,
   });
 
   @override
@@ -29,7 +27,7 @@ class SettingsPage extends StatelessWidget {
         children: <Widget>[
           ListTile(
             title: Text('Edit Cookies'),
-            subtitle: Text('${cookies.length} cookies pairs'),
+            subtitle: Text('$cookieCount cookies pairs'),
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => {
               Navigator.push(
@@ -52,29 +50,25 @@ class SettingsPageConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
       builder: (context, vm) => SettingsPage(
-        cookies: vm.cookies,
-        updateCookies: vm.updateCookies,
+        cookieCount: vm.cookieCount,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  Map<String, String> cookies;
-  void Function(Map<String, String>) updateCookies;
+  int cookieCount;
 
   ViewModel();
 
   ViewModel.build({
-    @required this.cookies,
-    @required this.updateCookies,
-  }) : super(equals: [cookies]);
+    @required this.cookieCount,
+  }) : super(equals: [cookieCount]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      cookies: state.cookies,
-      updateCookies: (map) => {},
+      cookieCount: state.cookies.length,
     );
   }
 }

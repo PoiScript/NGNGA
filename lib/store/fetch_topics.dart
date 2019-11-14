@@ -35,7 +35,7 @@ Future<_FetchTopicsResponse> _fetchTopics(
   int categoryId,
   int pageIndex,
   bool isSubcategory,
-  Map<String, String> cookies,
+  List<String> cookies,
 ) async {
   final uri = Uri.https(
     "nga.178.com",
@@ -48,10 +48,7 @@ Future<_FetchTopicsResponse> _fetchTopics(
 
   print(uri);
 
-  final res = await get(uri, headers: {
-    "cookie":
-        cookies.entries.map((entry) => "${entry.key}=${entry.value}").join(";")
-  });
+  final res = await get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 

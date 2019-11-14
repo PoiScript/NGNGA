@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ngnga/store/state.dart';
 
 class EditCookiesPage extends StatefulWidget {
-  final Map<String, String> cookies;
-  final void Function(Map<String, String>) updateCookies;
+  final List<String> cookies;
+  final void Function(List<String>) updateCookies;
 
   EditCookiesPage({
     @required this.cookies,
@@ -30,9 +30,10 @@ class _EditCookiesPageState extends State<EditCookiesPage> {
   Widget build(BuildContext context) {
     List<Widget> fields = [];
 
-    for (var entry in widget.cookies.entries) {
+    for (var cookie in widget.cookies) {
+      var pair = cookie.split("=");
       fields.add(TextFormField(
-        initialValue: entry.key,
+        initialValue: pair.first,
         decoration: const InputDecoration(
           labelText: 'Key',
           border: InputBorder.none,
@@ -47,7 +48,7 @@ class _EditCookiesPageState extends State<EditCookiesPage> {
       fields.add(TextFormField(
         minLines: 1,
         maxLines: null,
-        initialValue: entry.value,
+        initialValue: pair.last,
         decoration: const InputDecoration(
           labelText: 'Value',
           border: InputBorder.none,
@@ -99,8 +100,8 @@ class EditCookiesPageConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  Map<String, String> cookies;
-  void Function(Map<String, String>) updateCookies;
+  List<String> cookies;
+  void Function(List<String>) updateCookies;
 
   ViewModel();
 

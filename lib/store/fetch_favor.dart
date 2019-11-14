@@ -29,9 +29,7 @@ class _FetchTopicsResponse {
   }
 }
 
-Future<_FetchTopicsResponse> _fetchFavorTopics(
-  Map<String, String> cookies,
-) async {
+Future<_FetchTopicsResponse> _fetchFavorTopics(List<String> cookies) async {
   final uri = Uri.https("nga.178.com", "thread.php", {
     "favor": "1",
     "__output": "11",
@@ -39,10 +37,7 @@ Future<_FetchTopicsResponse> _fetchFavorTopics(
 
   print(uri);
 
-  final res = await get(uri, headers: {
-    "cookie":
-        cookies.entries.map((entry) => "${entry.key}=${entry.value}").join(";")
-  });
+  final res = await get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 
