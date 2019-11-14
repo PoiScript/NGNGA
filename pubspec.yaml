@@ -32,3 +32,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/stickers/
+  fonts:
+    - family: "Noto Sans CJK SC"
+      fonts:
+        - asset: fonts/NotoSansCJKsc-Regular.otf
+          weight: 400
+        - asset: fonts/NotoSansCJKsc-Medium.otf
+          weight: 500
