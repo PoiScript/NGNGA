@@ -10,6 +10,7 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
+import 'package:ngnga/store/update_user.dart';
 
 import 'link_dialog.dart';
 
@@ -20,6 +21,8 @@ class PostDialog extends StatefulWidget {
   final Map<String, String> cookies;
   final Stream<DateTime> everyMinutes;
 
+  final void Function(Iterable<MapEntry<int, User>>) updateUsers;
+
   PostDialog({
     @required this.topicId,
     @required this.postId,
@@ -27,12 +30,14 @@ class PostDialog extends StatefulWidget {
     @required this.topics,
     @required this.cookies,
     @required this.everyMinutes,
+    @required this.updateUsers,
   })  : assert(topicId != null),
         assert(postId != null),
         assert(users != null),
         assert(topics != null),
         assert(cookies != null),
-        assert(everyMinutes != null);
+        assert(everyMinutes != null),
+        assert(updateUsers != null);
 
   @override
   _PostDialogState createState() => _PostDialogState();
@@ -82,6 +87,7 @@ class _PostDialogState extends State<PostDialog> {
               if (snapshot.hasData) {
                 var post = snapshot.data;
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Row(
                       children: <Widget>[
@@ -144,7 +150,9 @@ class _PostDialogState extends State<PostDialog> {
         return post.first;
       }
     }
-    return await _fetchOnePost(topicId, postId, widget.cookies);
+    var response = await _fetchOnePost(topicId, postId, widget.cookies);
+    widget.updateUsers(response.users);
+    return response.post;
   }
 }
 
@@ -166,6 +174,7 @@ class PostDialogConnector extends StatelessWidget {
         users: vm.users,
         cookies: vm.cookies,
         everyMinutes: vm.everyMinutes,
+        updateUsers: vm.updateUsers,
         topicId: topicId,
         postId: postId,
       ),
@@ -173,7 +182,24 @@ class PostDialogConnector extends StatelessWidget {
   }
 }
 
-Future<Post> _fetchOnePost(
+class _FetchPostResponse {
+  final Post post;
+  final Iterable<MapEntry<int, User>> users;
+
+  _FetchPostResponse({this.post, this.users});
+
+  factory _FetchPostResponse.fromJson(Map<String, dynamic> json) {
+    return _FetchPostResponse(
+      post: Post.fromJson(json["data"]["__R"].first),
+      users: Map.from(json["data"]["__U"])
+          .values
+          .map((value) => User.fromJson(value))
+          .map((user) => MapEntry(user.id, user)),
+    );
+  }
+}
+
+Future<_FetchPostResponse> _fetchOnePost(
   int topicId,
   int postId,
   Map<String, String> cookies,
@@ -193,7 +219,7 @@ Future<Post> _fetchOnePost(
 
   final json = jsonDecode(res.body);
 
-  return Post.fromJson(json["data"]["__R"].first);
+  return _FetchPostResponse.fromJson(json);
 }
 
 class ViewModel extends BaseModel<AppState> {
@@ -201,6 +227,7 @@ class ViewModel extends BaseModel<AppState> {
   Map<int, TopicState> topics;
   Map<String, String> cookies;
   Stream<DateTime> everyMinutes;
+  void Function(Iterable<MapEntry<int, User>>) updateUsers;
 
   ViewModel();
 
@@ -209,6 +236,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.users,
     @required this.cookies,
     @required this.everyMinutes,
+    @required this.updateUsers,
   }) : super(equals: [topics, users, cookies]);
 
   @override
@@ -218,6 +246,7 @@ class ViewModel extends BaseModel<AppState> {
       users: state.users,
       cookies: state.cookies,
       everyMinutes: state.everyMinutes.stream,
+      updateUsers: (users) => dispatch(UpdateUsersAction(users)),
     );
   }
 }
