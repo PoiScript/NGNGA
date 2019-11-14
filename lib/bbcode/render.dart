@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,12 +5,11 @@ import 'package:flutter/gestures.dart';
 // import Text and Image widget under the material namespace
 import 'package:flutter/material.dart' as material show Text, Image;
 import 'package:flutter/material.dart' hide Text, Image;
-import 'package:flutter/material.dart' as prefix0;
 import 'package:photo_view/photo_view.dart';
 
+import 'collapse.dart';
 import 'parser.dart';
 import 'tag.dart';
-import 'collapse.dart';
 
 class BBCodeRender extends StatefulWidget {
   final String data;
@@ -60,7 +58,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _children.add(_buildParagraph(context, iter));
           break;
         case TagType.Reply:
-          _children.add(_buildReply(context, iter.current as Reply));
+          _children.add(_buildReply(context, iter.current as Reply, true));
           break;
         case TagType.Image:
         case TagType.Sticker:
@@ -203,7 +201,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.only(bottom: 6.0),
       child: RichText(
         text: TextSpan(children: _spans),
       ),
@@ -243,7 +241,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _children.add(_buildParagraph(context, iter));
           break;
         case TagType.Reply:
-          _children.add(_buildReply(context, iter.current as Reply));
+          _children.add(_buildReply(context, iter.current as Reply, false));
           break;
         case TagType.Image:
         case TagType.Text:
@@ -326,7 +324,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _applyStyle(context, iter.current);
           break;
         case TagType.Reply:
-          _children.add(_buildReply(context, iter.current as Reply));
+          _children.add(_buildReply(context, iter.current as Reply, false));
           break;
         case TagType.Text:
         case TagType.Image:
@@ -381,9 +379,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
         ),
-        color: Color.fromARGB(255, 0xf9, 0xf9, 0xf9),
+        color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
       ),
-      padding: EdgeInsets.only(left: 8.0 + 5.0),
+      padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: _children,
@@ -563,7 +561,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
                 .textTheme
                 .body2
                 .copyWith(color: Color.fromARGB(255, 0x64, 0x64, 0x64)),
-            textAlign: prefix0.TextAlign.center,
+            textAlign: TextAlign.center,
           ),
         ),
       ),
@@ -606,25 +604,52 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  Widget _buildReply(BuildContext context, Reply reply) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            width: 5.0,
-            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
-          ),
-        ),
-        color: Color.fromARGB(255, 0xf9, 0xf9, 0xf9),
+  Widget _buildReply(BuildContext context, Reply reply, bool wrapQuote) {
+    var row = InkWell(
+      onTap: () => widget.openPost(
+        reply.topicId,
+        reply.pageIndex,
+        reply.postId,
       ),
-      padding: EdgeInsets.only(left: 8.0 + 5.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          material.Text(reply.username),
+          Icon(
+            Icons.reply,
+            color: Colors.grey[500],
+          ),
+          material.Text(
+            reply.username,
+            style: Theme.of(context)
+                .textTheme
+                .body2
+                .copyWith(color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
+
+    if (wrapQuote) {
+      return Container(
+        margin: EdgeInsets.only(bottom: 8.0),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: 5.0,
+              color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+            ),
+          ),
+          color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
+        ),
+        padding: EdgeInsets.only(left: 8.0, top: 6.0, bottom: 6.0),
+        child: row,
+      );
+    } else {
+      return Container(
+        padding: EdgeInsets.only(bottom: 4.0),
+        child: row,
+      );
+    }
   }
 
   TextSpan _buildText(BuildContext context, Text text) {

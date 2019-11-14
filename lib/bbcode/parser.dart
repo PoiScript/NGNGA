@@ -14,6 +14,11 @@ RegExp imageRegExp = RegExp(r"\[img\](.*?)\[/img\]");
 RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
 RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\](.*?)\[/url\]");
 
+RegExp replyRegExp1 = RegExp(
+    r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]");
+RegExp replyRegExp2 = RegExp(
+    r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]");
+
 LinkedList<Tag> parseBBCode(String content) {
   LinkedList<Tag> tags = LinkedList();
 
@@ -37,6 +42,40 @@ LinkedList<Tag> parseBBCode(String content) {
 
 _parseBlock(String content, LinkedList<Tag> tags) {
   List<_TagWithPosition> _tags = List();
+
+  for (var match in replyRegExp1.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      Reply(
+        postId: int.parse(match[1]),
+        topicId: int.parse(match[2]),
+        pageIndex: int.parse(match[3]),
+        userId: int.parse(match[4]),
+        username: match[5],
+        dateTime: DateTime.parse(match[6]),
+      ),
+      match.start,
+      match.end,
+    ));
+    content =
+        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+  }
+
+  for (var match in replyRegExp2.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      Reply(
+        postId: int.parse(match[1]),
+        topicId: int.parse(match[2]),
+        pageIndex: int.parse(match[3]),
+        userId: int.parse(match[4]),
+        username: match[5],
+        dateTime: DateTime.parse(match[6]),
+      ),
+      match.start,
+      match.end,
+    ));
+    content =
+        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+  }
 
   var lastEnd = 0;
 
@@ -300,6 +339,10 @@ _parseBlock(String content, LinkedList<Tag> tags) {
       lastEnd = tagWihtPosition.end;
 
       switch (tagWihtPosition.tag.type) {
+        case TagType.HeadingStart:
+        case TagType.HeadingEnd:
+        case TagType.Reply:
+        case TagType.Rule:
         case TagType.CollapseStart:
         case TagType.CollapseEnd:
         case TagType.AlignStart:
