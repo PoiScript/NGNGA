@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
@@ -19,7 +20,8 @@ class PostDialog extends StatefulWidget {
   final Map<int, User> users;
   final Map<int, TopicState> topics;
   final List<String> cookies;
-  final Stream<DateTime> everyMinutes;
+
+  final StreamController<DateTime> everyMinutes;
 
   final void Function(Iterable<MapEntry<int, User>>) updateUsers;
 
@@ -29,15 +31,17 @@ class PostDialog extends StatefulWidget {
     @required this.users,
     @required this.topics,
     @required this.cookies,
-    @required this.everyMinutes,
     @required this.updateUsers,
   })  : assert(topicId != null),
         assert(postId != null),
         assert(users != null),
         assert(topics != null),
         assert(cookies != null),
-        assert(everyMinutes != null),
-        assert(updateUsers != null);
+        assert(updateUsers != null),
+        everyMinutes = StreamController.broadcast()
+          ..addStream(
+            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
+          );
 
   @override
   _PostDialogState createState() => _PostDialogState();
@@ -104,7 +108,7 @@ class _PostDialogState extends State<PostDialog> {
                             const Spacer(),
                             StreamBuilder<DateTime>(
                               initialData: DateTime.now(),
-                              stream: widget.everyMinutes,
+                              stream: widget.everyMinutes.stream,
                               builder: (context, snapshot) => Text(
                                 duration(snapshot.data, post.createdAt),
                                 style: Theme.of(context).textTheme.caption,
@@ -181,7 +185,6 @@ class PostDialogConnector extends StatelessWidget {
         topics: vm.topics,
         users: vm.users,
         cookies: vm.cookies,
-        everyMinutes: vm.everyMinutes,
         updateUsers: vm.updateUsers,
         topicId: topicId,
         postId: postId,
@@ -231,7 +234,6 @@ class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
   Map<int, TopicState> topics;
   List<String> cookies;
-  Stream<DateTime> everyMinutes;
   void Function(Iterable<MapEntry<int, User>>) updateUsers;
 
   ViewModel();
@@ -240,7 +242,6 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topics,
     @required this.users,
     @required this.cookies,
-    @required this.everyMinutes,
     @required this.updateUsers,
   }) : super(equals: [topics, users, cookies]);
 
@@ -250,7 +251,6 @@ class ViewModel extends BaseModel<AppState> {
       topics: state.topics,
       users: state.users,
       cookies: state.cookies,
-      everyMinutes: state.everyMinutes.stream,
       updateUsers: (users) => dispatch(UpdateUsersAction(users)),
     );
   }

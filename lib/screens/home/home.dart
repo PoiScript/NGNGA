@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +15,14 @@ import 'category_row.dart';
 import 'header.dart';
 import 'popup_menu.dart';
 
-const kExpandedHeight = 200.0;
+const kExpandedHeight = 150.0;
 
 class HomePage extends StatelessWidget {
   final List<Category> categories;
   final List<Topic> topics;
   final bool isLoading;
-  final Stream<DateTime> everyMinutes;
+
+  final StreamController<DateTime> everyMinutes;
 
   final Future<void> Function() onRefresh;
   final void Function(Category) navigateToCategory;
@@ -32,14 +35,16 @@ class HomePage extends StatelessWidget {
     @required this.onRefresh,
     @required this.navigateToCategory,
     @required this.navigateToTopic,
-    @required this.everyMinutes,
   })  : assert(categories != null),
         assert(isLoading != null),
         assert(topics != null),
         assert(onRefresh != null),
         assert(navigateToCategory != null),
         assert(navigateToTopic != null),
-        assert(everyMinutes != null);
+        everyMinutes = StreamController.broadcast()
+          ..addStream(
+            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
+          );
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +91,11 @@ class HomePage extends StatelessWidget {
             header,
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) =>
-                    TopicRow(topics[index], navigateToTopic, everyMinutes),
+                (context, index) => TopicRow(
+                  topics[index],
+                  navigateToTopic,
+                  everyMinutes.stream,
+                ),
                 childCount: topics.length,
               ),
             ),
@@ -129,7 +137,6 @@ class HomePageConnector extends StatelessWidget {
         onRefresh: vm.onRefresh,
         navigateToCategory: vm.navigateToCategory,
         navigateToTopic: vm.navigateToTopic,
-        everyMinutes: vm.everyMinutes,
       ),
     );
   }
@@ -143,7 +150,6 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() onRefresh;
   void Function(Category) navigateToCategory;
   void Function(Topic, int) navigateToTopic;
-  Stream<DateTime> everyMinutes;
 
   ViewModel();
 
@@ -154,7 +160,6 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onRefresh,
     @required this.navigateToCategory,
     @required this.navigateToTopic,
-    @required this.everyMinutes,
   }) : super(equals: [categories, topics, isLoading]);
 
   @override
@@ -168,7 +173,6 @@ class ViewModel extends BaseModel<AppState> {
           dispatch(NavigateToCategoryAction(category)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
-      everyMinutes: state.everyMinutes.stream,
     );
   }
 }

@@ -69,11 +69,6 @@ class AppState {
   final List<String> cookies;
   final bool isLoading;
 
-  final StreamController<DateTime> everyMinutes = StreamController.broadcast()
-    ..addStream(
-      Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
-    );
-
   AppState({
     @required this.isLoading,
     @required this.favorTopics,

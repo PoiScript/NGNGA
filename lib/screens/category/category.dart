@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,7 @@ import 'package:ngnga/store/state.dart';
 
 import 'topic_row.dart';
 
-const kExpandedHeight = 200.0;
+const kExpandedHeight = 150.0;
 
 class CategoryPage extends StatelessWidget {
   final Category category;
@@ -21,7 +23,8 @@ class CategoryPage extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
   final void Function(Topic, int) navigateToTopic;
-  final Stream<DateTime> everyMinutes;
+
+  final StreamController<DateTime> everyMinutes;
 
   CategoryPage({
     @required this.topics,
@@ -31,7 +34,6 @@ class CategoryPage extends StatelessWidget {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
-    @required this.everyMinutes,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
@@ -39,7 +41,10 @@ class CategoryPage extends StatelessWidget {
         assert(onRefresh != null),
         assert(onLoad != null),
         assert(navigateToTopic != null),
-        assert(everyMinutes != null);
+        everyMinutes = StreamController.broadcast()
+          ..addStream(
+            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
+          );
 
   Widget build(BuildContext context) {
     if (isLoading && topics.isEmpty) {
@@ -93,7 +98,7 @@ class CategoryPage extends StatelessWidget {
                     return TopicRow(
                       topics[itemIndex],
                       navigateToTopic,
-                      everyMinutes,
+                      everyMinutes.stream,
                     );
                   }
                   return Divider(height: 16.0, color: Colors.grey);
@@ -133,7 +138,6 @@ class CategoryPageConnector extends StatelessWidget {
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
-        everyMinutes: vm.everyMinutes,
       ),
     );
   }
@@ -162,7 +166,6 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
-    @required this.everyMinutes,
   }) : super(equals: [isLoading, topics, category, topicsCount]);
 
   @override
@@ -178,7 +181,6 @@ class ViewModel extends BaseModel<AppState> {
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
-      everyMinutes: state.everyMinutes.stream,
     );
   }
 }

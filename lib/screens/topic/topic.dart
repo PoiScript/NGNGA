@@ -22,7 +22,8 @@ class TopicPage extends StatelessWidget {
 
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
-  final Stream<DateTime> everyMinutes;
+
+  final StreamController<DateTime> everyMinutes;
 
   TopicPage({
     @required this.topic,
@@ -31,14 +32,16 @@ class TopicPage extends StatelessWidget {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.everyMinutes,
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
         assert(isLoading != null),
         assert(onRefresh != null),
         assert(onLoad != null),
-        assert(everyMinutes != null);
+        everyMinutes = StreamController.broadcast()
+          ..addStream(
+            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
+          );
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +88,7 @@ class TopicPage extends StatelessWidget {
                     return PostRow(
                       post,
                       users[post.userId],
-                      everyMinutes,
+                      everyMinutes.stream,
                     );
                   }
                   return Divider(height: 0, color: Colors.grey);
@@ -122,7 +125,6 @@ class TopicPageConnector extends StatelessWidget {
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
-        everyMinutes: vm.everyMinutes,
       ),
     );
   }
@@ -137,7 +139,6 @@ class ViewModel extends BaseModel<AppState> {
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
-  Stream<DateTime> everyMinutes;
 
   bool isLoading;
 
@@ -151,7 +152,6 @@ class ViewModel extends BaseModel<AppState> {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.everyMinutes,
   }) : super(equals: [isLoading, posts, topic, users]);
 
   @override
@@ -165,7 +165,6 @@ class ViewModel extends BaseModel<AppState> {
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
-      everyMinutes: state.everyMinutes.stream,
     );
   }
 }
