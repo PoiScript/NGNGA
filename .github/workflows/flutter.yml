@@ -6,14 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1  
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v1
+      - uses: wei/wget@v1
         with:
-          java-version: '12.x'
+          args: -O fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+      - uses: wei/wget@v1
+        with:
+          args: -O fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
       - uses: subosito/flutter-action@v1
         with:
           flutter-version: "1.9.1+hotfix.4"
       - run: flutter pub get
       - run: flutter test
       - run: flutter build apk
-        
