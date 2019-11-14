@@ -1,14 +1,17 @@
+import 'dart:collection';
 import 'dart:math';
 
-import 'package:expandable/expandable.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 // import Text and Image widget under the material namespace
 import 'package:flutter/material.dart' as material show Text, Image;
 import 'package:flutter/material.dart' hide Text, Image;
+import 'package:flutter/material.dart' as prefix0;
 import 'package:photo_view/photo_view.dart';
 
 import 'parser.dart';
 import 'tag.dart';
+import 'collapse.dart';
 
 class BBCodeRender extends StatefulWidget {
   final String data;
@@ -55,6 +58,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           break;
         case TagType.ParagraphStart:
           _children.add(_buildParagraph(context, iter));
+          break;
+        case TagType.Reply:
+          _children.add(_buildReply(context, iter.current as Reply));
           break;
         case TagType.Image:
         case TagType.Sticker:
@@ -184,6 +190,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.TableEnd:
         case TagType.HeadingStart:
         case TagType.HeadingEnd:
+        case TagType.Reply:
           throw "Execpted inline element, fount ${iter.current.type}.";
           break;
         case TagType.TableRowStart:
@@ -235,6 +242,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.ParagraphStart:
           _children.add(_buildParagraph(context, iter));
           break;
+        case TagType.Reply:
+          _children.add(_buildReply(context, iter.current as Reply));
+          break;
         case TagType.Image:
         case TagType.Text:
         case TagType.PlainLink:
@@ -276,21 +286,12 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
-    return Container(
-      color: Colors.grey[200],
-      margin: EdgeInsets.all(8.0),
-      child: ExpandablePanel(
-        header: material.Text(
-          _description ?? '点击显示隐藏的内容',
-          style: style,
-        ),
-        expanded: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: _children,
-        ),
-        tapHeaderToExpand: true,
-        hasIcon: false,
+    return Collapse(
+      description: _description,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: _children,
       ),
     );
   }
@@ -323,6 +324,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.UnderlineStart:
         case TagType.UnderlineEnd:
           _applyStyle(context, iter.current);
+          break;
+        case TagType.Reply:
+          _children.add(_buildReply(context, iter.current as Reply));
           break;
         case TagType.Text:
         case TagType.Image:
@@ -452,6 +456,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.HeadingEnd:
         case TagType.ParagraphStart:
         case TagType.ParagraphEnd:
+        case TagType.Reply:
           throw "Execpted inline element, fount ${iter.current.type}.";
           break;
         case TagType.TableRowStart:
@@ -471,27 +476,41 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   WidgetSpan _buildImage(BuildContext context, Image image) {
-    // FIXME: better way to resolve attachmet url
-    var url =
-        Uri.https("img.nga.178.com", "").resolve("attachments/${image.url}");
-    var imgUrl = url.toString();
+    var url;
+
+    if (image.url.startsWith("./")) {
+      url = "https://img.nga.178.com/attachments${image.url.substring(1)}";
+    } else if (image.url.startsWith("/")) {
+      url = "https://nga.178.com${image.url}";
+    } else {
+      url = image.url;
+    }
 
     return WidgetSpan(
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HeroPhotoViewWrapper(
-                imageProvider: NetworkImage(imgUrl),
+      child: CachedNetworkImage(
+        imageUrl: url,
+        imageBuilder: (context, imageProvider) => GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HeroPhotoViewWrapper(
+                  imageProvider: CachedNetworkImageProvider(url),
+                ),
               ),
-            ),
-          );
-        },
-        child: Hero(
-          // FIXME: better way to create unique tag
-          tag: "tag${DateTime.now().toString()}",
-          child: material.Image.network(imgUrl),
+            );
+          },
+          child: Hero(
+            // FIXME: better way to create unique tag
+            tag: "tag${DateTime.now().toString()}",
+            child: material.Image.network(url),
+          ),
+        ),
+        placeholder: (context, url) => Center(
+          child: CircularProgressIndicator(),
+        ),
+        errorWidget: (context, url, error) => material.Text(
+          "fialed to load image $url",
         ),
       ),
     );
@@ -511,7 +530,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
-        onTap: () => widget.openPost(pid.topicId, pid.page, pid.postId),
+        onTap: () => widget.openPost(pid.topicId, pid.pageIndex, pid.postId),
         child: Transform(
           alignment: Alignment.center,
           transform: Matrix4.rotationY(pi),
@@ -544,6 +563,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
                 .textTheme
                 .body2
                 .copyWith(color: Color.fromARGB(255, 0x64, 0x64, 0x64)),
+            textAlign: prefix0.TextAlign.center,
           ),
         ),
       ),
@@ -559,27 +579,59 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  TextSpan _buildMetions(BuildContext context, Metions metions) {
-    return TextSpan(text: "METIONS", style: TextStyle(color: Colors.red));
+  WidgetSpan _buildMetions(BuildContext context, Metions metions) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: InkWell(
+        onTap: () => widget.openUser(0),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 2.0,
+            vertical: 1.0,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4.0),
+            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+          ),
+          child: material.Text(
+            "@${metions.username}",
+            style: Theme.of(context)
+                .textTheme
+                .body2
+                .copyWith(color: Color.fromARGB(255, 0x64, 0x64, 0x64)),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
   }
 
-  static RegExp timestampRegExp = RegExp(
-    r"\(\d{4}-\d{2}-\d{2} \d{2}:\d{2}\):?",
-  );
+  Widget _buildReply(BuildContext context, Reply reply) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            width: 5.0,
+            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+          ),
+        ),
+        color: Color.fromARGB(255, 0xf9, 0xf9, 0xf9),
+      ),
+      padding: EdgeInsets.only(left: 8.0 + 5.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          material.Text(reply.username),
+        ],
+      ),
+    );
+  }
 
   TextSpan _buildText(BuildContext context, Text text) {
-    // a hack...
-    if (timestampRegExp.hasMatch(text.content.trim())) {
-      return TextSpan(
-        text: "${text.content}\n\n",
-        style: Theme.of(context).textTheme.caption,
-      );
-    } else {
-      return TextSpan(
-        text: text.content,
-        style: style,
-      );
-    }
+    return TextSpan(
+      text: text.content,
+      style: style,
+    );
   }
 
   Widget _buildRule(
@@ -617,7 +669,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         style = style.copyWith(fontWeight: FontWeight.w500);
         break;
       case TagType.BoldEnd:
-        style = style.copyWith(fontWeight: FontWeight.normal);
+        style = style.copyWith(fontWeight: FontWeight.w400);
         break;
       case TagType.ItalicStart:
         style = style.copyWith(fontStyle: FontStyle.italic);

@@ -1,67 +1,9 @@
 import 'dart:collection';
 
+import 'package:html_unescape/html_unescape.dart';
+
 import 'tag.dart';
 import 'sticker.dart';
-
-RegExp boldRegExp = RegExp(
-  r"\[b\](.*?)\[/b\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp italicsRegExp = RegExp(
-  r"\[i\](.*?)\[/i\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp deleteRegExp = RegExp(
-  r"\[del\](.*?)\[/del\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp underlineRegExp = RegExp(
-  r"\[u\](.*?)\[/u\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp headingRegExp = RegExp(
-  r"\[h\](.*?)\[/h\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp colorRegExp = RegExp(
-  r"\[color=([^\s\]]*)?\](.*?)\[/color\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp sizeRegExp = RegExp(
-  r"\[size=([^\s\]]*)?\](.*?)\[/size\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp quoteRegExp = RegExp(
-  r"\[quote\](.*?)\[/quote\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp tableRegExp = RegExp(
-  r"\[table\](.*?)\[/table\]",
-  multiLine: true,
-  dotAll: true,
-);
-
-RegExp collapseRegExp = RegExp(
-  r"\[collapse(=[^\]]*)?\](.*?)\[/collapse\]",
-  multiLine: true,
-  dotAll: true,
-);
 
 RegExp uidRegExp = RegExp(r"(Post by )?\[uid=(\d*)\](.*?)\[/uid\]");
 RegExp pidRegExp =
@@ -75,7 +17,10 @@ RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\](.*?)\[/url\]");
 LinkedList<Tag> parseBBCode(String content) {
   LinkedList<Tag> tags = LinkedList();
 
-  _parseBlock(content, tags);
+  var unescape = new HtmlUnescape();
+  var unescaped = unescape.convert(content);
+
+  _parseBlock(unescaped, tags);
 
   var _pre = tags.first;
 
@@ -93,108 +38,241 @@ LinkedList<Tag> parseBBCode(String content) {
 _parseBlock(String content, LinkedList<Tag> tags) {
   List<_TagWithPosition> _tags = List();
 
-  for (RegExpMatch match in quoteRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      QuoteStart(),
-      match.start,
-      match.start + "[quote]".length,
-    ));
-    _tags.add(_TagWithPosition(
-      QuoteEnd(),
-      match.end - "[/quote]".length,
-      match.end,
-    ));
+  var lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[quote]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/quote]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(QuoteStart(), start, start + "[quote]".length));
+    _tags.add(_TagWithPosition(QuoteEnd(), end, end + "[/quote]".length));
+
+    lastEnd = end + "[/quote]".length;
   }
 
-  for (RegExpMatch match in collapseRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      CollapseStart(match[1]?.substring(1)),
-      match.start,
-      match.start + "[collapse]".length + (match[1]?.length ?? 0),
-    ));
-    _tags.add(_TagWithPosition(
-      CollapseEnd(),
-      match.end - "[/collapse]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[collapse", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var bracketEnd = content.indexOf("]", start + "[collapse".length);
+
+    if (bracketEnd == -1) {
+      break;
+    }
+
+    String description;
+
+    if (bracketEnd != start + "[collapse".length) {
+      if (content[start + "[collapse".length] != "=") {
+        lastEnd = bracketEnd;
+        continue;
+      }
+      description = content.substring(start + "[collapse=".length, bracketEnd);
+    }
+
+    var end = content.indexOf("[/collapse]", bracketEnd + 1);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(
+        _TagWithPosition(CollapseStart(description), start, bracketEnd + 1));
+    _tags.add(_TagWithPosition(CollapseEnd(), end, end + "[/collapse]".length));
+
+    lastEnd = end + "[/collapse]".length;
   }
 
-  for (RegExpMatch match in boldRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      BoldStart(),
-      match.start,
-      match.start + "[b]".length,
-    ));
-    _tags.add(_TagWithPosition(
-      BoldEnd(),
-      match.end - "[/b]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[b]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/b]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(BoldStart(), start, start + "[b]".length));
+    _tags.add(_TagWithPosition(BoldEnd(), end, end + "[/b]".length));
+
+    lastEnd = end + "[/b]".length;
   }
 
-  for (RegExpMatch match in italicsRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      ItalicStart(),
-      match.start,
-      match.start + "[i]".length,
-    ));
-    _tags.add(_TagWithPosition(
-      ItalicEnd(),
-      match.end - "[/i]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[i]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/i]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(ItalicStart(), start, start + "[i]".length));
+    _tags.add(_TagWithPosition(ItalicEnd(), end, end + "[/i]".length));
+
+    lastEnd = end + "[/i]".length;
   }
 
-  for (RegExpMatch match in deleteRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      DeleteStart(),
-      match.start,
-      match.start + "[del]".length,
-    ));
-    _tags.add(_TagWithPosition(
-      DeleteEnd(),
-      match.end - "[/del]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[del]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/del]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(DeleteStart(), start, start + "[del]".length));
+    _tags.add(_TagWithPosition(DeleteEnd(), end, end + "[/del]".length));
+
+    lastEnd = end + "[/del]".length;
   }
 
-  for (RegExpMatch match in underlineRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      UnderlineStart(),
-      match.start,
-      match.start + "[u]".length,
-    ));
-    _tags.add(_TagWithPosition(
-      UnderlineEnd(),
-      match.end - "[/u]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[u]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/u]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(UnderlineStart(), start, start + "[u]".length));
+    _tags.add(_TagWithPosition(UnderlineEnd(), end, end + "[/u]".length));
+
+    lastEnd = end + "[/u]".length;
   }
 
-  for (RegExpMatch match in sizeRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      SizeStart(),
-      match.start,
-      match.start + "[size=]".length + (match[1]?.length ?? 0),
-    ));
-    _tags.add(_TagWithPosition(
-      SizeEnd(),
-      match.end - "[/size]".length,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[u]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/u]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(UnderlineStart(), start, start + "[u]".length));
+    _tags.add(_TagWithPosition(UnderlineEnd(), end, end + "[/u]".length));
+
+    lastEnd = end + "[/u]".length;
   }
 
-  for (RegExpMatch match in colorRegExp.allMatches(content)) {
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[size=", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var bracketEnd = content.indexOf("]", start);
+
+    var sizeStr = content.substring(start + "[size=".length, bracketEnd).trim();
+
+    if (bracketEnd == -1) {
+      break;
+    }
+
+    if (sizeStr.endsWith("%")) {
+      sizeStr = sizeStr.substring(0, sizeStr.length - 1);
+    }
+
+    int size = int.tryParse(sizeStr);
+
+    if (size == null) {
+      lastEnd = bracketEnd;
+      continue;
+    }
+
+    var end = content.indexOf("[/size]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    _tags.add(_TagWithPosition(SizeStart(), start, bracketEnd + 1));
+    _tags.add(_TagWithPosition(SizeEnd(), end, end + "[/size]".length));
+
+    lastEnd = end + "[/size]".length;
+  }
+
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[color=", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var bracketEnd = content.indexOf("]", start);
+
+    if (bracketEnd == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/color]", start);
+
+    if (end == -1) {
+      break;
+    }
+
     _tags.add(_TagWithPosition(
-      ColorStart(),
-      match.start,
-      match.start + "[color=]".length + (match[1]?.length ?? 0),
+      ColorStart(
+        content.substring(start + "[color=".length, bracketEnd).trim(),
+      ),
+      start,
+      bracketEnd + 1,
     ));
-    _tags.add(_TagWithPosition(
-      ColorEnd(),
-      match.end - "[/color]".length,
-      match.end,
-    ));
+    _tags.add(_TagWithPosition(ColorEnd(), end, end + "[/color]".length));
+
+    lastEnd = end + "[/color]".length;
   }
 
   if (_tags.isEmpty) {
@@ -266,65 +344,169 @@ _parseBlock(String content, LinkedList<Tag> tags) {
 _parseInlines(String content, Tag previous) {
   List<_TagWithPosition> _tags = List();
 
-  for (RegExpMatch match in linkRegExp.allMatches(content)) {
-    if (match[1] == null) {
+  var lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[url", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var bracketEnd = content.indexOf("]", start);
+
+    if (bracketEnd == -1) {
+      break;
+    }
+
+    String url;
+
+    if (bracketEnd != start + "[url".length) {
+      if (content[start + "[url".length] != "=") {
+        lastEnd = bracketEnd;
+        continue;
+      }
+      url = content.substring(start + "[url".length, bracketEnd).trim();
+    }
+
+    var end = content.indexOf("[/url]", bracketEnd);
+
+    if (end == -1) {
+      break;
+    }
+
+    if (url == null) {
       _tags.add(_TagWithPosition(
-        PlainLink(match[2]),
-        match.start,
-        match.end,
+        PlainLink(content.substring(bracketEnd + 1, end)),
+        start,
+        end + "[/url]".length,
       ));
     } else {
+      // TODO: call parse_link_content
+      _tags.add(_TagWithPosition(LinkStart(url), start, bracketEnd));
       _tags.add(_TagWithPosition(
-        LinkStart(match[1]),
-        match.start,
-        match.start + "[url]".length + match[1].length,
-      ));
-      _tags.add(_TagWithPosition(
-        Text(match[2]),
-        match.start + "[url]".length + match[1].length,
-        match.end - "[/url]".length,
-      ));
-      _tags.add(_TagWithPosition(
-        LinkEnd(),
-        match.end - "[/url]".length,
-        match.end,
-      ));
+          Text(content.substring(bracketEnd + 1, end)), bracketEnd, end));
+      _tags.add(_TagWithPosition(LinkEnd(), end, end + "[/url]".length));
     }
+
+    lastEnd = end + "[/url]".length;
   }
 
-  for (RegExpMatch match in metionsRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Metions(match[1]),
-      match.start,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[@", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    var username = content.substring(start + "[@".length, end);
+
+    if (!username.contains("\n")) {
+      _tags.add(_TagWithPosition(Metions(username), start, end + "]".length));
+    }
+
+    lastEnd = end + "]".length;
   }
 
-  for (RegExpMatch match in stickerRegExp.allMatches(content)) {
-    var path = stickerNameToPath[match[1]];
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[s:", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    var sticker = content.substring(start + "[s:".length, end);
+
+    var path = stickerNameToPath[sticker];
     if (path != null) {
-      _tags.add(_TagWithPosition(
-        Sticker(path),
-        match.start,
-        match.end,
-      ));
+      _tags.add(_TagWithPosition(Sticker(path), start, end + "]".length));
     }
+
+    lastEnd = end + "]".length;
   }
 
-  for (RegExpMatch match in imageRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Image(match[1]),
-      match.start,
-      match.end,
-    ));
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[img]", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var end = content.indexOf("[/img]", start);
+
+    if (end == -1) {
+      break;
+    }
+
+    var url = content.substring(start + "[img]".length, end);
+
+    if (!url.contains("\n")) {
+      if (imageUrlToPath[url] == null) {
+        _tags.add(_TagWithPosition(Image(url), start, end + "[/img]".length));
+      } else {
+        _tags.add(_TagWithPosition(
+            Sticker(imageUrlToPath[url]), start, end + "[/img]".length));
+      }
+    }
+
+    lastEnd = end + "[/img]".length;
   }
 
-  for (RegExpMatch match in uidRegExp.allMatches(content)) {
+  lastEnd = 0;
+
+  while (true) {
+    var start = content.indexOf("[uid=", lastEnd);
+
+    if (start == -1) {
+      break;
+    }
+
+    var bracketEnd = content.indexOf("]", start);
+
+    if (bracketEnd == -1) {
+      lastEnd = bracketEnd;
+      continue;
+    }
+
+    var userId = int.tryParse(
+        content.substring(start + "[uid=".length, bracketEnd).trim());
+
+    if (userId == null) {
+      lastEnd = bracketEnd;
+      continue;
+    }
+
+    var end = content.indexOf("[/uid]", start);
+
+    if (end == -1) {
+      break;
+    }
+
     _tags.add(_TagWithPosition(
-      Uid(int.parse(match[2]), match[3]),
-      match.start,
-      match.end,
+      Uid(userId, content.substring(bracketEnd + 1, end).trim()),
+      start,
+      end + "[/uid]".length,
     ));
+
+    lastEnd = end + "[/uid]".length;
   }
 
   for (RegExpMatch match in pidRegExp.allMatches(content)) {
@@ -411,4 +593,9 @@ class _TagWithPosition {
   final int end;
 
   _TagWithPosition(this.tag, this.start, this.end);
+
+  @override
+  String toString() {
+    return "$tag [$start, $end]";
+  }
 }

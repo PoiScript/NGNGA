@@ -1,5 +1,7 @@
 import "dart:collection";
 
+import 'package:flutter/foundation.dart';
+
 enum TagType {
   // [quote]
   QuoteStart,
@@ -78,21 +80,42 @@ enum TagType {
   Text,
   ParagraphStart,
   ParagraphEnd,
+
+  // [b]Reply to [pid=xxx,xxx,xxx]Reply[/pid] Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx)[/b]
+  // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx):[/b]
+  Reply
 }
 
 abstract class Tag extends LinkedListEntry<Tag> {
   final TagType type;
+  final List<Object> props;
 
-  Tag(this.type);
+  Tag(this.type, {this.props = const []});
 
-  bool operator ==(t) => t is Tag && t.type == type;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Tag &&
+          runtimeType == other.runtimeType &&
+          listEquals(props, other.props);
 
-  int get hashCode {
-    return type.hashCode;
+  @override
+  int get hashCode => runtimeType.hashCode ^ _propsHashCode;
+
+  int get _propsHashCode {
+    int hashCode = 0;
+    props.forEach((Object prop) => hashCode = hashCode ^ prop.hashCode);
+    return hashCode;
   }
 
   @override
-  String toString() => "$type";
+  String toString() {
+    if (props.isEmpty) {
+      return "$type";
+    } else {
+      return "$type(${props.map((prop) => prop.toString()).join(',')})";
+    }
+  }
 }
 
 class AlignEnd extends Tag {
@@ -118,17 +141,9 @@ class CollapseEnd extends Tag {
 class CollapseStart extends Tag {
   final String description;
 
-  CollapseStart(this.description) : super(TagType.CollapseStart);
-
-  bool operator ==(t) =>
-      t is CollapseStart && t.type == type && t.description == description;
-
-  int get hashCode {
-    return type.hashCode;
-  }
-
-  @override
-  String toString() => "$type($description)";
+  CollapseStart(description)
+      : this.description = description ?? "点击显示隐藏的内容",
+        super(TagType.CollapseStart, props: [description]);
 }
 
 class ColorEnd extends Tag {
@@ -136,7 +151,11 @@ class ColorEnd extends Tag {
 }
 
 class ColorStart extends Tag {
-  ColorStart() : super(TagType.ColorStart);
+  final String color;
+
+  ColorStart(this.color)
+      : assert(color != null),
+        super(TagType.ColorStart, props: [color]);
 }
 
 class DeleteEnd extends Tag {
@@ -168,16 +187,7 @@ class Image extends Tag {
 
   Image(this.url)
       : assert(url != null),
-        super(TagType.Image);
-
-  bool operator ==(t) => t is Image && t.type == type && t.url == url;
-
-  int get hashCode {
-    return type.hashCode;
-  }
-
-  @override
-  String toString() => "$type($url)";
+        super(TagType.Image, props: [url]);
 }
 
 class ItalicEnd extends Tag {
@@ -198,15 +208,6 @@ class LinkStart extends Tag {
   LinkStart(this.url)
       : assert(url != null),
         super(TagType.LinkStart);
-
-  bool operator ==(t) => t is LinkStart && t.type == type && t.url == url;
-
-  int get hashCode {
-    return type.hashCode ^ url.hashCode;
-  }
-
-  @override
-  String toString() => "$type($url)";
 }
 
 class Metions extends Tag {
@@ -214,17 +215,7 @@ class Metions extends Tag {
 
   Metions(this.username)
       : assert(username != null),
-        super(TagType.Metions);
-
-  bool operator ==(t) =>
-      t is Metions && t.type == type && t.username == username;
-
-  int get hashCode {
-    return type.hashCode ^ username.hashCode;
-  }
-
-  @override
-  String toString() => "$type($username)";
+        super(TagType.Metions, props: [username]);
 }
 
 class ParagraphEnd extends Tag {
@@ -238,10 +229,15 @@ class ParagraphStart extends Tag {
 class Pid extends Tag {
   final int postId;
   final int topicId;
-  final int page;
+  final int pageIndex;
   final String content;
 
-  Pid(this.postId, this.topicId, this.page, this.content) : super(TagType.Pid);
+  Pid(this.postId, this.topicId, this.pageIndex, this.content)
+      : assert(postId != null),
+        assert(topicId != null),
+        assert(pageIndex != null),
+        assert(content != null),
+        super(TagType.Pid, props: [postId, topicId, pageIndex, content]);
 }
 
 class PlainLink extends Tag {
@@ -249,16 +245,7 @@ class PlainLink extends Tag {
 
   PlainLink(this.url)
       : assert(url != null),
-        super(TagType.PlainLink);
-
-  bool operator ==(t) => t is PlainLink && t.type == type && t.url == url;
-
-  int get hashCode {
-    return type.hashCode ^ url.hashCode;
-  }
-
-  @override
-  String toString() => "$type($url)";
+        super(TagType.PlainLink, props: [url]);
 }
 
 class QuoteEnd extends Tag {
@@ -286,16 +273,7 @@ class Sticker extends Tag {
 
   Sticker(this.path)
       : assert(path != null),
-        super(TagType.Sticker);
-
-  bool operator ==(t) => t is Sticker && t.type == type && t.path == path;
-
-  int get hashCode {
-    return type.hashCode ^ path.hashCode;
-  }
-
-  @override
-  String toString() => "$type($path)";
+        super(TagType.Sticker, props: [path]);
 }
 
 class TableCellEnd extends Tag {
@@ -327,33 +305,17 @@ class Text extends Tag {
 
   Text(this.content)
       : assert(content != null && content.isNotEmpty),
-        super(TagType.Text);
-
-  bool operator ==(t) => t is Text && t.type == type && t.content == content;
-
-  int get hashCode {
-    return type.hashCode ^ content.hashCode;
-  }
-
-  @override
-  String toString() => "$type($content)";
+        super(TagType.Text, props: [content]);
 }
 
 class Uid extends Tag {
   final int id;
   final String username;
 
-  Uid(this.id, this.username) : super(TagType.Uid);
-
-  bool operator ==(t) =>
-      t is Uid && t.type == type && t.id == id && t.username == username;
-
-  int get hashCode {
-    return type.hashCode ^ id.hashCode ^ username.hashCode;
-  }
-
-  @override
-  String toString() => "$type($id, $username)";
+  Uid(this.id, this.username)
+      : assert(id != null),
+        assert(username != null),
+        super(TagType.Uid, props: [id, username]);
 }
 
 class UnderlineEnd extends Tag {
@@ -362,4 +324,35 @@ class UnderlineEnd extends Tag {
 
 class UnderlineStart extends Tag {
   UnderlineStart() : super(TagType.UnderlineStart);
+}
+
+class Reply extends Tag {
+  final int topicId;
+  final int pageIndex;
+  final int postId;
+  final int userId;
+  final String username;
+  final DateTime dateTime;
+
+  Reply({
+    this.topicId,
+    this.pageIndex,
+    this.postId,
+    this.userId,
+    this.username,
+    this.dateTime,
+  })  : assert(topicId != null),
+        assert(pageIndex != null),
+        assert(postId != null),
+        assert(userId != null),
+        assert(username != null),
+        assert(dateTime != null),
+        super(TagType.Reply, props: [
+          topicId,
+          pageIndex,
+          postId,
+          userId,
+          username,
+          dateTime,
+        ]);
 }

@@ -1,4 +1,14 @@
-const stickerNameToPath = {
+// https://github.com/ymback/NGA-CLIENT-VER-OPEN-SOURCE/blob/822b4236c65d077c0d61a8159498f7a610c51d49/nga_phone_base_3.0/src/main/java/sp/phone/util/EmoticonUtils.java
+const imageUrlToPath = const {
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4cc6331.png":
+      "assets/stickers/ac15.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4f51be7.png":
+      "assets/stickers/ac18.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc521c04b.png":
+      "assets/stickers/ac33.png",
+};
+
+const stickerNameToPath = const {
   "ac:blink": "assets/stickers/ac0.png",
   "ac:goodjob": "assets/stickers/ac1.png",
   "ac:上": "assets/stickers/ac2.png",
