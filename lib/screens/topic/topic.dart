@@ -10,6 +10,7 @@ import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/fetch_posts.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/widgets/title_colorize.dart';
 
 import 'post_row.dart';
 
@@ -58,11 +59,10 @@ class TopicPage extends StatelessWidget {
           slivers: <Widget>[
             SliverAppBar(
               backgroundColor: Colors.white,
-              title: Text(
+              title: TitleColorize(
                 topic.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.subhead,
               ),
               floating: true,
               titleSpacing: 0.0,

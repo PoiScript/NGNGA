@@ -3,8 +3,10 @@ import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/widgets/title_colorize.dart';
 
-final formatter = NumberFormat("#,###");
+final numberFormatter = NumberFormat("#,###");
+final dateFormatter = DateFormat("yyyy-MM-dd HH:mm");
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
@@ -27,12 +29,9 @@ class TopicRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                TitleColorize(topic.title),
                 Text(
-                  topic.title,
-                  style: Theme.of(context).textTheme.body1,
-                ),
-                Text(
-                  "${topic.createdAt.toString()}",
+                  "${dateFormatter.format(topic.createdAt)}",
                   style: Theme.of(context).textTheme.caption,
                 ),
               ],
@@ -53,7 +52,7 @@ class TopicRow extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      formatter.format(topic.postsCount),
+                      numberFormatter.format(topic.postsCount),
                       style: Theme.of(context).textTheme.caption,
                     ),
                   ),
