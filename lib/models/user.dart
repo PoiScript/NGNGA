@@ -16,10 +16,25 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    List<String> avatars = [];
+    if (json['avatar'] is String) {
+      String string = json['avatar'].replaceAll("%7C", "|");
+      var lastEnd = 0;
+      for (var match in RegExp(r"https?://").allMatches(string)) {
+        if (match.start != 0) {
+          avatars.add(string.substring(lastEnd, match.start));
+        }
+        lastEnd = match.start;
+      }
+      if (lastEnd != string.length) {
+        avatars.add(string.substring(lastEnd));
+      }
+    }
+
     return User(
       id: json['uid'],
       username: json['username'],
-      avatars: json['avatar']?.split('|'),
+      avatars: avatars,
       signature: json['signature'],
       postsCount: json['postnum'],
       createdAt: json['regDate'],

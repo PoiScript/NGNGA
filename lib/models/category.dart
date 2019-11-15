@@ -3,11 +3,13 @@ class Category {
   final String title;
   final bool isSubcategory;
 
-  Category({
+   Category({
     this.id,
     this.title,
-    this.isSubcategory,
-  });
+    this.isSubcategory = false,
+  })  : assert(id != null),
+        assert(title != null),
+        assert(isSubcategory != null);
 
   factory Category.fromString(String string) {
     var split = string.split(",");
