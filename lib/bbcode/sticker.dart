@@ -1,11 +1,83 @@
 // https://github.com/ymback/NGA-CLIENT-VER-OPEN-SOURCE/blob/822b4236c65d077c0d61a8159498f7a610c51d49/nga_phone_base_3.0/src/main/java/sp/phone/util/EmoticonUtils.java
 const imageUrlToPath = const {
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca81a77f.png":
+      "assets/stickers/ac0.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd3b4b3bd.png":
+      "assets/stickers/ac1.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcba15fcf.png":
+      "assets/stickers/ac3.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcb6e96d1.png":
+      "assets/stickers/ac4.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2a0d49a.png":
+      "assets/stickers/ac5.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c10aa0303.png":
+      "assets/stickers/ac6.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcaaacb45.png":
+      "assets/stickers/ac7.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c104b8e27.png":
+      "assets/stickers/ac9.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc587c6f9.png":
+      "assets/stickers/ac10.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c1076f119.png":
+      "assets/stickers/ac11.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2497822.png":
+      "assets/stickers/ac12.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2fa0790.png":
+      "assets/stickers/ac13.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c0f6da079.png":
+      "assets/stickers/ac14.png",
   "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4cc6331.png":
       "assets/stickers/ac15.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf37c4c9.png":
+      "assets/stickers/ac16.png",
   "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4f51be7.png":
       "assets/stickers/ac18.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c1101747c.png":
+      "assets/stickers/ac19.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c10d1f08c.png":
+      "assets/stickers/ac20.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcdd279bc.png":
+      "assets/stickers/ac21.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bce27ab4d.png":
+      "assets/stickers/ac22.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd35aec58.png":
+      "assets/stickers/ac23.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcdfd9c69.png":
+      "assets/stickers/ac24.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc835856c.png":
+      "assets/stickers/ac25.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bce4f2963.png":
+      "assets/stickers/ac26.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd330dfad.png":
+      "assets/stickers/ac27.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc7d91913.png":
+      "assets/stickers/ac28.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c112b3b1b.png":
+      "assets/stickers/ac29.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf0ba2db.png":
+      "assets/stickers/ac30.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc8638067.png":
+      "assets/stickers/ac31.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca55cb6e.png":
+      "assets/stickers/ac32.png",
   "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc521c04b.png":
       "assets/stickers/ac33.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca2a2f43.png":
+      "assets/stickers/ac34.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcad49530.png":
+      "assets/stickers/ac35.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bceb823da.png":
+      "assets/stickers/ac36.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc80140e3.png":
+      "assets/stickers/ac37.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcb3b8944.png":
+      "assets/stickers/ac38.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf68ddc2.png":
+      "assets/stickers/ac40.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd27520ef.png":
+      "assets/stickers/ac42.png",
+  "http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcbe35760.png":
+      "assets/stickers/ac43.png",
 };
 
 const stickerNameToPath = const {
