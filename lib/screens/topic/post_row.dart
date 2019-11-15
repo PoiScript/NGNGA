@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
 import 'package:ngnga/bbcode/render.dart';
@@ -38,11 +39,12 @@ class _PostRowState extends State<PostRow> {
       backgroundColor: numberToHslColor(widget.user.id),
     );
 
-    return Stack(
-      children: <Widget>[
-        Positioned(
-          left: 8.0,
-          top: 8.0,
+    return SliverStickyHeader(
+      overlapsContent: true,
+      header: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
           child: widget.user.avatars.isNotEmpty
               ? CachedNetworkImage(
                   // user can have mulitples avatars, so we randomly pick one of them to display
@@ -57,59 +59,63 @@ class _PostRowState extends State<PostRow> {
                 )
               : letterAvatar,
         ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text(
-                    widget.user.username,
-                    style: Theme.of(context).textTheme.subhead,
-                  ),
-                  const Spacer(),
-                  Text(
-                    "#${widget.post.index} ",
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  StreamBuilder<DateTime>(
-                    initialData: DateTime.now(),
-                    stream: widget.everyMinutes,
-                    builder: (context, snapshot) => Text(
-                      duration(snapshot.data, widget.post.createdAt),
+      ),
+      sliver: SliverPadding(
+        padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 0.0),
+        sliver: SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              Container(
+                margin: EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      widget.user.username,
+                      style: Theme.of(context).textTheme.subhead,
+                    ),
+                    const Spacer(),
+                    Text(
+                      "#${widget.post.index} ",
                       style: Theme.of(context).textTheme.caption,
                     ),
-                  ),
-                  PopupMenuButton<Choice>(
-                    child: const Icon(
-                      Icons.more_vert,
-                      color: Colors.grey,
-                      size: 20.0,
+                    StreamBuilder<DateTime>(
+                      initialData: DateTime.now(),
+                      stream: widget.everyMinutes,
+                      builder: (context, snapshot) => Text(
+                        duration(snapshot.data, widget.post.createdAt),
+                        style: Theme.of(context).textTheme.caption,
+                      ),
                     ),
-                    itemBuilder: (context) => [
-                      _displayMode != DisplayMode.BBCode
-                          ? PopupMenuItem<Choice>(
-                              value: Choice.DisplayInBBCode,
-                              child: Text(
-                                "Display in BBCode",
-                                style: Theme.of(context).textTheme.body1,
-                              ),
-                            )
-                          : null,
-                      _displayMode != DisplayMode.RichText
-                          ? PopupMenuItem<Choice>(
-                              value: Choice.DispalyRichText,
-                              child: Text(
-                                "Display in RichText",
-                                style: Theme.of(context).textTheme.body1,
-                              ),
-                            )
-                          : null,
-                    ]..removeWhere((item) => item == null),
-                    onSelected: _onMenuSelected,
-                  ),
-                ],
+                    PopupMenuButton<Choice>(
+                      child: const Icon(
+                        Icons.more_vert,
+                        color: Colors.grey,
+                        size: 20.0,
+                      ),
+                      itemBuilder: (context) => [
+                        _displayMode != DisplayMode.BBCode
+                            ? PopupMenuItem<Choice>(
+                                value: Choice.DisplayInBBCode,
+                                child: Text(
+                                  "Display in BBCode",
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              )
+                            : null,
+                        _displayMode != DisplayMode.RichText
+                            ? PopupMenuItem<Choice>(
+                                value: Choice.DispalyRichText,
+                                child: Text(
+                                  "Display in RichText",
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              )
+                            : null,
+                      ]..removeWhere((item) => item == null),
+                      onSelected: _onMenuSelected,
+                    ),
+                  ],
+                ),
               ),
               _buildContent(),
               Row(
@@ -135,17 +141,13 @@ class _PostRowState extends State<PostRow> {
                     color: Colors.grey,
                     size: 20.0,
                   ),
-                  const Icon(
-                    OMIcons.reply,
-                    color: Colors.grey,
-                    size: 20.0,
-                  ),
                 ],
-              )
+              ),
+              Divider()
             ],
           ),
-        )
-      ],
+        ),
+      ),
     );
   }
 
@@ -180,7 +182,9 @@ class _PostRowState extends State<PostRow> {
     var content;
     switch (_displayMode) {
       case DisplayMode.BBCode:
-        content = SelectableText(widget.post.content);
+        content = SelectableText(
+          widget.post.content.replaceAll("<br/>", "\n"),
+        );
         break;
       case DisplayMode.RichText:
         content = BBCodeRender(

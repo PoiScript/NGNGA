@@ -45,61 +45,55 @@ class TopicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading && topic == null) {
+    if (isLoading && posts.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      body: EasyRefresh.builder(
-        header: ClassicalHeader(),
-        footer: ClassicalFooter(),
-        onRefresh: onRefresh,
-        onLoad: onLoad,
-        enableControlFinishLoad: true,
-        builder: (context, physics, header, footer) => CustomScrollView(
-          physics: physics,
-          semanticChildCount: posts.length,
-          slivers: <Widget>[
-            SliverAppBar(
-              backgroundColor: Colors.white,
-              title: TitleColorize(
-                topic.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              floating: true,
-              titleSpacing: 0.0,
-              leading: const BackButton(color: Colors.black),
-              actions: <Widget>[
-                IconButton(
-                  color: Colors.black,
-                  icon: Icon(Icons.more_vert),
-                  onPressed: () {},
+      body: SafeArea(
+        child: Scrollbar(
+          child: EasyRefresh.builder(
+            header: ClassicalHeader(),
+            footer: ClassicalFooter(),
+            onRefresh: onRefresh,
+            onLoad: onLoad,
+            enableControlFinishLoad: true,
+            builder: (context, physics, header, footer) => CustomScrollView(
+              physics: physics,
+              semanticChildCount: posts.length,
+              slivers: <Widget>[
+                SliverAppBar(
+                  backgroundColor: Colors.white,
+                  title: TitleColorize(
+                    topic.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  floating: true,
+                  titleSpacing: 0.0,
+                  leading: const BackButton(color: Colors.black),
+                  actions: <Widget>[
+                    IconButton(
+                      color: Colors.black,
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
+                header,
+                ...posts.map(
+                  (post) => PostRow(
+                    post,
+                    users[post.userId],
+                    everyMinutes.stream,
+                  ),
+                ),
+                ...(posts.last.index ~/ 20 == topic.postsCount ~/ 20)
+                    ? []
+                    : [footer],
               ],
             ),
-            header,
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final int itemIndex = index ~/ 2;
-                  if (index.isEven) {
-                    final post = posts.elementAt(itemIndex);
-                    return PostRow(
-                      post,
-                      users[post.userId],
-                      everyMinutes.stream,
-                    );
-                  }
-                  return Divider(height: 0, color: Colors.grey);
-                },
-                semanticIndexCallback: (widget, localIndex) =>
-                    localIndex.isEven ? localIndex ~/ 2 : null,
-                childCount: posts.length * 2,
-              ),
-            ),
-            footer,
-          ],
+          ),
         ),
       ),
     );
