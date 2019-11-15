@@ -382,6 +382,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
       ),
       padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
+      margin: EdgeInsets.only(bottom: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: _children,
@@ -613,9 +614,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.subdirectory_arrow_right,
-            color: Colors.grey[500],
+          Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.rotationY(pi),
+            child: Icon(
+              Icons.reply,
+              color: Colors.grey[500],
+            ),
           ),
           material.Text(
             reply.username,
