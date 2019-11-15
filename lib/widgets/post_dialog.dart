@@ -61,29 +61,12 @@ class _PostDialogState extends State<PostDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
-      child: Container(
-        constraints: BoxConstraints(maxHeight: 600.0, minHeight: 300.0),
-        padding: EdgeInsets.all(8.0),
-        decoration: new BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(4.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10.0,
-              offset: const Offset(0.0, 10.0),
-            ),
-          ],
-        ),
-        child: ListView.separated(
+    return SimpleDialog(
+      contentPadding: EdgeInsets.all(8.0),
+      children: <Widget>[
+        ListView.separated(
           reverse: true,
+          shrinkWrap: true,
           itemCount: posts.length,
           controller: _scrollController,
           separatorBuilder: (context, index) => Divider(height: 0.0),
@@ -141,7 +124,7 @@ class _PostDialogState extends State<PostDialog> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 
