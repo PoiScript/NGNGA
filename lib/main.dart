@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/screens/category/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
+import 'package:ngnga/screens/explore/explore.dart';
 import 'package:ngnga/screens/home/home.dart';
 import 'package:ngnga/screens/new/new.dart';
 import 'package:ngnga/screens/settings/settings.dart';
@@ -66,6 +67,9 @@ class MyApp extends StatelessWidget {
         break;
       case "new":
         screen = NewPage();
+        break;
+      case "explore":
+        screen = ExplorePageConnector();
         break;
       default:
         return null;
