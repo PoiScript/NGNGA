@@ -3,7 +3,7 @@ class Category {
   final String title;
   final bool isSubcategory;
 
-   Category({
+  const Category({
     this.id,
     this.title,
     this.isSubcategory = false,
