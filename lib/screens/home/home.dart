@@ -92,9 +92,10 @@ class HomePage extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => TopicRow(
-                  topics[index],
-                  navigateToTopic,
-                  everyMinutes.stream,
+                  topic: topics[index],
+                  navigateToTopic: navigateToTopic,
+                  everyMinutes: everyMinutes.stream,
+                  navigateToCategory: navigateToCategory,
                 ),
                 childCount: topics.length,
               ),

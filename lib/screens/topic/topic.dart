@@ -65,7 +65,7 @@ class TopicPage extends StatelessWidget {
                 SliverAppBar(
                   backgroundColor: Colors.white,
                   title: TitleColorize(
-                    topic.title,
+                    topic,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

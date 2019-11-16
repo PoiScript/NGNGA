@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/utils/duration.dart';
@@ -13,64 +14,70 @@ class TopicRow extends StatelessWidget {
   final Stream<DateTime> everyMinutes;
 
   final void Function(Topic, int) navigateToTopic;
+  final void Function(Category) navigateToCategory;
 
-  TopicRow(this.topic, this.navigateToTopic, this.everyMinutes)
-      : assert(topic != null),
+  TopicRow({
+    this.topic,
+    this.everyMinutes,
+    this.navigateToTopic,
+    this.navigateToCategory,
+  })  : assert(topic != null),
+        assert(everyMinutes != null),
         assert(navigateToTopic != null),
-        assert(everyMinutes != null);
+        assert(navigateToCategory != null);
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(left: 8.0, right: 48.0),
-          child: InkWell(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                TitleColorize(topic.title),
-                Text(
-                  "${dateFormatter.format(topic.createdAt)}",
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              ],
-            ),
-            onTap: () => navigateToTopic(topic, 0),
+    if (topic.category != null)
+      return InkWell(
+        onTap: () => navigateToCategory(topic.category),
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Row(
+            children: <Widget>[
+              TitleColorize(topic),
+              const Spacer(),
+              const Icon(Icons.keyboard_arrow_right)
+            ],
           ),
         ),
-        Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 48,
-          child: InkWell(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      numberFormatter.format(topic.postsCount),
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: StreamBuilder<DateTime>(
-                    initialData: DateTime.now(),
-                    stream: everyMinutes,
-                    builder: (context, snapshot) => Text(
-                      duration(snapshot.data, topic.lastPostedAt),
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
+      );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        InkWell(
+          onTap: () => navigateToTopic(topic, 0),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
+            child: TitleColorize(topic),
           ),
+        ),
+        Row(
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+              child: Text(
+                "${topic.author.length > 6 ? topic.author.substring(0, 6) + '..' : topic.author} ${dateFormatter.format(topic.createdAt)} ${numberFormatter.format(topic.postsCount)}",
+                style: Theme.of(context).textTheme.caption,
+              ),
+            ),
+            const Spacer(),
+            InkWell(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                child: StreamBuilder<DateTime>(
+                  initialData: DateTime.now(),
+                  stream: everyMinutes,
+                  builder: (context, snapshot) => Text(
+                    "${topic.lastPoster.length > 6 ? topic.lastPoster.substring(0, 6) + '..' : topic.lastPoster} ${duration(snapshot.data, topic.lastPostedAt)}",
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ),
+              ),
+              onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
+            ),
+          ],
         ),
       ],
     );

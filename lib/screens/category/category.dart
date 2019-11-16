@@ -23,6 +23,7 @@ class CategoryPage extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
   final void Function(Topic, int) navigateToTopic;
+  final void Function(Category) navigateToCategory;
 
   final StreamController<DateTime> everyMinutes;
 
@@ -34,6 +35,7 @@ class CategoryPage extends StatelessWidget {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
+    @required this.navigateToCategory,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
@@ -41,6 +43,7 @@ class CategoryPage extends StatelessWidget {
         assert(onRefresh != null),
         assert(onLoad != null),
         assert(navigateToTopic != null),
+        assert(navigateToCategory != null),
         everyMinutes = StreamController.broadcast()
           ..addStream(
             Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
@@ -97,14 +100,15 @@ class CategoryPage extends StatelessWidget {
                     final int itemIndex = index ~/ 2;
                     if (index.isEven) {
                       return TopicRow(
-                        topics[itemIndex],
-                        navigateToTopic,
-                        everyMinutes.stream,
+                        topic: topics[itemIndex],
+                        everyMinutes: everyMinutes.stream,
+                        navigateToTopic: navigateToTopic,
+                        navigateToCategory: navigateToCategory,
                       );
                     }
-                    return Divider(height: 16.0, color: Colors.grey);
+                    return Divider(height: 0.0);
                   },
-                  semanticIndexCallback: (Widget widget, int localIndex) {
+                  semanticIndexCallback: (widget, localIndex) {
                     if (localIndex.isEven) {
                       return localIndex ~/ 2;
                     }
@@ -140,6 +144,7 @@ class CategoryPageConnector extends StatelessWidget {
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
+        navigateToCategory: vm.navigateToCategory,
       ),
     );
   }
@@ -155,6 +160,7 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
   void Function(Topic, int) navigateToTopic;
+  void Function(Category) navigateToCategory;
   Stream<DateTime> everyMinutes;
 
   ViewModel(this.categoryId);
@@ -168,6 +174,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
+    @required this.navigateToCategory,
   }) : super(equals: [isLoading, topics, category, topicsCount]);
 
   @override
@@ -183,6 +190,8 @@ class ViewModel extends BaseModel<AppState> {
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
+      navigateToCategory: (category) =>
+          dispatch(NavigateToCategoryAction(category)),
     );
   }
 }
