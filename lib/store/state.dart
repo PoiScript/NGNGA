@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
@@ -118,24 +120,24 @@ class AppState {
 }
 
 Future<AppState> initState() async {
-  var state = AppState.empty();
+  final state = AppState.empty();
 
-  final prefs = await SharedPreferences.getInstance();
+  final directory = await getApplicationDocumentsDirectory();
 
+  List<Category> savedCategories;
   List<String> cookies;
 
   try {
-    cookies = prefs.getStringList("cookies");
-  } catch (_) {}
+    final file = File('${directory.path}/state.json');
 
-  List<Category> savedCategories;
+    String contents = await file.readAsString();
+    final json = jsonDecode(contents);
 
-  try {
-    savedCategories = prefs
-        .getStringList("savedCategories")
-        .map((string) => Category.fromString(string))
-        .where((category) => category != null)
+    savedCategories = List.from(json["saved_cateogries"])
+        .map((x) => Category.fromJson(x))
         .toList();
+
+    cookies = List<String>.from(json["cookies"]);
   } catch (_) {}
 
   return state.copy(

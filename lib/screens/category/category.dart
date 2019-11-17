@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/store/categories.dart';
 import 'package:ngnga/store/fetch_topics.dart';
 import 'package:ngnga/store/router.dart';
 import 'package:ngnga/store/state.dart';
@@ -19,16 +20,20 @@ class CategoryPage extends StatelessWidget {
   final List<Topic> topics;
   final int topicsCount;
   final bool isLoading;
+  final bool isSaved;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
   final void Function(Topic, int) navigateToTopic;
   final void Function(Category) navigateToCategory;
+  final void Function(Category) saveCategory;
+  final void Function(Category) removeCategory;
 
   final StreamController<DateTime> everyMinutes;
 
   CategoryPage({
     @required this.topics,
+    @required this.isSaved,
     @required this.category,
     @required this.topicsCount,
     @required this.isLoading,
@@ -36,14 +41,19 @@ class CategoryPage extends StatelessWidget {
     @required this.onLoad,
     @required this.navigateToTopic,
     @required this.navigateToCategory,
+    @required this.saveCategory,
+    @required this.removeCategory,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
         assert(isLoading != null),
+        assert(isSaved != null),
         assert(onRefresh != null),
         assert(onLoad != null),
         assert(navigateToTopic != null),
         assert(navigateToCategory != null),
+        assert(saveCategory != null),
+        assert(removeCategory != null),
         everyMinutes = StreamController.broadcast()
           ..addStream(
             Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
@@ -72,6 +82,17 @@ class CategoryPage extends StatelessWidget {
                 leading: const BackButton(color: Colors.black),
                 backgroundColor: Theme.of(context).backgroundColor,
                 actions: <Widget>[
+                  isSaved
+                      ? IconButton(
+                          color: Colors.black,
+                          icon: Icon(Icons.star),
+                          onPressed: () => removeCategory(category),
+                        )
+                      : IconButton(
+                          color: Colors.black,
+                          icon: Icon(Icons.star_border),
+                          onPressed: () => saveCategory(category),
+                        ),
                   IconButton(
                     color: Colors.black,
                     icon: Icon(Icons.more_vert),
@@ -138,6 +159,7 @@ class CategoryPageConnector extends StatelessWidget {
       onInit: (store) => store.dispatch(FetchTopicsAction(categoryId)),
       builder: (context, vm) => CategoryPage(
         isLoading: vm.isLoading,
+        isSaved: vm.isSaved,
         topics: vm.topics,
         category: vm.category,
         topicsCount: vm.topicsCount,
@@ -145,6 +167,8 @@ class CategoryPageConnector extends StatelessWidget {
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
         navigateToCategory: vm.navigateToCategory,
+        saveCategory: vm.saveCategory,
+        removeCategory: vm.removeCategory,
       ),
     );
   }
@@ -152,15 +176,19 @@ class CategoryPageConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   final int categoryId;
+
   Category category;
   List<Topic> topics;
   int topicsCount;
   bool isLoading;
+  bool isSaved;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
   void Function(Topic, int) navigateToTopic;
   void Function(Category) navigateToCategory;
+  void Function(Category) saveCategory;
+  void Function(Category) removeCategory;
   Stream<DateTime> everyMinutes;
 
   ViewModel(this.categoryId);
@@ -168,6 +196,7 @@ class ViewModel extends BaseModel<AppState> {
   ViewModel.build({
     @required this.topics,
     @required this.isLoading,
+    @required this.isSaved,
     @required this.categoryId,
     @required this.category,
     @required this.topicsCount,
@@ -175,23 +204,28 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onLoad,
     @required this.navigateToTopic,
     @required this.navigateToCategory,
-  }) : super(equals: [isLoading, topics, category, topicsCount]);
+    @required this.saveCategory,
+    @required this.removeCategory,
+  }) : super(equals: [isLoading, isSaved, topics, category, topicsCount]);
 
   @override
   ViewModel fromStore() {
-    var category = state.categories[categoryId];
+    var categoryState = state.categories[categoryId];
     return ViewModel.build(
       categoryId: categoryId,
       isLoading: state.isLoading,
-      category: category.category,
-      topics: category.topics,
-      topicsCount: category.topicsCount,
+      isSaved: state.savedCategories.contains(categoryState.category),
+      category: categoryState.category,
+      topics: categoryState.topics,
+      topicsCount: categoryState.topicsCount,
       onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
       navigateToCategory: (category) =>
           dispatch(NavigateToCategoryAction(category)),
+      saveCategory: (category) => dispatch(AddCategoryAction(category)),
+      removeCategory: (category) => dispatch(RemoveCategoryAction(category)),
     );
   }
 }
