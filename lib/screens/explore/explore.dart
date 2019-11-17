@@ -1,17 +1,12 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
-import 'package:ngnga/models/category.dart';
-import 'package:ngnga/store/router.dart';
-import 'package:ngnga/store/state.dart';
+import 'package:ngnga/widgets/category_row.dart';
 
 import 'categories.dart';
 
 class ExplorePage extends StatelessWidget {
-  final void Function(Category) navigateToCategory;
-
-  ExplorePage({@required this.navigateToCategory});
+  ExplorePage();
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +38,8 @@ class ExplorePage extends StatelessWidget {
                   ),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => ListTile(
-                        title: Text(group.categories[index].title),
-                        onTap: () =>
-                            navigateToCategory(group.categories[index]),
-                        trailing: const Icon(Icons.keyboard_arrow_right),
-                      ),
+                      (context, index) =>
+                          CategoryRowConnector(group.categories[index]),
                       childCount: group.categories.length,
                     ),
                   ),
@@ -57,38 +48,6 @@ class ExplorePage extends StatelessWidget {
               .toList(),
         ),
       ),
-    );
-  }
-}
-
-class ExplorePageConnector extends StatelessWidget {
-  ExplorePageConnector();
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
-      builder: (context, vm) => ExplorePage(
-        navigateToCategory: vm.navigateToCategory,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  void Function(Category) navigateToCategory;
-
-  ViewModel();
-
-  ViewModel.build({
-    @required this.navigateToCategory,
-  });
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      navigateToCategory: (category) =>
-          dispatch(NavigateToCategoryAction(category)),
     );
   }
 }

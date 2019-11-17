@@ -58,44 +58,59 @@ class TopicPage extends StatelessWidget {
             onRefresh: onRefresh,
             onLoad: onLoad,
             enableControlFinishLoad: true,
-            builder: (context, physics, header, footer) => CustomScrollView(
-              physics: physics,
-              semanticChildCount: posts.length,
-              slivers: <Widget>[
-                SliverAppBar(
-                  backgroundColor: Colors.white,
-                  title: TitleColorize(
-                    topic,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  floating: true,
-                  titleSpacing: 0.0,
-                  leading: const BackButton(color: Colors.black),
-                  actions: <Widget>[
-                    IconButton(
-                      color: Colors.black,
-                      icon: Icon(Icons.more_vert),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-                header,
-                ...posts.map(
-                  (post) => PostRow(
-                    post,
-                    users[post.userId],
-                    everyMinutes.stream,
-                  ),
-                ),
-                ...(posts.last.index ~/ 20 == topic.postsCount ~/ 20)
-                    ? []
-                    : [footer],
-              ],
-            ),
+            builder: _buildContent,
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    ScrollPhysics physics,
+    Widget header,
+    Widget footer,
+  ) {
+    List<Widget> slivers = [];
+
+    slivers.add(SliverAppBar(
+      backgroundColor: Colors.white,
+      title: TitleColorize(
+        topic,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        displayLabel: false,
+      ),
+      floating: true,
+      titleSpacing: 0.0,
+      leading: const BackButton(color: Colors.black),
+      actions: <Widget>[
+        IconButton(
+          color: Colors.black,
+          icon: Icon(Icons.more_vert),
+          onPressed: () {},
+        ),
+      ],
+    ));
+
+    slivers.add(header);
+
+    for (var post in posts) {
+      slivers.add(PostRow(
+        post,
+        users[post.userId],
+        everyMinutes.stream,
+      ));
+    }
+
+    if (posts.last.index ~/ 20 < topic.postsCount ~/ 20) {
+      slivers.add(footer);
+    }
+
+    return CustomScrollView(
+      physics: physics,
+      semanticChildCount: posts.length,
+      slivers: slivers,
     );
   }
 }

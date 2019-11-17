@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
         screen = NewPage();
         break;
       case "explore":
-        screen = ExplorePageConnector();
+        screen = ExplorePage();
         break;
       default:
         return null;

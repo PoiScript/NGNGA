@@ -10,8 +10,7 @@ import 'package:ngnga/store/categories.dart';
 import 'package:ngnga/store/fetch_topics.dart';
 import 'package:ngnga/store/router.dart';
 import 'package:ngnga/store/state.dart';
-
-import 'topic_row.dart';
+import 'package:ngnga/widgets/topic_row.dart';
 
 const kExpandedHeight = 150.0;
 
@@ -73,7 +72,6 @@ class CategoryPage extends StatelessWidget {
           onLoad: onLoad,
           builder: (context, physics, header, footer) => CustomScrollView(
             physics: physics,
-            semanticChildCount: topics.length,
             slivers: <Widget>[
               SliverAppBar(
                 expandedHeight: kExpandedHeight,
@@ -120,12 +118,7 @@ class CategoryPage extends StatelessWidget {
                   (context, index) {
                     final int itemIndex = index ~/ 2;
                     if (index.isEven) {
-                      return TopicRow(
-                        topic: topics[itemIndex],
-                        everyMinutes: everyMinutes.stream,
-                        navigateToTopic: navigateToTopic,
-                        navigateToCategory: navigateToCategory,
-                      );
+                      return TopicRowConnector(topics[itemIndex]);
                     }
                     return Divider(height: 0.0);
                   },
@@ -138,7 +131,7 @@ class CategoryPage extends StatelessWidget {
                   childCount: topics.length * 2,
                 ),
               ),
-              footer,
+              ...(topics.length ~/ 35 != topicsCount ~/ 35) ? [footer] : [],
             ],
           ),
         ),

@@ -1,8 +1,11 @@
+import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
@@ -11,18 +14,15 @@ final dateFormatter = DateFormat("yyyy-MM-dd HH:mm");
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
-  final Stream<DateTime> everyMinutes;
 
   final void Function(Topic, int) navigateToTopic;
   final void Function(Category) navigateToCategory;
 
   TopicRow({
     this.topic,
-    this.everyMinutes,
     this.navigateToTopic,
     this.navigateToCategory,
   })  : assert(topic != null),
-        assert(everyMinutes != null),
         assert(navigateToTopic != null),
         assert(navigateToCategory != null);
 
@@ -67,10 +67,9 @@ class TopicRow extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                 child: StreamBuilder<DateTime>(
-                  initialData: DateTime.now(),
-                  stream: everyMinutes,
+                  stream: Stream.periodic(Duration(minutes: 1)),
                   builder: (context, snapshot) => Text(
-                    "${topic.lastPoster.length > 6 ? topic.lastPoster.substring(0, 6) + '..' : topic.lastPoster} ${duration(snapshot.data, topic.lastPostedAt)}",
+                    "${topic.lastPoster.length > 6 ? topic.lastPoster.substring(0, 6) + '..' : topic.lastPoster} ${duration(DateTime.now(), topic.lastPostedAt)}",
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
@@ -80,6 +79,46 @@ class TopicRow extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class TopicRowConnector extends StatelessWidget {
+  final Topic topic;
+
+  TopicRowConnector(this.topic);
+
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<AppState, ViewModel>(
+      model: ViewModel(),
+      builder: (context, vm) => TopicRow(
+        topic: topic,
+        navigateToCategory: vm.navigateToCategory,
+        navigateToTopic: vm.navigateToTopic,
+      ),
+    );
+  }
+}
+
+class ViewModel extends BaseModel<AppState> {
+  void Function(Topic, int) navigateToTopic;
+  void Function(Category) navigateToCategory;
+
+  ViewModel();
+
+  ViewModel.build({
+    @required this.navigateToCategory,
+    @required this.navigateToTopic,
+  });
+
+  @override
+  BaseModel fromStore() {
+    return ViewModel.build(
+      navigateToCategory: (category) =>
+          dispatch(NavigateToCategoryAction(category)),
+      navigateToTopic: (topic, page) =>
+          dispatch(NavigateToTopicAction(topic, page)),
     );
   }
 }

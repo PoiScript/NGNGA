@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:ngnga/models/category.dart';
 
 const int _MASK_LOCKED = 1024;

@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:intl/intl.dart';
-import 'package:outline_material_icons/outline_material_icons.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
@@ -36,46 +35,50 @@ class _PostRowState extends State<PostRow> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> slivers = [];
+
     if (widget.post.isComment) {
-      return SliverStickyHeader(
-        overlapsContent: true,
-        header: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: _buildAvatar(context),
-          ),
-        ),
-        sliver: SliverPadding(
-          padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 0.0),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                Text(
-                  widget.user.id > 0 ? widget.user.username : '匿名',
-                  style: Theme.of(context).textTheme.subhead.copyWith(
-                      color: widget.user.id <= 0 ? Colors.grey : null),
-                ),
-                ...widget.post.subject != null && widget.post.subject.isNotEmpty
-                    ? [
-                        Text(
-                          widget.post.subject,
-                          style: Theme.of(context).textTheme.subhead,
-                        )
-                      ]
-                    : [],
-                const Divider(),
-              ],
+      slivers.add(Container(
+        margin: EdgeInsets.only(bottom: 8.0),
+        child: Row(
+          children: [
+            Text(
+              widget.user.id > 0 ? widget.user.username : '匿名',
+              style: Theme.of(context)
+                  .textTheme
+                  .subhead
+                  .copyWith(color: widget.user.id <= 0 ? Colors.grey : null),
             ),
-          ),
+          ],
         ),
-      );
+      ));
+
+      if (widget.post.subject != null &&
+          widget.post.subject.isNotEmpty &&
+          widget.post.index != 0)
+        slivers.add(Text(
+          widget.post.subject,
+          style: Theme.of(context).textTheme.subhead,
+        ));
+    } else {
+      slivers.add(_buildHeader(context));
+      if (widget.post.subject != null &&
+          widget.post.subject.isNotEmpty &&
+          widget.post.index != 0)
+        slivers.add(Text(
+          widget.post.subject,
+          style: Theme.of(context).textTheme.subhead,
+        ));
+      slivers.add(_buildContent());
+      slivers.add(_buildFooter(context));
     }
+
+    slivers.add(const Divider());
 
     return SliverStickyHeader(
       overlapsContent: true,
       header: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        padding: const EdgeInsets.only(left: 8.0, top: 4.0, bottom: 16.0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: _buildAvatar(context),
@@ -84,67 +87,7 @@ class _PostRowState extends State<PostRow> {
       sliver: SliverPadding(
         padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 0.0),
         sliver: SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              Container(
-                margin: EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    Text(
-                      widget.user.id > 0 ? widget.user.username : '匿名',
-                      style: Theme.of(context).textTheme.subhead.copyWith(
-                          color: widget.user.id <= 0 ? Colors.grey : null),
-                    ),
-                    const Spacer(),
-                    _buildMetadata(context),
-                    PopupMenuButton<Choice>(
-                      child: const Icon(
-                        Icons.more_vert,
-                        color: Colors.grey,
-                        size: 20.0,
-                      ),
-                      itemBuilder: _buildMenuItem,
-                      onSelected: _onMenuSelected,
-                    ),
-                  ],
-                ),
-              ),
-              ...widget.post.subject != null && widget.post.subject.isNotEmpty
-                  ? [
-                      Text(
-                        widget.post.subject,
-                        style: Theme.of(context).textTheme.subhead,
-                      )
-                    ]
-                  : [],
-              _buildContent(),
-              Row(
-                children: <Widget>[
-                  const Spacer(),
-                  const Icon(
-                    Icons.thumb_up,
-                    color: Colors.grey,
-                    size: 20.0,
-                  ),
-                  widget.post.upVote > 0
-                      ? Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            widget.post.upVote.toString(),
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        )
-                      : Container(width: 8.0),
-                  const Icon(
-                    Icons.thumb_down,
-                    color: Colors.grey,
-                    size: 20.0,
-                  ),
-                ],
-              ),
-              const Divider(),
-            ],
-          ),
+          delegate: SliverChildListDelegate(slivers),
         ),
       ),
     );
@@ -174,6 +117,34 @@ class _PostRowState extends State<PostRow> {
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Text(
+            widget.user.id > 0 ? widget.user.username : '匿名',
+            style: Theme.of(context)
+                .textTheme
+                .subhead
+                .copyWith(color: widget.user.id <= 0 ? Colors.grey : null),
+          ),
+          const Spacer(),
+          _buildMetadata(context),
+          PopupMenuButton<Choice>(
+            child: const Icon(
+              Icons.more_vert,
+              color: Colors.grey,
+              size: 20.0,
+            ),
+            itemBuilder: _buildMenuItem,
+            onSelected: _onMenuSelected,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMetadata(BuildContext context) {
     // edit icon, client icon, post index, post date
     List<Widget> rowChildren = [];
@@ -184,12 +155,14 @@ class _PostRowState extends State<PostRow> {
         color: Colors.grey,
         size: 16.0,
       ));
-      rowChildren.add(
-        Text(
-          widget.post.attachments.length.toString(),
-          style: Theme.of(context).textTheme.caption,
-        ),
-      );
+      if (widget.post.attachments.length > 1) {
+        rowChildren.add(
+          Text(
+            "${widget.post.attachments.length}",
+            style: Theme.of(context).textTheme.caption,
+          ),
+        );
+      }
       rowChildren.add(Container(width: 4));
     }
 
@@ -229,10 +202,12 @@ class _PostRowState extends State<PostRow> {
       rowChildren.add(Container(width: 4));
     }
 
-    rowChildren.add(Text(
-      "#${widget.post.index}",
-      style: Theme.of(context).textTheme.caption,
-    ));
+    if (widget.post.index != 0) {
+      rowChildren.add(Text(
+        "#${widget.post.index}",
+        style: Theme.of(context).textTheme.caption,
+      ));
+    }
 
     rowChildren.add(Container(width: 4));
 
@@ -250,13 +225,17 @@ class _PostRowState extends State<PostRow> {
     // post date, client detail, edited data, actions
     List<ListTile> listChildren = [];
 
+    if (widget.post.index != 0) {
+      listChildren.add(ListTile(
+        dense: true,
+        leading: const Icon(Icons.info),
+        title: Text('第 ${widget.post.index} 楼'),
+      ));
+    }
+
     listChildren.add(ListTile(
       dense: true,
-      leading: const Icon(
-        Icons.access_time,
-        color: Colors.grey,
-        size: 20.0,
-      ),
+      leading: const Icon(Icons.access_time),
       title: Text('创建时间'),
       subtitle: Text(dateFormatter.format(widget.post.createdAt)),
     ));
@@ -264,11 +243,7 @@ class _PostRowState extends State<PostRow> {
     if (widget.post.editedAt != null) {
       listChildren.add(ListTile(
         dense: true,
-        leading: const Icon(
-          Icons.edit,
-          color: Colors.grey,
-          size: 20.0,
-        ),
+        leading: const Icon(Icons.edit),
         title: Text('编辑时间'),
         subtitle: Text(dateFormatter.format(widget.post.editedAt)),
       ));
@@ -291,22 +266,28 @@ class _PostRowState extends State<PostRow> {
           title = "发送自 Windows Phone 客户端";
           break;
       }
-      listChildren.add(ListTile(
-        dense: true,
-        leading: icon,
-        title: Text(title),
-        subtitle: widget.post.clientDetail.isNotEmpty
-            ? Text(widget.post.clientDetail)
-            : null,
-      ));
+      if (widget.post.clientDetail.trim().isEmpty) {
+        listChildren.add(ListTile(
+          dense: true,
+          leading: icon,
+          title: Text(title),
+        ));
+      } else {
+        listChildren.add(ListTile(
+          dense: true,
+          leading: icon,
+          title: Text(title),
+          subtitle: Text(widget.post.clientDetail),
+        ));
+      }
     }
 
     if (widget.post.attachments.isNotEmpty) {
       listChildren.add(ListTile(
         dense: true,
         leading: Icon(Icons.attach_file),
-        title: Text("附件"),
-        subtitle: Text("${widget.post.attachments.length} 张附件"),
+        title: Text("共 ${widget.post.attachments.length} 张附件"),
+        trailing: Icon(Icons.keyboard_arrow_right),
         onTap: () {
           Navigator.push(
             context,
@@ -424,6 +405,63 @@ class _PostRowState extends State<PostRow> {
         break;
     }
     return content;
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        const Spacer(),
+        const Icon(
+          Icons.thumb_up,
+          color: Colors.grey,
+          size: 16.0,
+        ),
+        widget.post.upVote > 0
+            ? Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  widget.post.upVote.toString(),
+                  style: Theme.of(context).textTheme.caption,
+                ),
+              )
+            : Container(width: 8.0),
+        const Icon(
+          Icons.thumb_down,
+          color: Colors.grey,
+          size: 16.0,
+        ),
+        Container(width: 8)
+      ],
+    );
+  }
+
+  void openLink(String url) {
+    if (url.startsWith("/read.php?") ||
+        url.startsWith("http://nga.178.com/read.php?") ||
+        url.startsWith("https://nga.178.com/read.php?") ||
+        url.startsWith("http://bbs.ngacn.cc/read.php?") ||
+        url.startsWith("https://bbs.ngacn.cc/read.php?") ||
+        url.startsWith("http://bbs.nga.cn/read.php?") ||
+        url.startsWith("https://bbs.nga.cn/read.php?") ||
+        url.startsWith("http://nga.donews.com/read.php?") ||
+        url.startsWith("https://nga.donews.com/read.php?")) {
+      // TODO: internal jumping
+    } else if (url.startsWith("/thread.php?") ||
+        url.startsWith("http://nga.178.com/thread.php?") ||
+        url.startsWith("https://nga.178.com/thread.php?") ||
+        url.startsWith("http://bbs.ngacn.cc/thread.php?") ||
+        url.startsWith("https://bbs.ngacn.cc/thread.php?") ||
+        url.startsWith("http://nga.donews.com/thread.php?") ||
+        url.startsWith("https://bbs.nga.cn/thread.php?") ||
+        url.startsWith("http://bbs.nga.cn/thread.php?") ||
+        url.startsWith("https://nga.donews.com/thread.php?")) {
+      // TODO: internal jumping
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => LinkDialog(url),
+    );
   }
 }
 
