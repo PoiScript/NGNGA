@@ -9,11 +9,13 @@ class TitleColorize extends StatelessWidget {
   final Topic topic;
   final int maxLines;
   final TextOverflow overflow;
+  final bool displayLabel;
 
   TitleColorize(
     this.topic, {
     this.maxLines,
     this.overflow,
+    this.displayLabel = true,
   });
 
   @override
@@ -69,7 +71,7 @@ class TitleColorize extends StatelessWidget {
       if (lastEnd != start) {
         spans.add(
           TextSpan(
-            text: content.substring(lastEnd, start),
+            text: content.substring(lastEnd, start).trim(),
             style: base.copyWith(color: color),
           ),
         );
@@ -92,16 +94,20 @@ class TitleColorize extends StatelessWidget {
 
     if (lastEnd != content.length) {
       spans.add(TextSpan(
-        text: content.substring(lastEnd),
+        text: content.substring(lastEnd).trim(),
         style: base.copyWith(color: color),
       ));
     }
 
-    if (topic.isLocked) {
-      spans.add(WidgetSpan(child: Icon(Icons.lock_outline)));
+    if (displayLabel && topic.isLocked) {
+      spans.add(TextSpan(
+        text: " [锁定]",
+        style:
+            Theme.of(context).textTheme.body2.copyWith(color: Colors.red[700]),
+      ));
     }
 
-    if (topic.label != null) {
+    if (displayLabel && topic.label != null) {
       spans.add(WidgetSpan(
         child: Container(
           margin: EdgeInsets.only(left: 2.0),
