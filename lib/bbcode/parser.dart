@@ -223,27 +223,6 @@ _parseBlock(String content, LinkedList<Tag> tags) {
   lastEnd = 0;
 
   while (true) {
-    var start = content.indexOf("[u]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/u]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(UnderlineStart(), start, start + "[u]".length));
-    _tags.add(_TagWithPosition(UnderlineEnd(), end, end + "[/u]".length));
-
-    lastEnd = end + "[/u]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
     var start = content.indexOf("[size=", lastEnd);
 
     if (start == -1) {
@@ -639,6 +618,6 @@ class _TagWithPosition {
 
   @override
   String toString() {
-    return "$tag [$start, $end]";
+    return "$tag($start, $end)";
   }
 }
