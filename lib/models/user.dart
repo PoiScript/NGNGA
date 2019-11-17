@@ -18,16 +18,20 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     List<String> avatars = [];
     if (json['avatar'] is String) {
-      String string = json['avatar'].replaceAll("%7C", "|");
-      var lastEnd = 0;
-      for (var match in RegExp(r"https?://").allMatches(string)) {
-        if (match.start != 0) {
-          avatars.add(string.substring(lastEnd, match.start));
+      if (json['avatar'].startsWith(r"/*$js$*/")) {
+        // TODO: json-style avatar object
+      } else {
+        String string = json['avatar'].replaceAll("%7C", "|");
+        var lastEnd = 0;
+        for (var match in RegExp(r"https?://").allMatches(string)) {
+          if (match.start != 0) {
+            avatars.add(string.substring(lastEnd, match.start));
+          }
+          lastEnd = match.start;
         }
-        lastEnd = match.start;
-      }
-      if (lastEnd != string.length) {
-        avatars.add(string.substring(lastEnd));
+        if (lastEnd != string.length) {
+          avatars.add(string.substring(lastEnd));
+        }
       }
     }
 
