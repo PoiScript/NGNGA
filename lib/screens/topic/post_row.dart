@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
+import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
 import 'package:ngnga/widgets/link_dialog.dart';
@@ -19,11 +20,17 @@ final dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
 class PostRow extends StatefulWidget {
   final Post post;
   final User user;
+  final int topicId;
   final Stream<DateTime> everyMinutes;
 
-  PostRow(this.post, this.user, this.everyMinutes)
-      : assert(post != null),
+  PostRow({
+    @required this.post,
+    @required this.user,
+    @required this.topicId,
+    @required this.everyMinutes,
+  })  : assert(post != null),
         assert(user != null),
+        assert(topicId != null),
         assert(everyMinutes != null);
 
   @override
@@ -319,29 +326,45 @@ class _PostRowState extends State<PostRow> {
   }
 
   List<PopupMenuEntry<Choice>> _buildMenuItem(BuildContext context) {
-    List<PopupMenuEntry<Choice>> entries = [];
-
-    if (_displayMode != DisplayMode.BBCode) {
-      entries.add(PopupMenuItem<Choice>(
-        value: Choice.DisplayInBBCode,
+    return [
+      if (_displayMode != DisplayMode.BBCode)
+        PopupMenuItem<Choice>(
+          value: Choice.DisplayInBBCode,
+          child: Text(
+            "Display in BBCode",
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
+      if (_displayMode != DisplayMode.RichText)
+        PopupMenuItem<Choice>(
+          value: Choice.DispalyInRichText,
+          child: Text(
+            "Display in RichText",
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
+      PopupMenuItem<Choice>(
+        value: Choice.ReplyToThisPost,
         child: Text(
-          "Display in BBCode",
+          "Reply To This Post",
           style: Theme.of(context).textTheme.body1,
         ),
-      ));
-    }
-
-    if (_displayMode != DisplayMode.RichText) {
-      entries.add(PopupMenuItem<Choice>(
-        value: Choice.DispalyRichText,
+      ),
+      PopupMenuItem<Choice>(
+        value: Choice.QuoteFromThisPost,
         child: Text(
-          "Display in RichText",
+          "Quote From This Post",
           style: Theme.of(context).textTheme.body1,
         ),
-      ));
-    }
-
-    return entries;
+      ),
+      PopupMenuItem<Choice>(
+        value: Choice.CommentOnThisPost,
+        child: Text(
+          "Comment On This Post",
+          style: Theme.of(context).textTheme.body1,
+        ),
+      ),
+    ];
   }
 
   Color numberToHslColor(int number) {
@@ -363,9 +386,30 @@ class _PostRowState extends State<PostRow> {
           _displayMode = DisplayMode.BBCode;
         });
         break;
-      case Choice.DispalyRichText:
+      case Choice.DispalyInRichText:
         setState(() {
           _displayMode = DisplayMode.RichText;
+        });
+        break;
+      case Choice.ReplyToThisPost:
+        Navigator.pushNamed(context, "/e", arguments: {
+          "action": ACTION_REPLY,
+          "topicId": widget.topicId,
+          "postId": widget.post.id,
+        });
+        break;
+      case Choice.QuoteFromThisPost:
+        Navigator.pushNamed(context, "/e", arguments: {
+          "action": ACTION_QUOTE,
+          "topicId": widget.topicId,
+          "postId": widget.post.id,
+        });
+        break;
+      case Choice.CommentOnThisPost:
+        Navigator.pushNamed(context, "/e", arguments: {
+          "action": ACTION_COMMENT,
+          "topicId": widget.topicId,
+          "postId": widget.post.id,
         });
         break;
     }
@@ -375,8 +419,11 @@ class _PostRowState extends State<PostRow> {
     var content;
     switch (_displayMode) {
       case DisplayMode.BBCode:
-        content = SelectableText(
-          widget.post.content.replaceAll("<br/>", "\n"),
+        content = Container(
+          padding: EdgeInsets.only(bottom: 6.0),
+          child: SelectableText(
+            widget.post.content.replaceAll("<br/>", "\n"),
+          ),
         );
         break;
       case DisplayMode.RichText:
@@ -467,7 +514,10 @@ class _PostRowState extends State<PostRow> {
 
 enum Choice {
   DisplayInBBCode,
-  DispalyRichText,
+  DispalyInRichText,
+  ReplyToThisPost,
+  QuoteFromThisPost,
+  CommentOnThisPost,
 }
 
 enum DisplayMode {

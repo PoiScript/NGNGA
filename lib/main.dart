@@ -63,7 +63,12 @@ class MyApp extends StatelessWidget {
         screen = SettingsPageConnector();
         break;
       case "/e":
-        screen = EditorPage();
+        screen = EditorPageConnector(
+          action: arguments["action"],
+          categoryId: arguments["categoryId"],
+          topicId: arguments["topicId"],
+          postId: arguments["postId"],
+        );
         break;
       case "new":
         screen = NewPage();

@@ -62,6 +62,13 @@ class TopicPage extends StatelessWidget {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add your onPressed code here!
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blue,
+      ),
     );
   }
 
@@ -97,9 +104,10 @@ class TopicPage extends StatelessWidget {
 
     for (var post in posts) {
       slivers.add(PostRow(
-        post,
-        users[post.userId],
-        everyMinutes.stream,
+        post: post,
+        user: users[post.userId],
+        topicId: topic.id,
+        everyMinutes: everyMinutes.stream,
       ));
     }
 
