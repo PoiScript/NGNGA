@@ -30,6 +30,9 @@ flutter:
   assets:
     - assets/stickers/
   fonts:
+    - family:  VendorIcon
+      fonts:
+        - asset: fonts/VendorIcon.ttf
     - family: "Noto Sans CJK SC"
       fonts:
         - asset: fonts/NotoSansCJKsc-Regular.otf

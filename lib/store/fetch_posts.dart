@@ -15,19 +15,26 @@ import 'state.dart';
 class _FetchTopicResponse {
   final Topic topic;
   final Iterable<Post> posts;
-  final Iterable<MapEntry<int, User>> users;
+  final List<MapEntry<int, User>> users;
 
   _FetchTopicResponse({this.topic, this.posts, this.users});
 
   factory _FetchTopicResponse.fromJson(Map<String, dynamic> json) {
+    List<MapEntry<int, User>> users = [];
+
+    for (var entry in Map.from(json["data"]["__U"]).entries) {
+      try {
+        final userId = int.parse(entry.key);
+        final user = User.fromJson(entry.value);
+        users.add(MapEntry(userId, user));
+      } catch (_) {}
+    }
+
     return _FetchTopicResponse(
       topic: Topic.fromJson(json["data"]["__T"]),
       posts:
           List.from(json["data"]["__R"]).map((value) => Post.fromJson(value)),
-      users: Map.from(json["data"]["__U"])
-          .values
-          .map((value) => User.fromJson(value))
-          .map((user) => MapEntry(user.id, user)),
+      users: users,
     );
   }
 }
