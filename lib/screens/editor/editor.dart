@@ -95,7 +95,6 @@ class EditorPage extends StatefulWidget {
 class _EditorPageState extends State<EditorPage> {
   final TextEditingController _controller = TextEditingController();
 
-  bool isSending = false;
   bool isPreview = false;
   bool isLoading = true;
   String subject;
@@ -143,6 +142,7 @@ class _EditorPageState extends State<EditorPage> {
               try {
                 final res = await _applyEditing();
                 if (res.code == 1) {
+                  _controller.clear();
                   // Scaffold.of(context).showSnackBar(SnackBar(
                   //   content: Text("Post sent."),
                   // ));
