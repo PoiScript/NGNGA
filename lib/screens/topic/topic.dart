@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
+import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/fetch_posts.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
@@ -62,7 +63,10 @@ class TopicPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your onPressed code here!
+          Navigator.pushNamed(context, "/e", arguments: {
+            "action": ACTION_REPLY,
+            "topicId": topic.id,
+          });
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
