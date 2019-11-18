@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/bbcode/render.dart';
@@ -8,6 +7,7 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
 import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
@@ -42,102 +42,62 @@ class _PostRowState extends State<PostRow> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> slivers = [];
+    List<Widget> children;
 
     if (widget.post.isComment) {
-      slivers.add(Container(
-        margin: EdgeInsets.only(bottom: 8.0),
-        child: Row(
-          children: [
-            Text(
-              widget.user.id > 0 ? widget.user.username : '匿名',
-              style: Theme.of(context)
-                  .textTheme
-                  .subhead
-                  .copyWith(color: widget.user.id <= 0 ? Colors.grey : null),
-            ),
-          ],
+      children = [
+        Container(
+          margin: EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            children: [
+              _buildAvatar(),
+              Container(width: 8.0),
+              _buildUsername(),
+            ],
+          ),
         ),
-      ));
-
-      if (widget.post.subject != null &&
-          widget.post.subject.isNotEmpty &&
-          widget.post.index != 0)
-        slivers.add(Text(
-          widget.post.subject,
-          style: Theme.of(context).textTheme.subhead,
-        ));
+        if (widget.post.subject.isNotEmpty && widget.post.index != 0)
+          _buildSubject(),
+        const Divider(),
+      ];
     } else {
-      slivers.add(_buildHeader(context));
-      if (widget.post.subject != null &&
-          widget.post.subject.isNotEmpty &&
-          widget.post.index != 0)
-        slivers.add(Text(
-          widget.post.subject,
-          style: Theme.of(context).textTheme.subhead,
-        ));
-      slivers.add(_buildContent());
-      slivers.add(_buildFooter(context));
+      children = [
+        _buildHeader(),
+        if (widget.post.subject.isNotEmpty && widget.post.index != 0)
+          _buildSubject(),
+        _buildContent(),
+        _buildFooter(),
+        const Divider(),
+      ];
     }
 
-    slivers.add(const Divider());
-
-    return SliverStickyHeader(
-      overlapsContent: true,
-      header: Padding(
-        padding: const EdgeInsets.only(left: 8.0, top: 4.0, bottom: 16.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: _buildAvatar(context),
-        ),
-      ),
-      sliver: SliverPadding(
-        padding: EdgeInsets.fromLTRB(48.0, 8.0, 8.0, 0.0),
-        sliver: SliverList(
-          delegate: SliverChildListDelegate(slivers),
-        ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
       ),
     );
   }
 
-  Widget _buildAvatar(BuildContext context) {
-    final letterAvatar = CircleAvatar(
-      radius: 16,
-      child: Text(
-        widget.user.username[0].toUpperCase(),
-        style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
-      ),
-      backgroundColor: numberToHslColor(widget.user.id),
-    );
-
-    if (widget.user.avatars.isEmpty) return letterAvatar;
-
-    return CachedNetworkImage(
-      // user can have mulitples avatars, so we randomly pick one of them to display
-      imageUrl:
-          widget.user.avatars[widget.post.index % widget.user.avatars.length],
-      imageBuilder: (context, imageProvider) => CircleAvatar(
-        radius: 16,
-        backgroundImage: imageProvider,
-      ),
-      errorWidget: (context, url, error) => letterAvatar,
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader() {
     return Container(
       margin: EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
-          Text(
-            widget.user.id > 0 ? widget.user.username : '匿名',
-            style: Theme.of(context)
-                .textTheme
-                .subhead
-                .copyWith(color: widget.user.id <= 0 ? Colors.grey : null),
-          ),
+          _buildAvatar(),
+          Container(width: 8.0),
+          _buildUsername(),
           const Spacer(),
-          _buildMetadata(context),
+          GestureDetector(
+            child: _buildMetaRow(),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => _buildMetaList(),
+              );
+            },
+          ),
           PopupMenuButton<Choice>(
             child: const Icon(
               Icons.more_vert,
@@ -152,73 +112,83 @@ class _PostRowState extends State<PostRow> {
     );
   }
 
-  Widget _buildMetadata(BuildContext context) {
-    // edit icon, client icon, post index, post date
-    List<Widget> rowChildren = [];
+  Widget _buildAvatar() {
+    final letterAvatar = CircleAvatar(
+      radius: 16,
+      child: Text(
+        widget.user.username[0].toUpperCase(),
+        style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
+      ),
+      backgroundColor: numberToHslColor(widget.user.id),
+    );
 
-    if (widget.post.attachments.isNotEmpty) {
-      rowChildren.add(Icon(
-        Icons.attach_file,
-        color: Colors.grey,
-        size: 16.0,
-      ));
-      if (widget.post.attachments.length > 1) {
-        rowChildren.add(
-          Text(
-            "${widget.post.attachments.length}",
-            style: Theme.of(context).textTheme.caption,
-          ),
-        );
-      }
-      rowChildren.add(Container(width: 4));
-    }
+    if (widget.user.avatars.isEmpty) return letterAvatar;
 
-    if (widget.post.editedAt != null) {
-      rowChildren.add(Icon(
-        Icons.edit,
-        color: Colors.grey,
-        size: 16.0,
-      ));
-      rowChildren.add(Container(width: 4));
-    }
+    // wrap the avatar with a sized box,
+    // so it can take up enough space even when loading image
+    return SizedBox(
+      width: 32.0,
+      height: 32.0,
+      child: CachedNetworkImage(
+        // user can have mulitples avatars, so we pick one of them randomly to display
+        imageUrl:
+            widget.user.avatars[widget.post.index % widget.user.avatars.length],
+        imageBuilder: (context, imageProvider) => CircleAvatar(
+          radius: 16,
+          backgroundImage: imageProvider,
+        ),
+        errorWidget: (context, url, error) => letterAvatar,
+      ),
+    );
+  }
 
-    if (widget.post.client != null) {
-      switch (widget.post.client) {
-        case Client.Android:
-          rowChildren.add(Icon(
-            VendorIcons.android,
-            color: Colors.grey,
-            size: 16.0,
-          ));
-          break;
-        case Client.Apple:
-          rowChildren.add(Icon(
-            VendorIcons.apple,
-            color: Colors.grey,
-            size: 16.0,
-          ));
-          break;
-        case Client.Windows:
-          rowChildren.add(Icon(
-            VendorIcons.windows,
-            color: Colors.grey,
-            size: 16.0,
-          ));
-          break;
-      }
-      rowChildren.add(Container(width: 4));
-    }
+  Widget _buildUsername() {
+    TextStyle subhead = Theme.of(context).textTheme.subhead;
 
-    if (widget.post.index != 0) {
-      rowChildren.add(Text(
-        "#${widget.post.index}",
-        style: Theme.of(context).textTheme.caption,
-      ));
-    }
+    return widget.user.id > 0
+        ? Text(widget.user.username, style: subhead)
+        : Text('匿名', style: subhead.copyWith(color: Colors.grey));
+  }
 
-    rowChildren.add(Container(width: 4));
+  Widget _buildMetaRow() {
+    return Row(children: [
+      // attachments icon
+      if (widget.post.attachments.isNotEmpty)
+        Icon(Icons.attach_file, color: Colors.grey, size: 16),
+      if (widget.post.attachments.length > 1)
+        Text(
+          "${widget.post.attachments.length}",
+          style: Theme.of(context).textTheme.caption,
+        ),
+      if (widget.post.attachments.isNotEmpty)
+        Container(width: 4),
 
-    rowChildren.add(
+      // edit icon
+      if (widget.post.editedAt != null)
+        Icon(Icons.edit, color: Colors.grey, size: 16),
+      if (widget.post.editedAt != null)
+        Container(width: 4),
+
+      // vendor icon
+      if (widget.post.client != null)
+        Icon(
+          VendorIcons.fromClient(widget.post.client),
+          color: Colors.grey,
+          size: 16.0,
+        ),
+      if (widget.post.client != null)
+        Container(width: 4),
+
+      // post index
+      if (widget.post.index != 0)
+        Text(
+          "#${widget.post.index}",
+          style: Theme.of(context).textTheme.caption,
+        ),
+      if (widget.post.index != 0)
+        Container(width: 4),
+
+      // post send date in duration format, updated by minutes
       StreamBuilder<DateTime>(
         initialData: DateTime.now(),
         stream: widget.everyMinutes,
@@ -227,102 +197,83 @@ class _PostRowState extends State<PostRow> {
           style: Theme.of(context).textTheme.caption,
         ),
       ),
-    );
+    ]);
+  }
 
-    // post date, client detail, edited data, actions
-    List<ListTile> listChildren = [];
-
-    if (widget.post.index != 0) {
-      listChildren.add(ListTile(
-        dense: true,
-        leading: const Icon(Icons.info),
-        title: Text('第 ${widget.post.index} 楼'),
-      ));
-    }
-
-    listChildren.add(ListTile(
-      dense: true,
-      leading: const Icon(Icons.access_time),
-      title: Text('创建时间'),
-      subtitle: Text(dateFormatter.format(widget.post.createdAt)),
-    ));
-
-    if (widget.post.editedAt != null) {
-      listChildren.add(ListTile(
-        dense: true,
-        leading: const Icon(Icons.edit),
-        title: Text('编辑时间'),
-        subtitle: Text(dateFormatter.format(widget.post.editedAt)),
-      ));
-    }
-
-    if (widget.post.client != null) {
-      Icon icon;
-      String title;
-      switch (widget.post.client) {
-        case Client.Android:
-          icon = Icon(VendorIcons.android);
-          title = "发送自 Android 客户端";
-          break;
-        case Client.Apple:
-          icon = Icon(VendorIcons.apple);
-          title = "发送自 iOS 客户端";
-          break;
-        case Client.Windows:
-          icon = Icon(VendorIcons.windows);
-          title = "发送自 Windows Phone 客户端";
-          break;
-      }
-      if (widget.post.clientDetail.trim().isEmpty) {
-        listChildren.add(ListTile(
+  Widget _buildMetaList() {
+    List<ListTile> listChildren = [
+      if (widget.post.index != 0)
+        ListTile(
           dense: true,
-          leading: icon,
-          title: Text(title),
-        ));
-      } else {
-        listChildren.add(ListTile(
-          dense: true,
-          leading: icon,
-          title: Text(title),
-          subtitle: Text(widget.post.clientDetail),
-        ));
-      }
-    }
-
-    if (widget.post.attachments.isNotEmpty) {
-      listChildren.add(ListTile(
+          leading: const Icon(Icons.info),
+          title: Text('第 ${widget.post.index} 楼'),
+        ),
+      ListTile(
         dense: true,
-        leading: Icon(Icons.attach_file),
-        title: Text("共 ${widget.post.attachments.length} 张附件"),
-        trailing: Icon(Icons.keyboard_arrow_right),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AttachViewer(widget.post.attachments)),
-          );
-        },
-      ));
-    }
-
-    return GestureDetector(
-      child: Row(children: rowChildren),
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (context) {
-            return Container(
-              child: ListView.separated(
-                shrinkWrap: true,
-                separatorBuilder: (context, index) => const Divider(height: 0),
-                itemCount: listChildren.length,
-                itemBuilder: (context, index) => listChildren[index],
+        leading: const Icon(Icons.access_time),
+        title: Text('创建时间'),
+        subtitle: Text(dateFormatter.format(widget.post.createdAt)),
+      ),
+      if (widget.post.editedAt != null)
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.edit),
+          title: Text('编辑时间'),
+          subtitle: Text(dateFormatter.format(widget.post.editedAt)),
+        ),
+      if (widget.post.client != null) _buildVendorListTile(),
+      if (widget.post.attachments.isNotEmpty)
+        ListTile(
+          dense: true,
+          leading: Icon(Icons.attach_file),
+          title: Text("共 ${widget.post.attachments.length} 张附件"),
+          trailing: Icon(Icons.keyboard_arrow_right),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AttachViewer(widget.post.attachments),
               ),
             );
           },
-        );
-      },
+        ),
+    ];
+
+    return ListView.separated(
+      shrinkWrap: true,
+      separatorBuilder: (context, index) => const Divider(height: 0),
+      itemCount: listChildren.length,
+      itemBuilder: (context, index) => listChildren[index],
     );
+  }
+
+  ListTile _buildVendorListTile() {
+    String title;
+    switch (widget.post.client) {
+      case Client.Android:
+        title = "发送自 Android 客户端";
+        break;
+      case Client.Apple:
+        title = "发送自 iOS 客户端";
+        break;
+      case Client.Windows:
+        title = "发送自 Windows Phone 客户端";
+        break;
+    }
+    if (widget.post.clientDetail.isEmpty) {
+      return ListTile(
+        dense: true,
+        leading: Icon(VendorIcons.fromClient(widget.post.client)),
+        title: Text(title),
+      );
+    } else {
+      return ListTile(
+        dense: true,
+        leading: Icon(VendorIcons.fromClient(widget.post.client)),
+        title: Text(title),
+        subtitle: Text(widget.post.clientDetail),
+      );
+    }
   }
 
   List<PopupMenuEntry<Choice>> _buildMenuItem(BuildContext context) {
@@ -367,18 +318,6 @@ class _PostRowState extends State<PostRow> {
     ];
   }
 
-  Color numberToHslColor(int number) {
-    var hash = 0;
-
-    for (var rune in number.toString().runes) {
-      hash = rune + ((hash << 5) - hash);
-    }
-
-    var h = hash % 360;
-
-    return HSLColor.fromAHSL(1.0, h.toDouble(), 0.3, 0.8).toColor();
-  }
-
   _onMenuSelected(Choice choice) {
     switch (choice) {
       case Choice.DisplayInBBCode:
@@ -413,6 +352,13 @@ class _PostRowState extends State<PostRow> {
         });
         break;
     }
+  }
+
+  Widget _buildSubject() {
+    return Text(
+      widget.post.subject,
+      style: Theme.of(context).textTheme.subhead,
+    );
   }
 
   Widget _buildContent() {
@@ -454,7 +400,7 @@ class _PostRowState extends State<PostRow> {
     return content;
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter() {
     return Row(
       children: <Widget>[
         const Spacer(),

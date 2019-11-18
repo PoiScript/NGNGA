@@ -50,16 +50,14 @@ class TopicPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: Scrollbar(
-          child: EasyRefresh.builder(
-            header: ClassicalHeader(),
-            footer: ClassicalFooter(),
-            onRefresh: onRefresh,
-            onLoad: onLoad,
-            enableControlFinishLoad: true,
-            builder: _buildContent,
-          ),
+      body: Scrollbar(
+        child: EasyRefresh.builder(
+          header: ClassicalHeader(),
+          footer: ClassicalFooter(),
+          onRefresh: onRefresh,
+          onLoad: onLoad,
+          enableControlFinishLoad: true,
+          builder: _buildContent,
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -78,42 +76,40 @@ class TopicPage extends StatelessWidget {
     Widget header,
     Widget footer,
   ) {
-    List<Widget> slivers = [];
-
-    slivers.add(SliverAppBar(
-      backgroundColor: Colors.white,
-      title: TitleColorize(
-        topic,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        displayLabel: false,
-      ),
-      floating: true,
-      titleSpacing: 0.0,
-      leading: const BackButton(color: Colors.black),
-      actions: <Widget>[
-        IconButton(
-          color: Colors.black,
-          icon: Icon(Icons.more_vert),
-          onPressed: () {},
+    List<Widget> slivers = [
+      SliverAppBar(
+        backgroundColor: Colors.white,
+        title: TitleColorize(
+          topic,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          displayLabel: false,
         ),
-      ],
-    ));
-
-    slivers.add(header);
-
-    for (var post in posts) {
-      slivers.add(PostRow(
-        post: post,
-        user: users[post.userId],
-        topicId: topic.id,
-        everyMinutes: everyMinutes.stream,
-      ));
-    }
-
-    if (posts.last.index ~/ 20 < topic.postsCount ~/ 20) {
-      slivers.add(footer);
-    }
+        floating: true,
+        titleSpacing: 0.0,
+        leading: const BackButton(color: Colors.black),
+        actions: <Widget>[
+          IconButton(
+            color: Colors.black,
+            icon: Icon(Icons.more_vert),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      header,
+      SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => PostRow(
+            post: posts.elementAt(index),
+            user: users[posts.elementAt(index).userId],
+            topicId: topic.id,
+            everyMinutes: everyMinutes.stream,
+          ),
+          childCount: posts.length,
+        ),
+      ),
+      if (posts.last.index ~/ 20 < topic.postsCount ~/ 20) footer
+    ];
 
     return CustomScrollView(
       physics: physics,

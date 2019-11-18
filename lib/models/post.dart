@@ -67,7 +67,7 @@ class Post {
         id: json['pid'],
         userId: json['authorid'],
         index: json['lou'],
-        subject: json['subject'],
+        subject: json['subject']?.trim() ?? "",
         isComment: true,
       );
     }
@@ -138,12 +138,10 @@ class Post {
       topicId: json['tid'],
       userId: json['authorid'],
       replyTo: json['reply_to'],
-      createdAt: (json['postdatetimestamp'] is int)
-          ? DateTime.fromMillisecondsSinceEpoch(
-              json['postdatetimestamp'] * 1000,
-            )
-          : null,
-      subject: json['subject'],
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        json['postdatetimestamp'] * 1000,
+      ),
+      subject: json['subject']?.trim() ?? "",
       content: json['content'],
       upVote: json["score"],
       downVote: json["score_2"],
