@@ -58,7 +58,6 @@ class _PostRowState extends State<PostRow> {
         ),
         if (widget.post.subject.isNotEmpty && widget.post.index != 0)
           _buildSubject(),
-        const Divider(),
       ];
     } else {
       children = [
@@ -67,7 +66,6 @@ class _PostRowState extends State<PostRow> {
           _buildSubject(),
         _buildContent(),
         _buildFooter(),
-        const Divider(),
       ];
     }
 

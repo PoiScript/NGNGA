@@ -78,9 +78,9 @@ class HomePage extends StatelessWidget {
                   }
                   return Divider(height: 0);
                 },
-                semanticIndexCallback: (widget, localIndex) {
-                  if (localIndex.isEven) {
-                    return localIndex ~/ 2;
+                semanticIndexCallback: (widget, index) {
+                  if (index.isEven) {
+                    return index ~/ 2;
                   }
                   return null;
                 },

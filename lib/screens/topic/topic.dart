@@ -99,13 +99,26 @@ class TopicPage extends StatelessWidget {
       header,
       SliverList(
         delegate: SliverChildBuilderDelegate(
-          (context, index) => PostRow(
-            post: posts.elementAt(index),
-            user: users[posts.elementAt(index).userId],
-            topicId: topic.id,
-            everyMinutes: everyMinutes.stream,
-          ),
-          childCount: posts.length,
+          (context, index) {
+            final int itemIndex = index ~/ 2;
+            if (index.isOdd) {
+              final Post post = posts.elementAt(itemIndex);
+              return PostRow(
+                post: post,
+                user: users[post.userId],
+                topicId: topic.id,
+                everyMinutes: everyMinutes.stream,
+              );
+            }
+            return Divider();
+          },
+          semanticIndexCallback: (widget, index) {
+            if (index.isOdd) {
+              return index ~/ 2;
+            }
+            return null;
+          },
+          childCount: posts.length > 0 ? (posts.length * 2 + 1) : 0,
         ),
       ),
       if (posts.last.index ~/ 20 < topic.postsCount ~/ 20) footer

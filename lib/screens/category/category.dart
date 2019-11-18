@@ -131,7 +131,7 @@ class CategoryPage extends StatelessWidget {
                   childCount: topics.length * 2,
                 ),
               ),
-              ...(topics.length ~/ 35 != topicsCount ~/ 35) ? [footer] : [],
+              if (topics.length ~/ 35 != topicsCount ~/ 35) footer,
             ],
           ),
         ),
