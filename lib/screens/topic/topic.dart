@@ -9,7 +9,7 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/store/fetch_posts.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 

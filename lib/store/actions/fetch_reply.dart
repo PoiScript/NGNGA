@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/utils/requests.dart';
 
-import 'state.dart';
+import '../state.dart';
 
 class FetchReplyAction extends ReduxAction<AppState> {
   final int topicId;

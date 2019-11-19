@@ -4,7 +4,7 @@ import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/utils/requests.dart';
 
-import 'state.dart';
+import '../state.dart';
 import 'is_loading.dart';
 
 class FetchTopicsAction extends ReduxAction<AppState> {

@@ -1,6 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 
-import './state.dart';
+import '../state.dart';
 
 class IsLoadingAction extends ReduxAction<AppState> {
   IsLoadingAction(this.val);

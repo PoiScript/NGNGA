@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/utils/requests.dart';
 
 import 'is_loading.dart';
-import 'state.dart';
+import '../state.dart';
 
 class FetchPreviousPostsAction extends ReduxAction<AppState> {
   final int topicId;
@@ -31,7 +30,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
             topicId,
             (topicState) => topicState.copy(
               topic: response.topic,
-              posts: ListQueue.of(response.posts)
+              posts: List.of(response.posts)
                 ..addAll(
                   topicState.posts
                     ..removeWhere((post) => post.index ~/ 20 == 0),
@@ -53,7 +52,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
             topicId,
             (topicState) => topicState.copy(
               topic: response.topic,
-              posts: ListQueue.of(response.posts)..addAll(topicState.posts),
+              posts: List.of(response.posts)..addAll(topicState.posts),
             ),
           ),
       );
@@ -144,11 +143,11 @@ class FetchPostsAction extends ReduxAction<AppState> {
           topicId,
           (topicState) => topicState.copy(
             topic: response.topic,
-            posts: ListQueue.from(response.posts),
+            posts: List.from(response.posts),
           ),
           ifAbsent: () => TopicState(
             topic: response.topic,
-            posts: ListQueue.from(response.posts),
+            posts: List.from(response.posts),
           ),
         ),
     );

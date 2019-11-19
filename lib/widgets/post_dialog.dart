@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
-import 'package:ngnga/store/fetch_reply.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/user_dialog.dart';

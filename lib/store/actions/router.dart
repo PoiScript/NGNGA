@@ -5,7 +5,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
 
-import 'state.dart';
+import '../state.dart';
 
 class NavigateToCategoryAction extends ReduxAction<AppState> {
   final Category category;
@@ -48,7 +48,7 @@ class NavigateToTopicAction extends ReduxAction<AppState> {
           topic.id,
           () => TopicState(
             topic: topic,
-            posts: ListQueue(),
+            posts: List(),
           ),
         ),
     );

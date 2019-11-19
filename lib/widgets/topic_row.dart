@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/models/topic.dart';
-import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';

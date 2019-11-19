@@ -2,8 +2,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/bbcode/render.dart';
-import 'package:ngnga/store/apply_editing.dart';
-import 'package:ngnga/store/prepare_editing.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 class ToolbarIcon extends StatelessWidget {

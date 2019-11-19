@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
-import 'package:ngnga/store/categories.dart';
-import 'package:ngnga/store/fetch_topics.dart';
-import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 

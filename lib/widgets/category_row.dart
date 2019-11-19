@@ -2,7 +2,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:ngnga/models/category.dart';
 
-import 'package:ngnga/store/router.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 class CategoryRow extends StatelessWidget {
