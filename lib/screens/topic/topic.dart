@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -16,13 +15,24 @@ import 'package:ngnga/widgets/title_colorize.dart';
 import 'post_row.dart';
 
 class TopicPage extends StatelessWidget {
-  final ListQueue<Post> posts;
+  final List<Post> posts;
   final Topic topic;
   final Map<int, User> users;
   final bool isLoading;
 
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
+
+  final Future<void> Function({
+    int topicId,
+    int postId,
+    int postIndex,
+  }) upvotePost;
+  final Future<void> Function({
+    int topicId,
+    int postId,
+    int postIndex,
+  }) downvotePost;
 
   final StreamController<DateTime> everyMinutes;
 
@@ -33,6 +43,8 @@ class TopicPage extends StatelessWidget {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.upvotePost,
+    @required this.downvotePost,
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
@@ -106,12 +118,22 @@ class TopicPage extends StatelessWidget {
           (context, index) {
             final int itemIndex = index ~/ 2;
             if (index.isOdd) {
-              final Post post = posts.elementAt(itemIndex);
+              final Post post = posts[itemIndex];
               return PostRow(
                 post: post,
                 user: users[post.userId],
                 topicId: topic.id,
                 everyMinutes: everyMinutes.stream,
+                upvote: () => upvotePost(
+                  topicId: topic.id,
+                  postId: post.id,
+                  postIndex: itemIndex,
+                ),
+                downvote: () => downvotePost(
+                  topicId: topic.id,
+                  postId: post.id,
+                  postIndex: itemIndex,
+                ),
               );
             }
             return Divider();
@@ -155,6 +177,8 @@ class TopicPageConnector extends StatelessWidget {
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
+        upvotePost: vm.upvotePost,
+        downvotePost: vm.downvotePost,
       ),
     );
   }
@@ -164,11 +188,22 @@ class ViewModel extends BaseModel<AppState> {
   final topicId;
 
   Topic topic;
-  ListQueue<Post> posts;
+  List<Post> posts;
   Map<int, User> users;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
+
+  Future<void> Function({
+    int topicId,
+    int postId,
+    int postIndex,
+  }) upvotePost;
+  Future<void> Function({
+    int topicId,
+    int postId,
+    int postIndex,
+  }) downvotePost;
 
   bool isLoading;
 
@@ -182,11 +217,14 @@ class ViewModel extends BaseModel<AppState> {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.upvotePost,
+    @required this.downvotePost,
   }) : super(equals: [isLoading, posts, topic, users]);
 
   @override
   ViewModel fromStore() {
-    var topic = state.topics[topicId];
+    final topic = state.topics[topicId];
+
     return ViewModel.build(
       topicId: topicId,
       posts: topic.posts,
@@ -195,6 +233,20 @@ class ViewModel extends BaseModel<AppState> {
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
+      upvotePost: ({topicId, postId, postIndex}) => dispatchFuture(
+        UpvotePostAction(
+          topicId: topicId,
+          postId: postId,
+          postIndex: postIndex,
+        ),
+      ),
+      downvotePost: ({topicId, postId, postIndex}) => dispatchFuture(
+        DownvotePostAction(
+          topicId: topicId,
+          postId: postId,
+          postIndex: postIndex,
+        ),
+      ),
     );
   }
 }

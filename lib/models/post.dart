@@ -60,6 +60,27 @@ class Post {
                 (clientDetail != null && client != null),
             "client and clientDetail should be set at the same time");
 
+  Post vote(int value) {
+    return Post(
+      id: this.id,
+      topicId: this.topicId,
+      userId: this.userId,
+      replyTo: this.replyTo,
+      createdAt: this.createdAt,
+      subject: this.subject,
+      content: this.content,
+      client: this.client,
+      clientDetail: this.clientDetail,
+      upVote: this.upVote + value,
+      downVote: this.downVote,
+      index: this.index,
+      editedAt: this.editedAt,
+      editedBy: this.editedBy,
+      attachments: this.attachments,
+      isComment: this.isComment,
+    );
+  }
+
   factory Post.fromJson(Map<String, dynamic> json) {
     // this post is actually a comment
     if (json['comment_to_id'] != null) {

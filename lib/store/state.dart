@@ -45,7 +45,7 @@ class CategoryState {
 
 class TopicState {
   final Topic topic;
-  final ListQueue<Post> posts;
+  final List<Post> posts;
 
   TopicState({
     @required this.topic,
@@ -54,7 +54,7 @@ class TopicState {
 
   TopicState copy({
     Topic topic,
-    ListQueue<Post> posts,
+    List<Post> posts,
   }) {
     return TopicState(
       topic: topic ?? this.topic,

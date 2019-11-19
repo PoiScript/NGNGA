@@ -23,14 +23,21 @@ class PostRow extends StatefulWidget {
   final int topicId;
   final Stream<DateTime> everyMinutes;
 
+  final Future<void> Function() upvote;
+  final Future<void> Function() downvote;
+
   PostRow({
     @required this.post,
     @required this.user,
     @required this.topicId,
+    @required this.upvote,
+    @required this.downvote,
     @required this.everyMinutes,
   })  : assert(post != null),
         assert(user != null),
         assert(topicId != null),
+        assert(upvote != null),
+        assert(downvote != null),
         assert(everyMinutes != null);
 
   @override
@@ -149,53 +156,55 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildMetaRow() {
-    return Row(children: [
-      // attachments icon
-      if (widget.post.attachments.isNotEmpty)
-        Icon(Icons.attach_file, color: Colors.grey, size: 16),
-      if (widget.post.attachments.length > 1)
-        Text(
-          "${widget.post.attachments.length}",
-          style: Theme.of(context).textTheme.caption,
-        ),
-      if (widget.post.attachments.isNotEmpty)
-        Container(width: 4),
+    return Row(
+      children: [
+        // attachments icon
+        if (widget.post.attachments.isNotEmpty)
+          Icon(Icons.attach_file, color: Colors.grey, size: 16),
+        if (widget.post.attachments.length > 1)
+          Text(
+            "${widget.post.attachments.length}",
+            style: Theme.of(context).textTheme.caption,
+          ),
+        if (widget.post.attachments.isNotEmpty)
+          Container(width: 4),
 
-      // edit icon
-      if (widget.post.editedAt != null)
-        Icon(Icons.edit, color: Colors.grey, size: 16),
-      if (widget.post.editedAt != null)
-        Container(width: 4),
+        // edit icon
+        if (widget.post.editedAt != null)
+          Icon(Icons.edit, color: Colors.grey, size: 16),
+        if (widget.post.editedAt != null)
+          Container(width: 4),
 
-      // vendor icon
-      if (widget.post.client != null)
-        Icon(
-          VendorIcons.fromClient(widget.post.client),
-          color: Colors.grey,
-          size: 16.0,
-        ),
-      if (widget.post.client != null)
-        Container(width: 4),
+        // vendor icon
+        if (widget.post.client != null)
+          Icon(
+            VendorIcons.fromClient(widget.post.client),
+            color: Colors.grey,
+            size: 16.0,
+          ),
+        if (widget.post.client != null)
+          Container(width: 4),
 
-      // post index
-      if (widget.post.index != 0)
-        Text(
-          "#${widget.post.index}",
-          style: Theme.of(context).textTheme.caption,
-        ),
-      if (widget.post.index != 0)
-        Container(width: 4),
+        // post index
+        if (widget.post.index != 0)
+          Text(
+            "#${widget.post.index}",
+            style: Theme.of(context).textTheme.caption,
+          ),
+        if (widget.post.index != 0)
+          Container(width: 4),
 
-      // post send date in duration format, updated by minutes
-      StreamBuilder<DateTime>(
-        initialData: DateTime.now(),
-        stream: widget.everyMinutes,
-        builder: (context, snapshot) => Text(
-          duration(snapshot.data, widget.post.createdAt),
-          style: Theme.of(context).textTheme.caption,
+        // post send date in duration format, updated by minutes
+        StreamBuilder<DateTime>(
+          initialData: DateTime.now(),
+          stream: widget.everyMinutes,
+          builder: (context, snapshot) => Text(
+            duration(snapshot.data, widget.post.createdAt),
+            style: Theme.of(context).textTheme.caption,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 
   Widget _buildMetaList() {
@@ -360,18 +369,16 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildContent() {
-    var content;
     switch (_displayMode) {
       case DisplayMode.BBCode:
-        content = Container(
+        return Container(
           padding: EdgeInsets.only(bottom: 6.0),
           child: SelectableText(
             widget.post.content.replaceAll("<br/>", "\n"),
           ),
         );
-        break;
       case DisplayMode.RichText:
-        content = BBCodeRender(
+        return BBCodeRender(
           data: widget.post.content,
           openUser: (userId) {
             showDialog(
@@ -393,19 +400,21 @@ class _PostRowState extends State<PostRow> {
             );
           },
         );
-        break;
     }
-    return content;
+    return null;
   }
 
   Widget _buildFooter() {
     return Row(
       children: <Widget>[
         const Spacer(),
-        const Icon(
-          Icons.thumb_up,
-          color: Colors.grey,
-          size: 16.0,
+        InkResponse(
+          child: Icon(
+            Icons.thumb_up,
+            size: 16.0,
+            color: Colors.grey,
+          ),
+          onTap: () => widget.upvote(),
         ),
         widget.post.upVote > 0
             ? Padding(
@@ -416,10 +425,13 @@ class _PostRowState extends State<PostRow> {
                 ),
               )
             : Container(width: 8.0),
-        const Icon(
-          Icons.thumb_down,
-          color: Colors.grey,
-          size: 16.0,
+        InkResponse(
+          child: Icon(
+            Icons.thumb_down,
+            size: 16.0,
+            color: Colors.grey,
+          ),
+          onTap: () => widget.downvote(),
         ),
         Container(width: 8)
       ],
