@@ -151,7 +151,11 @@ class Topic {
       postsCount: json['replies'],
       ancestors: ancestors,
       label: label,
-      author: (json['author'] is String) ? json['author'] : "",
+      author: json['authorid'] is int
+          ? (json['author'] is String
+              ? json['author']
+              : "UID${json['authorid']}")
+          : "#ANONYMOUS#",
       lastPoster: json['lastposter'],
       isLocked: type & _MASK_LOCKED == _MASK_LOCKED,
       category: category,
