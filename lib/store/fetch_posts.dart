@@ -1,63 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
-import 'package:http/http.dart';
 
-import 'package:ngnga/models/post.dart';
-import 'package:ngnga/models/topic.dart';
-import 'package:ngnga/models/user.dart';
+import 'package:ngnga/utils/requests.dart';
 
 import 'is_loading.dart';
 import 'state.dart';
-
-class _FetchTopicResponse {
-  final Topic topic;
-  final Iterable<Post> posts;
-  final List<MapEntry<int, User>> users;
-
-  _FetchTopicResponse({this.topic, this.posts, this.users});
-
-  factory _FetchTopicResponse.fromJson(Map<String, dynamic> json) {
-    List<MapEntry<int, User>> users = [];
-
-    for (var entry in Map.from(json["data"]["__U"]).entries) {
-      try {
-        final userId = int.parse(entry.key);
-        final user = User.fromJson(entry.value);
-        users.add(MapEntry(userId, user));
-      } catch (_) {}
-    }
-
-    return _FetchTopicResponse(
-      topic: Topic.fromJson(json["data"]["__T"]),
-      posts:
-          List.from(json["data"]["__R"]).map((value) => Post.fromJson(value)),
-      users: users,
-    );
-  }
-}
-
-Future<_FetchTopicResponse> _fetchTopic(
-  int topicId,
-  int page,
-  List<String> cookies,
-) async {
-  final uri = Uri.https("nga.178.com", "read.php", {
-    "tid": topicId.toString(),
-    "page": (page + 1).toString(),
-    "__output": "11",
-  });
-
-  print(uri);
-
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
-
-  final json = jsonDecode(res.body);
-
-  return _FetchTopicResponse.fromJson(json);
-}
 
 class FetchPreviousPostsAction extends ReduxAction<AppState> {
   final int topicId;
@@ -66,10 +15,14 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    var firstPage = state.topics[topicId].posts.first.index ~/ 20;
+    final firstPage = state.topics[topicId].posts.first.index ~/ 20;
 
     if (firstPage == 0) {
-      var response = await _fetchTopic(topicId, 0, state.cookies);
+      final response = await fetchTopicPosts(
+        topicId: topicId,
+        page: 0,
+        cookies: state.cookies,
+      );
 
       return state.copy(
         users: state.users..addEntries(response.users),
@@ -87,7 +40,11 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
           ),
       );
     } else {
-      var response = await _fetchTopic(topicId, firstPage - 1, state.cookies);
+      final response = await fetchTopicPosts(
+        topicId: topicId,
+        page: firstPage - 1,
+        cookies: state.cookies,
+      );
 
       return state.copy(
         users: state.users..addEntries(response.users),
@@ -118,7 +75,11 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
     var lastPage = state.topics[topicId].posts.last.index ~/ 20;
 
     if (lastPage < state.topics[topicId].topic.postsCount ~/ 20) {
-      var response = await _fetchTopic(topicId, lastPage + 1, state.cookies);
+      final response = await fetchTopicPosts(
+        topicId: topicId,
+        page: lastPage + 1,
+        cookies: state.cookies,
+      );
 
       return state.copy(
         users: state.users..addEntries(response.users),
@@ -132,8 +93,13 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
           ),
       );
     } else {
-      var response = await _fetchTopic(topicId, lastPage, state.cookies);
-      var firstIndex = response.posts.first.index;
+      final response = await fetchTopicPosts(
+        topicId: topicId,
+        page: lastPage,
+        cookies: state.cookies,
+      );
+
+      final firstIndex = response.posts.first.index;
 
       return state.copy(
         users: state.users..addEntries(response.users),
@@ -165,7 +131,11 @@ class FetchPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    var response = await _fetchTopic(topicId, pageIndex, state.cookies);
+    var response = await fetchTopicPosts(
+      topicId: topicId,
+      page: pageIndex,
+      cookies: state.cookies,
+    );
 
     return state.copy(
       users: state.users..addEntries(response.users),

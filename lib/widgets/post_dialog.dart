@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/utils/requests.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 import 'package:ngnga/store/update_user.dart';
 
@@ -145,7 +144,11 @@ class _PostDialogState extends State<PostDialog> {
         return post.first;
       }
     }
-    var response = await _fetchOnePost(topicId, postId, widget.cookies);
+    var response = await fetchReply(
+      topicId: topicId,
+      postId: postId,
+      cookies: widget.cookies,
+    );
     widget.updateUsers(response.users);
     return response.post;
   }
@@ -174,43 +177,6 @@ class PostDialogConnector extends StatelessWidget {
       ),
     );
   }
-}
-
-class _FetchPostResponse {
-  final Post post;
-  final Iterable<MapEntry<int, User>> users;
-
-  _FetchPostResponse({this.post, this.users});
-
-  factory _FetchPostResponse.fromJson(Map<String, dynamic> json) {
-    return _FetchPostResponse(
-      post: Post.fromJson(json["data"]["__R"].first),
-      users: Map.from(json["data"]["__U"])
-          .values
-          .map((value) => User.fromJson(value))
-          .map((user) => MapEntry(user.id, user)),
-    );
-  }
-}
-
-Future<_FetchPostResponse> _fetchOnePost(
-  int topicId,
-  int postId,
-  List<String> cookies,
-) async {
-  final uri = Uri.https("nga.178.com", "read.php", {
-    "pid": postId.toString(),
-    "tid": topicId.toString(),
-    "__output": "11",
-  });
-
-  print(uri);
-
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
-
-  final json = jsonDecode(res.body);
-
-  return _FetchPostResponse.fromJson(json);
 }
 
 class ViewModel extends BaseModel<AppState> {

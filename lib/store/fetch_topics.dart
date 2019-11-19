@@ -1,59 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/widgets.dart';
-import 'package:http/http.dart';
 
-import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/utils/requests.dart';
 
 import 'state.dart';
 import 'is_loading.dart';
-
-class _FetchTopicsResponse {
-  final Iterable<Topic> topics;
-  final int topicCount;
-
-  _FetchTopicsResponse({
-    @required this.topics,
-    @required this.topicCount,
-  }) : assert(topics != null && topicCount != null);
-
-  factory _FetchTopicsResponse.fromJson(Map<String, dynamic> json) {
-    return _FetchTopicsResponse(
-      topics: (json["data"]["__T"] is List)
-          ? List.from(json["data"]["__T"]).map((value) => Topic.fromJson(value))
-          : Map.from(json["data"]["__T"])
-              .values
-              .map((value) => Topic.fromJson(value)),
-      topicCount: json["data"]["__ROWS"],
-    );
-  }
-}
-
-Future<_FetchTopicsResponse> _fetchTopics(
-  int categoryId,
-  int pageIndex,
-  bool isSubcategory,
-  List<String> cookies,
-) async {
-  final uri = Uri.https(
-    "nga.178.com",
-    "thread.php",
-    {
-      "page": (pageIndex + 1).toString(),
-      "__output": "11",
-    }..putIfAbsent(isSubcategory ? "stid" : "fid", () => categoryId.toString()),
-  );
-
-  print(uri);
-
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
-
-  final json = jsonDecode(res.body);
-
-  return _FetchTopicsResponse.fromJson(json);
-}
 
 class FetchTopicsAction extends ReduxAction<AppState> {
   final int categoryId;
@@ -62,11 +14,11 @@ class FetchTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final response = await _fetchTopics(
-      categoryId,
-      0,
-      state.categories[categoryId].category.isSubcategory,
-      state.cookies,
+    final response = await fetchCategoryTopics(
+      categoryId: categoryId,
+      page: 0,
+      isSubcategory: state.categories[categoryId].category.isSubcategory,
+      cookies: state.cookies,
     );
 
     return state.copy(
@@ -98,11 +50,11 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
 
     assert(lastPage <= (state.categories[categoryId].topicsCount / 35).ceil());
 
-    final response = await _fetchTopics(
-      categoryId,
-      lastPage + 1,
-      state.categories[categoryId].category.isSubcategory,
-      state.cookies,
+    final response = await fetchCategoryTopics(
+      categoryId: categoryId,
+      page: lastPage + 1,
+      isSubcategory: state.categories[categoryId].category.isSubcategory,
+      cookies: state.cookies,
     );
 
     return state.copy(
