@@ -2,32 +2,36 @@ import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
-import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/favorite.dart';
 
 class FetchFavorTopicsResponse {
-  final List<Topic> topics;
-  final int topicCount;
+  final List<Favorite> favorites;
+  final int favoriteCount;
 
   FetchFavorTopicsResponse._({
-    this.topics,
-    this.topicCount,
-  }) : assert(topics != null && topicCount != null);
+    this.favorites,
+    this.favoriteCount,
+  }) : assert(favorites != null && favoriteCount != null);
 
   factory FetchFavorTopicsResponse.fromJson(Map<String, dynamic> json) {
     return FetchFavorTopicsResponse._(
-      topics: List.from(json["data"]["__T"])
-          .map((value) => Topic.fromJson(value))
+      favorites: List.from(json["data"][0][0])
+          .map((value) => Favorite.fromJson(value))
           .toList(),
-      topicCount: json["data"]["__ROWS"],
+      favoriteCount: json["data"][0][1],
     );
   }
 }
 
 Future<FetchFavorTopicsResponse> fetchFavorTopics({
   @required List<String> cookies,
+  @required int page,
 }) async {
-  final uri = Uri.https("nga.178.com", "thread.php", {
-    "favor": "1",
+  final uri = Uri.https("nga.178.com", "nuke.php", {
+    "__lib": "topic_favor",
+    "__act": "topic_favor",
+    "action": "get",
+    "page": (page + 1).toString(),
     "__output": "11",
   });
 

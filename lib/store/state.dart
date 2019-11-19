@@ -4,12 +4,39 @@ import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:ngnga/models/favorite.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
+
+class FavoriteState {
+  final List<Favorite> favorites;
+  final int favoriteCount;
+  final int lastPage;
+
+  FavoriteState({
+    @required this.favorites,
+    @required this.favoriteCount,
+    @required this.lastPage,
+  })  : assert(favorites != null),
+        assert(favoriteCount != null),
+        assert(lastPage != null);
+
+  FavoriteState copy({
+    List<Favorite> favorites,
+    int favoriteCount,
+    int lastPage,
+  }) {
+    return FavoriteState(
+      favorites: favorites ?? this.favorites,
+      favoriteCount: favoriteCount ?? this.favoriteCount,
+      lastPage: lastPage ?? this.lastPage,
+    );
+  }
+}
 
 class CategoryState {
   final Category category;
@@ -83,7 +110,7 @@ class PostWrapper {
 }
 
 class AppState {
-  final List<Topic> favorTopics;
+  final FavoriteState favorites;
   final List<Category> savedCategories;
   final Map<int, User> users;
   final Map<int, CategoryState> categories;
@@ -96,7 +123,7 @@ class AppState {
 
   AppState({
     @required this.isLoading,
-    @required this.favorTopics,
+    @required this.favorites,
     @required this.savedCategories,
     @required this.cookies,
     @required this.users,
@@ -105,14 +132,14 @@ class AppState {
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
   })  : assert(categories != null),
-        assert(favorTopics != null),
+        assert(favorites != null),
         assert(savedCategories != null),
         assert(isLoading != null),
         assert(topics != null),
         assert(users != null);
 
   AppState copy({
-    List<Topic> favorTopics,
+    FavoriteState favorites,
     List<Category> savedCategories,
     Map<int, CategoryState> categories,
     Map<int, TopicState> topics,
@@ -124,7 +151,7 @@ class AppState {
   }) {
     return AppState(
       savedCategories: savedCategories ?? this.savedCategories,
-      favorTopics: favorTopics ?? this.favorTopics,
+      favorites: favorites ?? this.favorites,
       categories: categories ?? this.categories,
       topics: topics ?? this.topics,
       users: users ?? this.users,
@@ -143,7 +170,7 @@ class AppState {
       categories: Map(),
       topics: Map(),
       users: Map(),
-      favorTopics: List(),
+      favorites: FavoriteState(favorites: [], favoriteCount: 0, lastPage: 0),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
     );

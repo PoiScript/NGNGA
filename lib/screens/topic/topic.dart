@@ -303,7 +303,9 @@ class ViewModel extends BaseModel<AppState> {
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
-      isFavorited: state.favorTopics.indexWhere((t) => t.id == topicId) != -1,
+      isFavorited:
+          state.favorites.favorites.indexWhere((f) => f.topic.id == topicId) !=
+              -1,
       addToFavorites: () => dispatchFuture(
         AddToFavoritesAction(topicId: topicId),
       ),

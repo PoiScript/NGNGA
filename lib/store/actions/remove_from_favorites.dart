@@ -22,5 +22,5 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
     return state;
   }
 
-  void after() => dispatch(FetchFavorTopicsAction());
+  void after() => dispatch(FetchFavoritesAction());
 }

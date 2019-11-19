@@ -22,5 +22,5 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
     return state;
   }
 
-  void after() => dispatch(FetchFavorTopicsAction());
+  void after() => dispatch(FetchFavoritesAction());
 }

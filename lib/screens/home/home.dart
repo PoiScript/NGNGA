@@ -5,7 +5,7 @@ import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/category.dart';
-import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/favorite.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/category_row.dart';
@@ -18,19 +18,19 @@ const kExpandedHeight = 150.0;
 
 class HomePage extends StatelessWidget {
   final List<Category> categories;
-  final List<Topic> topics;
+  final List<Favorite> favorites;
   final bool isLoading;
 
   final Future<void> Function() onRefresh;
 
   HomePage({
     @required this.categories,
-    @required this.topics,
+    @required this.favorites,
     @required this.isLoading,
     @required this.onRefresh,
   })  : assert(categories != null),
         assert(isLoading != null),
-        assert(topics != null),
+        assert(favorites != null),
         assert(onRefresh != null);
 
   @override
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
                   final int itemIndex = index ~/ 2;
                   if (index.isEven) {
                     return TopicRowConnector(
-                      topics[itemIndex],
+                      favorites[itemIndex].topic,
                     );
                   }
                   return Divider(height: 0);
@@ -84,7 +84,8 @@ class HomePage extends StatelessWidget {
                   }
                   return null;
                 },
-                childCount: topics.length > 0 ? (topics.length * 2 - 1) : 0,
+                childCount:
+                    favorites.length > 0 ? (favorites.length * 2 - 1) : 0,
               ),
             ),
             SliverPersistentHeader(
@@ -113,10 +114,10 @@ class HomePageConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
-      onInit: (store) => store.dispatch(FetchFavorTopicsAction()),
+      onInit: (store) => store.dispatch(FetchFavoritesAction()),
       builder: (context, vm) => HomePage(
         categories: vm.categories,
-        topics: vm.topics,
+        favorites: vm.favorites,
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
       ),
@@ -126,7 +127,7 @@ class HomePageConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   List<Category> categories;
-  List<Topic> topics;
+  List<Favorite> favorites;
   bool isLoading;
 
   Future<void> Function() onRefresh;
@@ -135,18 +136,18 @@ class ViewModel extends BaseModel<AppState> {
 
   ViewModel.build({
     @required this.categories,
-    @required this.topics,
+    @required this.favorites,
     @required this.isLoading,
     @required this.onRefresh,
-  }) : super(equals: [categories, topics, isLoading]);
+  }) : super(equals: [categories, favorites, isLoading]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
       categories: state.savedCategories,
-      topics: state.favorTopics,
+      favorites: state.favorites.favorites,
       isLoading: state.isLoading,
-      onRefresh: () => dispatchFuture(FetchFavorTopicsAction()),
+      onRefresh: () => dispatchFuture(FetchFavoritesAction()),
     );
   }
 }
