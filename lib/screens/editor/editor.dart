@@ -1,51 +1,22 @@
-import 'dart:convert';
-
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/store/apply_editing.dart';
+import 'package:ngnga/store/prepare_editing.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/gbk_encode.dart';
 
-class _PrepareEditResponse {
-  final String content;
-  final String subject;
-  final String attachUrl;
+class ToolbarIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
 
-  _PrepareEditResponse({
-    this.content,
-    this.subject,
-    this.attachUrl,
-  });
+  ToolbarIcon({this.icon, this.onTap});
 
-  factory _PrepareEditResponse.fromJson(Map<String, dynamic> json) {
-    if (json['code'] is int && json['code'] == 0) {
-      return _PrepareEditResponse(
-        content: json['result'][0]['content'],
-        subject: json['result'][0]['subject'],
-        attachUrl: json['result'][0]['attach_url'],
-      );
-    } else {
-      // TODO: error handling
-      return _PrepareEditResponse();
-    }
-  }
-}
-
-class _AppleEditResponse {
-  final int code;
-  final String message;
-
-  _AppleEditResponse({
-    @required this.code,
-    @required this.message,
-  });
-
-  factory _AppleEditResponse.fromJson(Map<String, dynamic> json) {
-    return _AppleEditResponse(
-      code: json['code'],
-      message: json['msg'],
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Icon(icon, size: 30.0),
+      onTap: onTap,
     );
   }
 }
@@ -58,21 +29,285 @@ const int ACTION_MODIFY = 3;
 const int ACTION_COMMENT = 4;
 
 class EditorPage extends StatefulWidget {
+  final Event<Editing> setEditingEvt;
+
+  final Future<void> Function(String, String) applyEditing;
+
+  EditorPage({
+    @required this.setEditingEvt,
+    @required this.applyEditing,
+  })  : assert(setEditingEvt != null),
+        assert(applyEditing != null);
+
+  @override
+  _EditorPageState createState() => _EditorPageState();
+}
+
+class _EditorPageState extends State<EditorPage> {
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  bool isPreviewing = false;
+  bool isSending = false;
+  bool isLoading = true;
+  OverlayEntry overlayEntry;
+
+  String attachUrl;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _displayOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _removeOverlay();
+  }
+
+  _removeOverlay() {
+    if (overlayEntry != null) {
+      overlayEntry.remove();
+      overlayEntry = null;
+    }
+  }
+
+  _displayOverlay() {
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        right: 0.0,
+        left: 0.0,
+        child: Container(
+          alignment: Alignment.center,
+          color: Theme.of(context).cardColor,
+          child: Wrap(
+            children: <Widget>[
+              ToolbarIcon(
+                icon: Icons.format_bold,
+                onTap: () => _insertPair("[b]", "[/b]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.format_italic,
+                onTap: () => _insertPair("[i]", "[/i]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.format_underlined,
+                onTap: () => _insertPair("[u]", "[/u]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.format_quote,
+                onTap: () => _insertPair("[quote]", "[/quote]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.format_strikethrough,
+                onTap: () => _insertPair("[del]", "[/del]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.format_list_bulleted,
+                onTap: () {},
+              ),
+              ToolbarIcon(
+                icon: Icons.title,
+                onTap: () => _insertPair("[h]", "[/h]"),
+              ),
+              ToolbarIcon(
+                icon: Icons.code,
+                onTap: () => _insertPair("[code]", "[/code]"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    OverlayState overlayState = Overlay.of(context);
+    overlayState.insert(overlayEntry);
+  }
+
+  @override
+  void didUpdateWidget(EditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    consumeEvents();
+  }
+
+  consumeEvents() {
+    Editing editing = widget.setEditingEvt.consume();
+    if (editing != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+          _subjectController.text = editing.subject;
+          _contentController.text = editing.content;
+        }
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Stack(
+      children: <Widget>[
+        Scaffold(
+          key: _scaffoldKey,
+          appBar: AppBar(
+            leading: const BackButton(color: Colors.black),
+            elevation: 0.0,
+            title: Text(
+              "Editor",
+              style: Theme.of(context)
+                  .textTheme
+                  .body1
+                  .copyWith(color: Colors.black),
+            ),
+            backgroundColor: Colors.white,
+            actions: <Widget>[
+              FlatButton(
+                child: isPreviewing ? Text("Edit") : Text("Preview"),
+                onPressed: () {
+                  if (!isPreviewing) _removeOverlay();
+                  setState(() => isPreviewing = !isPreviewing);
+                },
+              ),
+              FlatButton(
+                child: Text("Send"),
+                onPressed: () => _submit(),
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (!isPreviewing)
+                    TextField(
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: 'Subject',
+                        border: InputBorder.none,
+                      ),
+                      controller: _subjectController,
+                    ),
+                  if (!isPreviewing)
+                    TextField(
+                      focusNode: _focusNode,
+                      keyboardType: TextInputType.multiline,
+                      decoration: InputDecoration(
+                        labelText: 'Content',
+                        border: InputBorder.none,
+                      ),
+                      maxLines: null,
+                      controller: _contentController,
+                      autofocus: true,
+                    ),
+                  if (isPreviewing && _subjectController.text.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        _subjectController.text,
+                        style: Theme.of(context).textTheme.subhead,
+                      ),
+                    ),
+                  if (isPreviewing && _contentController.text.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: BBCodeRender(
+                        data: _contentController.text,
+                        // TODO
+                        openLink: (x) => {},
+                        openPost: (x, y, z) => {},
+                        openUser: (x) => {},
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (isSending) ModalBarrier(color: Colors.red.withOpacity(0.4)),
+      ],
+    );
+  }
+
+  _insertContent(String content) {
+    int baseOffset = _contentController.selection.baseOffset;
+    int extentOffset = _contentController.selection.extentOffset;
+    String text = _contentController.text;
+
+    _contentController.value = _contentController.value.copyWith(
+      text:
+          "${text.substring(0, baseOffset)}$content${text.substring(extentOffset)}",
+      selection: TextSelection.collapsed(offset: baseOffset + content.length),
+    );
+  }
+
+  _insertPair(String start, String end) {
+    int baseOffset = _contentController.selection.baseOffset;
+    int extentOffset = _contentController.selection.extentOffset;
+    String text = _contentController.text;
+
+    if (baseOffset != extentOffset) {
+      _contentController.value = _contentController.value.copyWith(
+        text:
+            "${text.substring(0, baseOffset)}$start${text.substring(baseOffset, extentOffset)}$end${text.substring(extentOffset)}",
+        selection: TextSelection(
+          baseOffset: baseOffset + start.length,
+          extentOffset: extentOffset + start.length,
+        ),
+      );
+    } else {
+      _contentController.value = _contentController.value.copyWith(
+        text:
+            "${text.substring(0, baseOffset)}$start$end${text.substring(extentOffset)}",
+        selection: TextSelection.collapsed(offset: baseOffset + start.length),
+      );
+    }
+  }
+
+  Future<void> _submit() async {
+    setState(() => isSending = true);
+
+    _removeOverlay();
+
+    await widget.applyEditing(
+      _subjectController.text,
+      _contentController.text,
+    );
+
+    // close editor page
+    Navigator.pop(context);
+  }
+}
+
+class EditorPageConnector extends StatelessWidget {
   final int action;
   final int categoryId;
   final int topicId;
   final int postId;
-  final List<String> cookies;
 
-  EditorPage({
+  EditorPageConnector({
     @required this.action,
     @required this.categoryId,
     @required this.topicId,
     @required this.postId,
-    @required this.cookies,
-    List<String> cookis,
-  })  : assert(cookies != null),
-        assert(action == ACTION_NEW_TOPIC ||
+  })  : assert(action == ACTION_NEW_TOPIC ||
             action == ACTION_QUOTE ||
             action == ACTION_REPLY ||
             action == ACTION_MODIFY ||
@@ -89,239 +324,69 @@ class EditorPage extends StatefulWidget {
             (categoryId == null && topicId != null));
 
   @override
-  _EditorPageState createState() => _EditorPageState();
-}
-
-class _EditorPageState extends State<EditorPage> {
-  final TextEditingController _controller = TextEditingController();
-
-  bool isPreview = false;
-  bool isLoading = true;
-  String subject;
-  String attachUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _prepareEditing().then((res) {
-      setState(() {
-        isLoading = false;
-        _controller.text = res.content;
-        subject = res.subject;
-        attachUrl = res.attachUrl;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        elevation: 0.0,
-        title: Text(
-          "Editor",
-          style:
-              Theme.of(context).textTheme.body1.copyWith(color: Colors.black),
-        ),
-        backgroundColor: Colors.white,
-        actions: <Widget>[
-          FlatButton(
-            child: isPreview ? Text("Edit") : Text("Preview"),
-            onPressed: () => setState(() => isPreview = !isPreview),
-          ),
-          FlatButton(
-            child: Text("Send"),
-            onPressed: () async {
-              _showIndicatorDialog();
-              // TODO: FIXME: display snack bar
-              try {
-                final res = await _applyEditing();
-                if (res.code == 1) {
-                  _controller.clear();
-                  // Scaffold.of(context).showSnackBar(SnackBar(
-                  //   content: Text("Post sent."),
-                  // ));
-                  // close dialog
-                  Navigator.pop(context);
-                  // close editor page
-                  Navigator.pop(context);
-                } else {
-                  print(res.message);
-                  // Scaffold.of(context).showSnackBar(SnackBar(
-                  //   content: Text("Failed to send."),
-                  // ));
-                  // close dialog
-                  Navigator.pop(context);
-                }
-              } catch (e) {
-                print(e);
-                // Scaffold.of(context).showSnackBar(SnackBar(
-                //   content: Text("Failed to send."),
-                // ));
-                // close dialog
-                Navigator.pop(context);
-              }
-            },
-          ),
-        ],
-      ),
-      body: isPreview ? _previewSection() : _editorSection(),
-    );
-  }
-
-  Widget _previewSection() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: BBCodeRender(
-          data: _controller.text,
-          // TODO
-          openLink: (x) => {},
-          openPost: (x, y, z) => {},
-          openUser: (x) => {},
-        ),
-      ),
-    );
-  }
-
-  Widget _editorSection() {
-    return Container(
-      padding: EdgeInsets.all(8.0),
-      child: TextField(
-        keyboardType: TextInputType.multiline,
-        minLines: 10,
-        maxLines: null,
-        controller: _controller,
-        autofocus: true,
-      ),
-    );
-  }
-
-  _showIndicatorDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        children: <Widget>[
-          Center(child: CircularProgressIndicator()),
-        ],
-      ),
-    );
-  }
-
-  StringBuffer _getQuery() {
-    final sb = StringBuffer("__output=14");
-
-    switch (widget.action) {
-      case ACTION_NEW_TOPIC:
-        sb.write("&action=new");
-        break;
-      case ACTION_QUOTE:
-        sb.write("&action=quote");
-        break;
-      case ACTION_REPLY:
-        sb.write("&action=reply");
-        break;
-      case ACTION_MODIFY:
-        sb.write("&action=modify");
-        break;
-      case ACTION_COMMENT:
-        sb..write("&action=reply")..write("&comment=1");
-        break;
-    }
-
-    if (widget.categoryId != null) {
-      sb.write("&fid=${widget.categoryId}");
-    }
-
-    if (widget.topicId != null) {
-      sb.write("&tid=${widget.topicId}");
-    }
-
-    if (widget.postId != null) {
-      sb.write("&pid=${widget.postId}");
-    }
-
-    return sb;
-  }
-
-  Future<_PrepareEditResponse> _prepareEditing() async {
-    final query = _getQuery();
-
-    final uri = "https://nga.178.com/post.php?${query.toString()}";
-
-    print(uri);
-
-    final res = await get(uri, headers: {"cookie": widget.cookies.join(";")});
-
-    final json = jsonDecode(res.body);
-
-    return _PrepareEditResponse.fromJson(json);
-  }
-
-  Future<_AppleEditResponse> _applyEditing() async {
-    final query = _getQuery()..write("&step=2");
-
-    query.write("&post_content=${encodeUrlGbk(_controller.text).toString()}");
-
-    // we're manually encode url here, so we have to concatenate it by hand
-    final uri = "https://nga.178.com/post.php?${query.toString()}";
-
-    print(uri);
-
-    final res = await post(uri, headers: {"cookie": widget.cookies.join(";")});
-
-    final json = jsonDecode(res.body);
-
-    return _AppleEditResponse.fromJson(json);
-  }
-}
-
-class EditorPageConnector extends StatelessWidget {
-  final int action;
-  final int categoryId;
-  final int topicId;
-  final int postId;
-
-  EditorPageConnector({
-    @required this.action,
-    @required this.categoryId,
-    @required this.topicId,
-    @required this.postId,
-  });
-
-  @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
-      builder: (context, vm) => EditorPage(
+      model: ViewModel(
         action: action,
         categoryId: categoryId,
         topicId: topicId,
         postId: postId,
-        cookies: vm.cookies,
+      ),
+      onInit: (store) => store.dispatch(PrepareEditingAction(
+        action: action,
+        categoryId: categoryId,
+        topicId: topicId,
+        postId: postId,
+      )),
+      builder: (context, vm) => EditorPage(
+        setEditingEvt: vm.setEditingEvt,
+        applyEditing: vm.applyEditing,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  List<String> cookies;
+  final int action;
+  final int categoryId;
+  final int topicId;
+  final int postId;
 
-  ViewModel();
+  Event<Editing> setEditingEvt;
+  Future<void> Function(String, String) applyEditing;
+
+  ViewModel({
+    @required this.action,
+    @required this.categoryId,
+    @required this.topicId,
+    @required this.postId,
+  });
 
   ViewModel.build({
-    @required this.cookies,
-  });
+    @required this.action,
+    @required this.categoryId,
+    @required this.topicId,
+    @required this.postId,
+    @required this.setEditingEvt,
+    @required this.applyEditing,
+  }) : super(equals: [setEditingEvt]);
 
   @override
   BaseModel fromStore() {
     return ViewModel.build(
-      cookies: state.cookies,
+      action: action,
+      categoryId: categoryId,
+      topicId: topicId,
+      postId: postId,
+      setEditingEvt: state.setEditingEvt,
+      applyEditing: (subject, content) => dispatchFuture(ApplyEditingAction(
+        action: action,
+        categoryId: categoryId,
+        topicId: topicId,
+        postId: postId,
+        subject: subject,
+        content: content,
+      )),
     );
   }
 }

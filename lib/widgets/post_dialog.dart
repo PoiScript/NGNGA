@@ -6,37 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
+import 'package:ngnga/store/fetch_reply.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
-import 'package:ngnga/utils/requests.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
-import 'package:ngnga/store/update_user.dart';
 
 import 'link_dialog.dart';
 
 class PostDialog extends StatefulWidget {
-  final int topicId, postId;
   final Map<int, User> users;
-  final Map<int, TopicState> topics;
-  final List<String> cookies;
 
   final StreamController<DateTime> everyMinutes;
 
-  final void Function(Iterable<MapEntry<int, User>>) updateUsers;
+  final Event<Post> fetchReplyEvt;
+  final Function(int, int) fetchReply;
 
   PostDialog({
-    @required this.topicId,
-    @required this.postId,
     @required this.users,
-    @required this.topics,
-    @required this.cookies,
-    @required this.updateUsers,
-  })  : assert(topicId != null),
-        assert(postId != null),
-        assert(users != null),
-        assert(topics != null),
-        assert(cookies != null),
-        assert(updateUsers != null),
+    @required this.fetchReply,
+    @required this.fetchReplyEvt,
+  })  : assert(users != null),
+        assert(fetchReply != null),
+        assert(fetchReplyEvt != null),
         everyMinutes = StreamController.broadcast()
           ..addStream(
             Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
@@ -47,15 +38,28 @@ class PostDialog extends StatefulWidget {
 }
 
 class _PostDialogState extends State<PostDialog> {
-  final List<Future<Post>> posts = [];
-  final List<int> postIds = [];
-  final ScrollController _scrollController = ScrollController();
+  final List<Post> posts = [];
+
+  bool isLoading = true;
 
   @override
-  void initState() {
-    super.initState();
-    postIds.add(widget.postId);
-    posts.add(_findPostContent(widget.topicId, widget.postId));
+  void didUpdateWidget(PostDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _consumeEvents();
+  }
+
+  _consumeEvents() {
+    Post newPost = widget.fetchReplyEvt.consume();
+    print(newPost);
+    if (newPost != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            posts.add(newPost);
+            isLoading = false;
+          });
+        }
+      });
   }
 
   @override
@@ -66,91 +70,70 @@ class _PostDialogState extends State<PostDialog> {
         ListView.separated(
           reverse: true,
           shrinkWrap: true,
-          itemCount: posts.length,
-          controller: _scrollController,
+          itemCount: isLoading ? posts.length + 1 : posts.length,
           separatorBuilder: (context, index) => Divider(height: 0.0),
           itemBuilder: (context, index) => Container(
             padding: EdgeInsets.all(8.0),
-            child: FutureBuilder<Post>(
-              future: posts[index],
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  var post = snapshot.data;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          children: <Widget>[
-                            Text(
-                              widget.users[post.userId].username,
-                              style: Theme.of(context).textTheme.caption,
-                            ),
-                            const Spacer(),
-                            StreamBuilder<DateTime>(
-                              initialData: DateTime.now(),
-                              stream: widget.everyMinutes.stream,
-                              builder: (context, snapshot) => Text(
-                                duration(snapshot.data, post.createdAt),
-                                style: Theme.of(context).textTheme.caption,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      BBCodeRender(
-                        data: post.content,
-                        openLink: (url) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => LinkDialog(url),
-                          );
-                        },
-                        openUser: (userId) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => UserDialog(userId),
-                          );
-                        },
-                        openPost: _openPost,
-                      ),
-                    ],
-                  );
-                }
-                return Center(child: CircularProgressIndicator());
-              },
-            ),
+            child: index == posts.length
+                ? Center(child: CircularProgressIndicator())
+                : _buildContent(posts[index]),
           ),
         ),
       ],
     );
   }
 
-  _openPost(int topicId, int page, int postId) {
-    if (!postIds.contains(postId)) {
-      setState(() {
-        postIds.add(postId);
-        posts.add(_findPostContent(topicId, postId));
-      });
-    }
+  Widget _buildContent(Post post) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            children: <Widget>[
+              Text(
+                widget.users[post.userId].username,
+                style: Theme.of(context).textTheme.caption,
+              ),
+              const Spacer(),
+              StreamBuilder<DateTime>(
+                initialData: DateTime.now(),
+                stream: widget.everyMinutes.stream,
+                builder: (context, snapshot) => Text(
+                  duration(snapshot.data, post.createdAt),
+                  style: Theme.of(context).textTheme.caption,
+                ),
+              ),
+            ],
+          ),
+        ),
+        BBCodeRender(
+          data: post.content,
+          openLink: (url) {
+            showDialog(
+              context: context,
+              builder: (context) => LinkDialog(url),
+            );
+          },
+          openUser: (userId) {
+            showDialog(
+              context: context,
+              builder: (context) => UserDialog(userId),
+            );
+          },
+          openPost: _openPost,
+        ),
+      ],
+    );
   }
 
-  Future<Post> _findPostContent(int topicId, int postId) async {
-    var topic = widget.topics[topicId];
-    if (topic != null) {
-      var post = topic.posts.where((post) => post.id == postId);
-      if (post.isNotEmpty) {
-        return post.first;
-      }
+  _openPost(int topicId, int page, int postId) {
+    if (!isLoading && posts.where((p) => p.id == postId).isEmpty) {
+      widget.fetchReply(topicId, postId);
+      setState(() {
+        isLoading = true;
+      });
     }
-    var response = await fetchReply(
-      topicId: topicId,
-      postId: postId,
-      cookies: widget.cookies,
-    );
-    widget.updateUsers(response.users);
-    return response.post;
   }
 }
 
@@ -167,13 +150,14 @@ class PostDialogConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
-      builder: (context, vm) => PostDialog(
-        topics: vm.topics,
-        users: vm.users,
-        cookies: vm.cookies,
-        updateUsers: vm.updateUsers,
+      onInit: (store) => store.dispatch(FetchReplyAction(
         topicId: topicId,
         postId: postId,
+      )),
+      builder: (context, vm) => PostDialog(
+        users: vm.users,
+        fetchReply: vm.fetchReply,
+        fetchReplyEvt: vm.fetchReplyEvt,
       ),
     );
   }
@@ -181,26 +165,27 @@ class PostDialogConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
-  Map<int, TopicState> topics;
-  List<String> cookies;
-  void Function(Iterable<MapEntry<int, User>>) updateUsers;
+
+  Function(int, int) fetchReply;
+  Event<Post> fetchReplyEvt;
 
   ViewModel();
 
   ViewModel.build({
-    @required this.topics,
     @required this.users,
-    @required this.cookies,
-    @required this.updateUsers,
-  }) : super(equals: [topics, users, cookies]);
+    @required this.fetchReply,
+    @required this.fetchReplyEvt,
+  }) : super(equals: [users, fetchReplyEvt]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      topics: state.topics,
       users: state.users,
-      cookies: state.cookies,
-      updateUsers: (users) => dispatch(UpdateUsersAction(users)),
+      fetchReply: (topicId, postId) => dispatch(FetchReplyAction(
+        topicId: topicId,
+        postId: postId,
+      )),
+      fetchReplyEvt: state.fetchReplyEvt,
     );
   }
 }

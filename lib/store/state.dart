@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -62,6 +63,18 @@ class TopicState {
   }
 }
 
+class Editing {
+  final String subject;
+  final String content;
+  final String attachUrl;
+
+  Editing({
+    @required this.subject,
+    @required this.content,
+    @required this.attachUrl,
+  });
+}
+
 class AppState {
   final List<Topic> favorTopics;
   final List<Category> savedCategories;
@@ -71,6 +84,9 @@ class AppState {
   final List<String> cookies;
   final bool isLoading;
 
+  final Event<Post> fetchReplyEvt;
+  final Event<Editing> setEditingEvt;
+
   AppState({
     @required this.isLoading,
     @required this.favorTopics,
@@ -79,6 +95,8 @@ class AppState {
     @required this.users,
     @required this.topics,
     @required this.categories,
+    @required this.fetchReplyEvt,
+    @required this.setEditingEvt,
   })  : assert(categories != null),
         assert(favorTopics != null),
         assert(savedCategories != null),
@@ -94,6 +112,8 @@ class AppState {
     Map<int, User> users,
     List<String> cookies,
     bool isLoading,
+    Event<Post> fetchReplyEvt,
+    Event<Editing> setEditing,
   }) {
     return AppState(
       savedCategories: savedCategories ?? this.savedCategories,
@@ -103,6 +123,8 @@ class AppState {
       users: users ?? this.users,
       cookies: cookies ?? this.cookies,
       isLoading: isLoading ?? this.isLoading,
+      fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
+      setEditingEvt: setEditing ?? this.setEditingEvt,
     );
   }
 
@@ -115,6 +137,8 @@ class AppState {
       topics: Map(),
       users: Map(),
       favorTopics: List(),
+      fetchReplyEvt: Event.spent(),
+      setEditingEvt: Event.spent(),
     );
   }
 }
