@@ -27,7 +27,7 @@ class CategoryRow extends StatelessWidget {
 class CategoryRowConnector extends StatelessWidget {
   final Category category;
 
-  CategoryRowConnector(this.category);
+  CategoryRowConnector({@required this.category});
 
   @override
   Widget build(BuildContext context) {

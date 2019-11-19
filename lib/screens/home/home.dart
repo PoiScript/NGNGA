@@ -93,7 +93,9 @@ class HomePage extends StatelessWidget {
             ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => CategoryRowConnector(categories[index]),
+                (context, index) => CategoryRowConnector(
+                  category: categories[index],
+                ),
                 childCount: categories.length,
               ),
             ),

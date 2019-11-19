@@ -21,9 +21,14 @@ console.log("const categoryGroups = [");
 for (const group of json.result.map(x => x.groups).flat()) {
   console.log(`CategoryGroup(name: "${group.name}", categories: [`);
 
-  for (const category of group.forums) {
+  const categories = group.forums.sort(
+    (a, b) => (typeof a.id == "string" ? parseInt(a.id) : a.id) < (typeof b.id == "string" ? parseInt(b.id) : b.id) ? -1 : 1
+  );
+
+  for (const category of categories) {
     console.log(`Category(id: ${category.id}, title: "${category.name}"),`)
   }
+
   console.log(`],),`);
 }
 

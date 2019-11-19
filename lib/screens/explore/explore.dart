@@ -38,8 +38,9 @@ class ExplorePage extends StatelessWidget {
                   ),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) =>
-                          CategoryRowConnector(group.categories[index]),
+                      (context, index) => CategoryRowConnector(
+                        category: group.categories[index],
+                      ),
                       childCount: group.categories.length,
                     ),
                   ),
