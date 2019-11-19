@@ -20,6 +20,10 @@ class TopicPage extends StatelessWidget {
   final Map<int, User> users;
   final bool isLoading;
 
+  final bool isFavorited;
+  final Future<void> Function() addToFavorites;
+  final Future<void> Function() removeFromFavorites;
+
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
 
@@ -43,6 +47,9 @@ class TopicPage extends StatelessWidget {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.isFavorited,
+    @required this.addToFavorites,
+    @required this.removeFromFavorites,
     @required this.upvotePost,
     @required this.downvotePost,
   })  : assert(topic != null),
@@ -51,6 +58,10 @@ class TopicPage extends StatelessWidget {
         assert(isLoading != null),
         assert(onRefresh != null),
         assert(onLoad != null),
+        assert(addToFavorites != null),
+        assert(removeFromFavorites != null),
+        assert(upvotePost != null),
+        assert(downvotePost != null),
         everyMinutes = StreamController.broadcast()
           ..addStream(
             Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
@@ -105,10 +116,50 @@ class TopicPage extends StatelessWidget {
         titleSpacing: 0.0,
         leading: const BackButton(color: Colors.black),
         actions: <Widget>[
-          IconButton(
-            color: Colors.black,
-            icon: Icon(Icons.more_vert),
-            onPressed: () {},
+          PopupMenuButton<Choice>(
+            icon: const Icon(
+              Icons.more_vert,
+              color: Colors.black,
+            ),
+            itemBuilder: (context) => [
+              isFavorited
+                  ? PopupMenuItem<Choice>(
+                      value: Choice.RemoveFromFavorites,
+                      child: Text(
+                        "Remove from Favorites",
+                        style: Theme.of(context).textTheme.body1,
+                      ),
+                    )
+                  : PopupMenuItem<Choice>(
+                      value: Choice.AddToFavorites,
+                      child: Text(
+                        "Add to Favorites",
+                        style: Theme.of(context).textTheme.body1,
+                      ),
+                    ),
+            ],
+            onSelected: (choice) {
+              switch (choice) {
+                case Choice.RemoveFromFavorites:
+                  removeFromFavorites().then((_) {
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text("成功移出收藏"),
+                      duration: Duration(seconds: 3),
+                    ));
+                  });
+                  break;
+                case Choice.AddToFavorites:
+                  addToFavorites().then((_) {
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text("成功加入收藏"),
+                      duration: Duration(seconds: 3),
+                    ));
+                  });
+                  break;
+                default:
+                  break;
+              }
+            },
           ),
         ],
       ),
@@ -162,8 +213,10 @@ class TopicPageConnector extends StatelessWidget {
   final int topicId;
   final int pageIndex;
 
-  TopicPageConnector(this.topicId, this.pageIndex)
-      : assert(topicId != null && pageIndex != null && pageIndex >= 0);
+  TopicPageConnector({
+    @required this.topicId,
+    @required this.pageIndex,
+  }) : assert(topicId != null && pageIndex != null && pageIndex >= 0);
 
   @override
   Widget build(BuildContext context) {
@@ -179,9 +232,19 @@ class TopicPageConnector extends StatelessWidget {
         onLoad: vm.onLoad,
         upvotePost: vm.upvotePost,
         downvotePost: vm.downvotePost,
+        isFavorited: vm.isFavorited,
+        addToFavorites: vm.addToFavorites,
+        removeFromFavorites: vm.removeFromFavorites,
       ),
     );
   }
+}
+
+enum Choice {
+  AddToFavorites,
+  RemoveFromFavorites,
+  CopyLinkToClipboard,
+  JumpToPage,
 }
 
 class ViewModel extends BaseModel<AppState> {
@@ -190,6 +253,10 @@ class ViewModel extends BaseModel<AppState> {
   Topic topic;
   List<Post> posts;
   Map<int, User> users;
+
+  bool isFavorited;
+  Future<void> Function() addToFavorites;
+  Future<void> Function() removeFromFavorites;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
@@ -217,9 +284,12 @@ class ViewModel extends BaseModel<AppState> {
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
+    @required this.isFavorited,
+    @required this.addToFavorites,
+    @required this.removeFromFavorites,
     @required this.upvotePost,
     @required this.downvotePost,
-  }) : super(equals: [isLoading, posts, topic, users]);
+  }) : super(equals: [isLoading, isFavorited, posts, topic, users]);
 
   @override
   ViewModel fromStore() {
@@ -233,6 +303,13 @@ class ViewModel extends BaseModel<AppState> {
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
+      isFavorited: state.favorTopics.indexWhere((t) => t.id == topicId) != -1,
+      addToFavorites: () => dispatchFuture(
+        AddToFavoritesAction(topicId: topicId),
+      ),
+      removeFromFavorites: () => dispatchFuture(
+        RemoveFromFavoritesAction(topicId: topicId),
+      ),
       upvotePost: ({topicId, postId, postIndex}) => dispatchFuture(
         UpvotePostAction(
           topicId: topicId,

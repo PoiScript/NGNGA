@@ -74,7 +74,6 @@ class Editing {
   });
 }
 
-
 /// A simple wrapper for post, so PostWrapper(null) is used to
 /// indicates to a deleted or hidden reply which is now inaccessible.
 class PostWrapper {
