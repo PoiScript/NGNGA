@@ -18,7 +18,7 @@ class PostDialog extends StatefulWidget {
 
   final StreamController<DateTime> everyMinutes;
 
-  final Event<Post> fetchReplyEvt;
+  final Event<PostWrapper> fetchReplyEvt;
   final Function(int, int) fetchReply;
 
   PostDialog({
@@ -49,13 +49,12 @@ class _PostDialogState extends State<PostDialog> {
   }
 
   _consumeEvents() {
-    Post newPost = widget.fetchReplyEvt.consume();
-    print(newPost);
-    if (newPost != null)
+    PostWrapper wrapper = widget.fetchReplyEvt.consume();
+    if (wrapper != null)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
-            posts.add(newPost);
+            posts.add(wrapper.post);
             isLoading = false;
           });
         }
@@ -84,6 +83,10 @@ class _PostDialogState extends State<PostDialog> {
   }
 
   Widget _buildContent(Post post) {
+    if (post == null) {
+      return Text("Post Not Found");
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -167,7 +170,7 @@ class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
 
   Function(int, int) fetchReply;
-  Event<Post> fetchReplyEvt;
+  Event<PostWrapper> fetchReplyEvt;
 
   ViewModel();
 

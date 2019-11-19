@@ -23,7 +23,7 @@ class FetchReplyAction extends ReduxAction<AppState> {
       final post = state.topics[topicId].posts.where((p) => p.id == postId);
       if (post.isNotEmpty) {
         return state.copy(
-          fetchReplyEvt: Event(post.first),
+          fetchReplyEvt: Event(PostWrapper(post.first)),
         );
       }
     }
@@ -35,7 +35,7 @@ class FetchReplyAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      fetchReplyEvt: Event(response.post),
+      fetchReplyEvt: Event(PostWrapper(response.post)),
       users: state.users..addEntries(response.users),
     );
   }

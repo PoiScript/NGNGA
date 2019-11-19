@@ -14,7 +14,9 @@ class FetchReplyResponse {
 
   factory FetchReplyResponse.fromJson(Map<String, dynamic> json) {
     return FetchReplyResponse._(
-      post: Post.fromJson(json["data"]["__R"].first),
+      post: json["data"]["__R"].length > 0
+          ? Post.fromJson(json["data"]["__R"][0])
+          : null,
       users: Map.from(json["data"]["__U"])
           .values
           .map((value) => User.fromJson(value))

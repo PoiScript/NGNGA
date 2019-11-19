@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -75,6 +74,15 @@ class Editing {
   });
 }
 
+
+/// A simple wrapper for post, so PostWrapper(null) is used to
+/// indicates to a deleted or hidden reply which is now inaccessible.
+class PostWrapper {
+  final Post post;
+
+  PostWrapper(this.post);
+}
+
 class AppState {
   final List<Topic> favorTopics;
   final List<Category> savedCategories;
@@ -84,7 +92,7 @@ class AppState {
   final List<String> cookies;
   final bool isLoading;
 
-  final Event<Post> fetchReplyEvt;
+  final Event<PostWrapper> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
 
   AppState({
@@ -112,7 +120,7 @@ class AppState {
     Map<int, User> users,
     List<String> cookies,
     bool isLoading,
-    Event<Post> fetchReplyEvt,
+    Event<PostWrapper> fetchReplyEvt,
     Event<Editing> setEditing,
   }) {
     return AppState(
