@@ -393,7 +393,11 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   TextSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.LinkStart);
 
-    var url = (iter.current as LinkStart).url;
+    final url = (iter.current as LinkStart).url;
+
+    final recognizer = TapGestureRecognizer()
+      ..onTap = () => widget.openLink(url);
+
     List<InlineSpan> _spans = [];
 
     outerloop:
@@ -423,8 +427,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           break;
         case TagType.Text:
           _spans.add(TextSpan(
+            recognizer: recognizer,
             text: (iter.current as Text).content,
-            style: style,
+            style: style.copyWith(color: Colors.blue),
           ));
           break;
         case TagType.Image:
@@ -467,11 +472,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
-    return TextSpan(
-      style: TextStyle(color: Colors.red),
-      recognizer: TapGestureRecognizer()..onTap = () => widget.openLink(url),
-      children: _spans,
-    );
+    return TextSpan(children: _spans);
   }
 
   WidgetSpan _buildImage(BuildContext context, Image image) {

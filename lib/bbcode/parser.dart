@@ -388,7 +388,7 @@ _parseInlines(String content, Tag previous) {
         lastEnd = bracketEnd;
         continue;
       }
-      url = content.substring(start + "[url".length, bracketEnd).trim();
+      url = content.substring(start + "[url=".length, bracketEnd).trim();
     }
 
     var end = content.indexOf("[/url]", bracketEnd);
