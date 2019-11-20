@@ -20,7 +20,9 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
       cookies: state.cookies,
     );
 
-    return state;
+    return state.copy(
+      snackBarEvt: Event("成功加入收藏"),
+    );
   }
 
   void after() => dispatch(FetchFavoritesAction());

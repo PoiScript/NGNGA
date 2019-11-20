@@ -20,7 +20,9 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
       cookies: state.cookies,
     );
 
-    return state;
+    return state.copy(
+      snackBarEvt: Event("成功移出收藏"),
+    );
   }
 
   void after() => dispatch(FetchFavoritesAction());

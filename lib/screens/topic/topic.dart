@@ -18,15 +18,18 @@ class TopicPage extends StatefulWidget {
   final List<Post> posts;
   final Topic topic;
   final Map<int, User> users;
-  final bool isLoading;
+  final Event<String> snackBarEvt;
 
+  final bool isLoading;
   final bool isFavorited;
+
   final Future<void> Function() addToFavorites;
   final Future<void> Function() removeFromFavorites;
 
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
 
+  final Future<void> Function() startListening;
   final Future<void> Function() cancelListening;
 
   final Future<void> Function({
@@ -44,6 +47,7 @@ class TopicPage extends StatefulWidget {
     @required this.topic,
     @required this.posts,
     @required this.users,
+    @required this.snackBarEvt,
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
@@ -52,10 +56,12 @@ class TopicPage extends StatefulWidget {
     @required this.removeFromFavorites,
     @required this.upvotePost,
     @required this.downvotePost,
+    @required this.startListening,
     @required this.cancelListening,
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
+        assert(snackBarEvt != null),
         assert(isLoading != null),
         assert(onRefresh != null),
         assert(onLoad != null),
@@ -63,6 +69,7 @@ class TopicPage extends StatefulWidget {
         assert(removeFromFavorites != null),
         assert(upvotePost != null),
         assert(downvotePost != null),
+        assert(startListening != null),
         assert(cancelListening != null);
 
   @override
@@ -70,10 +77,37 @@ class TopicPage extends StatefulWidget {
 }
 
 class _TopicPageState extends State<TopicPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.startListening();
+  }
+
   @override
   void dispose() {
     super.dispose();
     widget.cancelListening();
+  }
+
+  @override
+  void didUpdateWidget(TopicPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _consumeEvents();
+  }
+
+  _consumeEvents() {
+    String message = widget.snackBarEvt.consume();
+    if (message != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _scaffoldKey.currentState.showSnackBar(SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+          ));
+        }
+      });
   }
 
   @override
@@ -83,13 +117,13 @@ class _TopicPageState extends State<TopicPage> {
     }
 
     return Scaffold(
+      key: _scaffoldKey,
       body: Scrollbar(
         child: EasyRefresh.builder(
           header: ClassicalHeader(),
           footer: ClassicalFooter(),
           onRefresh: widget.onRefresh,
           onLoad: widget.onLoad,
-          enableControlFinishLoad: true,
           builder: _buildContent,
         ),
       ),
@@ -150,20 +184,10 @@ class _TopicPageState extends State<TopicPage> {
             onSelected: (choice) {
               switch (choice) {
                 case Choice.RemoveFromFavorites:
-                  widget.removeFromFavorites().then((_) {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text("成功移出收藏"),
-                      duration: Duration(seconds: 3),
-                    ));
-                  });
+                  widget.removeFromFavorites();
                   break;
                 case Choice.AddToFavorites:
-                  widget.addToFavorites().then((_) {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text("成功加入收藏"),
-                      duration: Duration(seconds: 3),
-                    ));
-                  });
+                  widget.addToFavorites();
                   break;
                 default:
                   break;
@@ -207,7 +231,13 @@ class _TopicPageState extends State<TopicPage> {
               widget.posts.length > 0 ? (widget.posts.length * 2 + 1) : 0,
         ),
       ),
-      if (widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20) footer
+      widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20
+          ? footer
+          : SliverToBoxAdapter(
+              child: Container(
+                height: 64 + kFloatingActionButtonMargin,
+              ),
+            ),
     ];
 
     return CustomScrollView(
@@ -236,6 +266,7 @@ class TopicPageConnector extends StatelessWidget {
         posts: vm.posts,
         topic: vm.topic,
         users: vm.users,
+        snackBarEvt: vm.snackBarEvt,
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
@@ -244,6 +275,7 @@ class TopicPageConnector extends StatelessWidget {
         isFavorited: vm.isFavorited,
         addToFavorites: vm.addToFavorites,
         removeFromFavorites: vm.removeFromFavorites,
+        startListening: vm.startListening,
         cancelListening: vm.cancelListening,
       ),
     );
@@ -263,6 +295,7 @@ class ViewModel extends BaseModel<AppState> {
   Topic topic;
   List<Post> posts;
   Map<int, User> users;
+  Event<String> snackBarEvt;
 
   bool isFavorited;
   Future<void> Function() addToFavorites;
@@ -271,6 +304,7 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
 
+  Future<void> Function() startListening;
   Future<void> Function() cancelListening;
 
   Future<void> Function({
@@ -293,6 +327,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topic,
     @required this.posts,
     @required this.users,
+    @required this.snackBarEvt,
     @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
@@ -301,8 +336,16 @@ class ViewModel extends BaseModel<AppState> {
     @required this.removeFromFavorites,
     @required this.upvotePost,
     @required this.downvotePost,
-  }) : super(equals: [isLoading, isFavorited, posts, topic, users]);
+    @required this.startListening,
     @required this.cancelListening,
+  }) : super(equals: [
+          isLoading,
+          snackBarEvt,
+          isFavorited,
+          posts,
+          topic,
+          users,
+        ]);
 
   @override
   ViewModel fromStore() {
@@ -313,6 +356,7 @@ class ViewModel extends BaseModel<AppState> {
       posts: topic.posts,
       topic: topic.topic,
       users: state.users,
+      snackBarEvt: state.snackBarEvt,
       isLoading: state.isLoading,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
@@ -339,8 +383,11 @@ class ViewModel extends BaseModel<AppState> {
           postIndex: postIndex,
         ),
       ),
+      startListening: () => dispatchFuture(
+        StartListeningNewReplyAction(topicId),
+      ),
       cancelListening: () => dispatchFuture(
-        CancelListeningAction(),
+        CancelListeningNewReplyAction(),
       ),
     );
   }

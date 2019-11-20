@@ -1,12 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:ngnga/models/favorite.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
@@ -121,10 +116,11 @@ class AppState {
 
   final Event<PostWrapper> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
+  final Event<String> snackBarEvt;
 
   final Client client = Client();
 
-  AppState({
+  AppState._({
     @required this.isLoading,
     @required this.favorites,
     @required this.savedCategories,
@@ -134,12 +130,17 @@ class AppState {
     @required this.categories,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
+    @required this.snackBarEvt,
   })  : assert(categories != null),
         assert(favorites != null),
         assert(savedCategories != null),
         assert(isLoading != null),
+        assert(users != null),
         assert(topics != null),
-        assert(users != null);
+        assert(categories != null),
+        assert(fetchReplyEvt != null),
+        assert(setEditingEvt != null),
+        assert(snackBarEvt != null);
 
   AppState copy({
     FavoriteState favorites,
@@ -151,8 +152,9 @@ class AppState {
     bool isLoading,
     Event<PostWrapper> fetchReplyEvt,
     Event<Editing> setEditing,
+    Event<String> snackBarEvt,
   }) {
-    return AppState(
+    return AppState._(
       savedCategories: savedCategories ?? this.savedCategories,
       favorites: favorites ?? this.favorites,
       categories: categories ?? this.categories,
@@ -162,11 +164,12 @@ class AppState {
       isLoading: isLoading ?? this.isLoading,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
+      snackBarEvt: snackBarEvt ?? this.snackBarEvt,
     );
   }
 
   factory AppState.empty() {
-    return AppState(
+    return AppState._(
       cookies: List(),
       savedCategories: List(),
       isLoading: false,
@@ -176,6 +179,7 @@ class AppState {
       favorites: FavoriteState(favorites: [], favoriteCount: 0, lastPage: 0),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
+      snackBarEvt: Event.spent(),
     );
   }
 }

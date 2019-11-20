@@ -90,7 +90,7 @@ class _PostRowState extends State<PostRow> {
           _buildAvatar(),
           Container(width: 8.0),
           Expanded(child: _buildUsername()),
-          GestureDetector(
+          InkWell(
             child: Container(
               padding: EdgeInsets.all(8.0),
               child: _buildMetaRow(),
@@ -103,10 +103,13 @@ class _PostRowState extends State<PostRow> {
             },
           ),
           PopupMenuButton<Choice>(
-            child: const Icon(
-              Icons.more_vert,
-              color: Colors.grey,
-              size: 20.0,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              child: const Icon(
+                Icons.more_vert,
+                color: Colors.grey,
+                size: 16.0,
+              ),
             ),
             itemBuilder: _buildMenuItem,
             onSelected: _onMenuSelected,

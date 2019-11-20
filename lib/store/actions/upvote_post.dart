@@ -26,6 +26,7 @@ class UpvotePostAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
+      snackBarEvt: Event(res.message),
       topics: state.topics
         ..update(
           topicId,

@@ -10,10 +10,10 @@ import '../state.dart';
 StreamSubscription streamSub;
 int subscribedTopic;
 
-class StartListeningAction extends ReduxAction<AppState> {
+class StartListeningNewReplyAction extends ReduxAction<AppState> {
   final int topicId;
 
-  StartListeningAction(this.topicId);
+  StartListeningNewReplyAction(this.topicId);
 
   @override
   Future<AppState> reduce() async {
@@ -25,14 +25,32 @@ class StartListeningAction extends ReduxAction<AppState> {
       print("Start listening");
 
       streamSub = Stream.periodic(const Duration(minutes: 1))
-          .listen((_) => dispatch(FetchNextPostsAction(topicId)));
+          .listen((_) => dispatch(_NewReplyAction(topicId)));
       subscribedTopic = topicId;
     }
     return null;
   }
 }
 
-class CancelListeningAction extends ReduxAction<AppState> {
+class _NewReplyAction extends ReduxAction<AppState> {
+  final int topicId;
+
+  _NewReplyAction(this.topicId);
+
+  @override
+  Future<AppState> reduce() async {
+    final lastPage = state.topics[topicId].posts.last.index ~/ 20;
+    final maxPage = state.topics[topicId].topic.postsCount ~/ 20;
+
+    if (lastPage == maxPage) {
+      await dispatchFuture(FetchNextPostsAction(topicId));
+    }
+
+    return null;
+  }
+}
+
+class CancelListeningNewReplyAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     subscribedTopic = null;
@@ -135,8 +153,6 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
           ),
       );
     } else {
-      await dispatchFuture(StartListeningAction(topicId));
-
       final response = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
@@ -182,10 +198,6 @@ class FetchPostsAction extends ReduxAction<AppState> {
       page: pageIndex,
       cookies: state.cookies,
     );
-
-    if (pageIndex == (response.topic.postsCount ~/ 20)) {
-      await dispatchFuture(StartListeningAction(topicId));
-    }
 
     return state.copy(
       users: state.users..addEntries(response.users),
