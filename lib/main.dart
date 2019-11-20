@@ -9,15 +9,34 @@ import 'package:ngnga/screens/new/new.dart';
 import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
+import 'package:ngnga/store/persistor.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
-void main() async => runApp(MyApp(await initState()));
+main() async {
+  final persistor = await JsonPersistor.init();
+
+  var initialState = await persistor.readState();
+
+  if (initialState == null) {
+    initialState = AppState.empty();
+    await persistor.saveInitialState(initialState);
+  }
+
+  return runApp(MyApp(
+    persistor: persistor,
+    state: initialState,
+  ));
+}
 
 class MyApp extends StatelessWidget {
+  final Persistor persistor;
   final AppState state;
 
-  MyApp(this.state);
+  MyApp({
+    @required this.persistor,
+    @required this.state,
+  });
 
   @override
   Widget build(BuildContext context) {

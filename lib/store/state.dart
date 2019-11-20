@@ -179,30 +179,3 @@ class AppState {
     );
   }
 }
-
-Future<AppState> initState() async {
-  final state = AppState.empty();
-
-  final directory = await getApplicationDocumentsDirectory();
-
-  List<Category> savedCategories;
-  List<String> cookies;
-
-  try {
-    final file = File('${directory.path}/state.json');
-
-    String contents = await file.readAsString();
-    final json = jsonDecode(contents);
-
-    savedCategories = List.from(json["saved_cateogries"])
-        .map((x) => Category.fromJson(x))
-        .toList();
-
-    cookies = List<String>.from(json["cookies"]);
-  } catch (_) {}
-
-  return state.copy(
-    cookies: cookies,
-    savedCategories: savedCategories,
-  );
-}
