@@ -92,10 +92,12 @@ class _PostRowState extends State<PostRow> {
         children: [
           _buildAvatar(),
           Container(width: 8.0),
-          _buildUsername(),
-          const Spacer(),
+          Expanded(child: _buildUsername()),
           GestureDetector(
-            child: _buildMetaRow(),
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              child: _buildMetaRow(),
+            ),
             onTap: () {
               showModalBottomSheet(
                 context: context,
@@ -148,11 +150,20 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildUsername() {
-    TextStyle subhead = Theme.of(context).textTheme.subhead;
-
     return widget.user.id > 0
-        ? Text(widget.user.username, style: subhead)
-        : Text('匿名', style: subhead.copyWith(color: Colors.grey));
+        ? Text(
+            widget.user.username,
+            style: Theme.of(context).textTheme.subhead,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        : Text(
+            "#ANONYMOUS#",
+            style: Theme.of(context)
+                .textTheme
+                .subhead
+                .copyWith(color: Colors.grey),
+          );
   }
 
   Widget _buildMetaRow() {
@@ -176,13 +187,13 @@ class _PostRowState extends State<PostRow> {
           Container(width: 4),
 
         // vendor icon
-        if (widget.post.client != null)
+        if (widget.post.vendor != null)
           Icon(
-            VendorIcons.fromClient(widget.post.client),
+            VendorIcons.fromVendor(widget.post.vendor),
             color: Colors.grey,
             size: 16.0,
           ),
-        if (widget.post.client != null)
+        if (widget.post.vendor != null)
           Container(width: 4),
 
         // post index
@@ -228,7 +239,7 @@ class _PostRowState extends State<PostRow> {
           title: Text('编辑时间'),
           subtitle: Text(dateFormatter.format(widget.post.editedAt)),
         ),
-      if (widget.post.client != null) _buildVendorListTile(),
+      if (widget.post.vendor != null) _buildVendorListTile(),
       if (widget.post.attachments.isNotEmpty)
         ListTile(
           dense: true,
@@ -256,29 +267,29 @@ class _PostRowState extends State<PostRow> {
 
   ListTile _buildVendorListTile() {
     String title;
-    switch (widget.post.client) {
-      case Client.Android:
+    switch (widget.post.vendor) {
+      case Vendor.Android:
         title = "发送自 Android 客户端";
         break;
-      case Client.Apple:
+      case Vendor.Apple:
         title = "发送自 iOS 客户端";
         break;
-      case Client.Windows:
+      case Vendor.Windows:
         title = "发送自 Windows Phone 客户端";
         break;
     }
-    if (widget.post.clientDetail.isEmpty) {
+    if (widget.post.vendorDetail.isEmpty) {
       return ListTile(
         dense: true,
-        leading: Icon(VendorIcons.fromClient(widget.post.client)),
+        leading: Icon(VendorIcons.fromVendor(widget.post.vendor)),
         title: Text(title),
       );
     } else {
       return ListTile(
         dense: true,
-        leading: Icon(VendorIcons.fromClient(widget.post.client)),
+        leading: Icon(VendorIcons.fromVendor(widget.post.vendor)),
         title: Text(title),
-        subtitle: Text(widget.post.clientDetail),
+        subtitle: Text(widget.post.vendorDetail),
       );
     }
   }
@@ -328,14 +339,10 @@ class _PostRowState extends State<PostRow> {
   _onMenuSelected(Choice choice) {
     switch (choice) {
       case Choice.DisplayInBBCode:
-        setState(() {
-          _displayMode = DisplayMode.BBCode;
-        });
+        setState(() => _displayMode = DisplayMode.BBCode);
         break;
       case Choice.DispalyInRichText:
-        setState(() {
-          _displayMode = DisplayMode.RichText;
-        });
+        setState(() => _displayMode = DisplayMode.RichText);
         break;
       case Choice.ReplyToThisPost:
         Navigator.pushNamed(context, "/e", arguments: {
@@ -395,8 +402,10 @@ class _PostRowState extends State<PostRow> {
           openPost: (topicId, page, postId) {
             showDialog(
               context: context,
-              builder: (context) =>
-                  PostDialogConnector(topicId: topicId, postId: postId),
+              builder: (context) => PostDialogConnector(
+                topicId: topicId,
+                postId: postId,
+              ),
             );
           },
         );
@@ -408,32 +417,33 @@ class _PostRowState extends State<PostRow> {
     return Row(
       children: <Widget>[
         const Spacer(),
-        InkResponse(
-          child: Icon(
-            Icons.thumb_up,
-            size: 16.0,
-            color: Colors.grey,
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: InkResponse(
+            child: Icon(
+              Icons.thumb_up,
+              size: 16.0,
+              color: Color.fromARGB(255, 144, 144, 144),
+            ),
+            onTap: () => widget.upvote(),
           ),
-          onTap: () => widget.upvote(),
         ),
-        widget.post.upVote > 0
-            ? Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  widget.post.upVote.toString(),
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              )
-            : Container(width: 8.0),
-        InkResponse(
-          child: Icon(
-            Icons.thumb_down,
-            size: 16.0,
-            color: Colors.grey,
+        if (widget.post.upVote > 0)
+          Text(
+            widget.post.upVote.toString(),
+            style: Theme.of(context).textTheme.caption,
           ),
-          onTap: () => widget.downvote(),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: InkResponse(
+            child: Icon(
+              Icons.thumb_down,
+              size: 16.0,
+              color: Color.fromARGB(255, 144, 144, 144),
+            ),
+            onTap: () => widget.downvote(),
+          ),
         ),
-        Container(width: 8)
       ],
     );
   }

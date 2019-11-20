@@ -24,6 +24,7 @@ class ApplyEditingAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     await applyEditing(
+      client: state.client,
       action: action,
       categoryId: categoryId,
       topicId: topicId,

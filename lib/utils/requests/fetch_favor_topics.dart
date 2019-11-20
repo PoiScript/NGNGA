@@ -24,6 +24,7 @@ class FetchFavorTopicsResponse {
 }
 
 Future<FetchFavorTopicsResponse> fetchFavorTopics({
+  @required Client client,
   @required List<String> cookies,
   @required int page,
 }) async {
@@ -37,7 +38,7 @@ Future<FetchFavorTopicsResponse> fetchFavorTopics({
 
   print(uri);
 
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 

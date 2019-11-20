@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:ngnga/models/favorite.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -120,6 +121,8 @@ class AppState {
 
   final Event<PostWrapper> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
+
+  final Client client = Client();
 
   AppState({
     @required this.isLoading,

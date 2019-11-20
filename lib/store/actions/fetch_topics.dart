@@ -15,6 +15,7 @@ class FetchTopicsAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     final response = await fetchCategoryTopics(
+      client: state.client,
       categoryId: categoryId,
       page: 0,
       isSubcategory: state.categories[categoryId].category.isSubcategory,
@@ -51,6 +52,7 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
     assert(lastPage <= (state.categories[categoryId].topicsCount / 35).ceil());
 
     final response = await fetchCategoryTopics(
+      client: state.client,
       categoryId: categoryId,
       page: lastPage + 1,
       isSubcategory: state.categories[categoryId].category.isSubcategory,

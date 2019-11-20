@@ -29,6 +29,7 @@ class FetchReplyAction extends ReduxAction<AppState> {
     }
 
     final response = await fetchReply(
+      client: state.client,
       topicId: topicId,
       postId: postId,
       cookies: state.cookies,

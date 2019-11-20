@@ -10,9 +10,9 @@ class VendorIcons {
   static const IconData apple = const IconData(0xf179, fontFamily: _kFontFam);
   static const IconData windows = const IconData(0xf17a, fontFamily: _kFontFam);
 
-  static IconData fromClient(Client client) {
-    return client == Client.Android
+  static IconData fromVendor(Vendor vendor) {
+    return vendor == Vendor.Android
         ? VendorIcons.android
-        : (client == Client.Apple ? VendorIcons.apple : VendorIcons.windows);
+        : (vendor == Vendor.Apple ? VendorIcons.apple : VendorIcons.windows);
   }
 }

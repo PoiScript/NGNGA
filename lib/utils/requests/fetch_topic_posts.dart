@@ -38,6 +38,7 @@ class FetchTopicPostsResponse {
 }
 
 Future<FetchTopicPostsResponse> fetchTopicPosts({
+  @required Client client,
   @required int topicId,
   @required int page,
   @required List<String> cookies,
@@ -50,7 +51,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
 
   print(uri);
 
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 

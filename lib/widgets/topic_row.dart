@@ -53,30 +53,67 @@ class TopicRow extends StatelessWidget {
             child: TitleColorize(topic),
           ),
         ),
-        Row(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
-              child: Text(
-                "${topic.author.length > 6 ? topic.author.substring(0, 6) + '..' : topic.author} ${dateFormatter.format(topic.createdAt)} ${numberFormatter.format(topic.postsCount)}",
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
-                child: StreamBuilder<DateTime>(
-                  stream: Stream.periodic(Duration(minutes: 1)),
-                  builder: (context, snapshot) => Text(
-                    "${topic.lastPoster.length > 6 ? topic.lastPoster.substring(0, 6) + '..' : topic.lastPoster} ${duration(DateTime.now(), topic.lastPostedAt)}",
-                    style: Theme.of(context).textTheme.caption,
-                  ),
+        StreamBuilder<DateTime>(
+          initialData: DateTime.now(),
+          stream: Stream.periodic(Duration(minutes: 1), (x) => DateTime.now()),
+          builder: (context, snapshot) => Row(
+            children: <Widget>[
+              Container(width: 8.0),
+              Container(
+                width: 46.0,
+                child: Text(
+                  numberFormatter.format(topic.postsCount),
+                  style: Theme.of(context).textTheme.caption,
                 ),
               ),
-              onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
-            ),
-          ],
+              Container(width: 4.0),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        topic.author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                    Container(width: 4.0),
+                    Text(
+                      duration(snapshot.data, topic.createdAt),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 8.0),
+              Expanded(
+                child: InkWell(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          topic.lastPoster,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                      ),
+                      Container(width: 4.0),
+                      Text(
+                        duration(snapshot.data, topic.lastPostedAt),
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                      Container(width: 8.0),
+                    ],
+                  ),
+                  onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

@@ -26,6 +26,7 @@ class FetchReplyResponse {
 }
 
 Future<FetchReplyResponse> fetchReply({
+  @required Client client,
   @required int topicId,
   @required int postId,
   @required List<String> cookies,
@@ -38,7 +39,7 @@ Future<FetchReplyResponse> fetchReply({
 
   print(uri);
 
-  final res = await get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
 
   final json = jsonDecode(res.body);
 

@@ -16,6 +16,7 @@ class FavoritesResponse {
 }
 
 Future<FavoritesResponse> addToFavorites({
+  @required Client client,
   @required int topicId,
   @required List<String> cookies,
 }) async {
@@ -29,7 +30,7 @@ Future<FavoritesResponse> addToFavorites({
 
   print(uri);
 
-  final res = await post(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
 
   print(res.body);
 
@@ -39,6 +40,7 @@ Future<FavoritesResponse> addToFavorites({
 }
 
 Future<FavoritesResponse> removeFromFavorites({
+  @required Client client,
   @required int topicId,
   @required List<String> cookies,
 }) async {
@@ -54,7 +56,7 @@ Future<FavoritesResponse> removeFromFavorites({
 
   print(uri);
 
-  final res = await post(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
 
   print(res.body);
 

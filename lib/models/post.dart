@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-enum Client {
+enum Vendor {
   Android,
   Apple,
   Windows,
@@ -16,8 +16,8 @@ class Post {
   final String editedBy;
   final String content;
   final String subject;
-  final Client client;
-  final String clientDetail;
+  final Vendor vendor;
+  final String vendorDetail;
 
   final int index;
 
@@ -36,8 +36,8 @@ class Post {
     this.createdAt,
     this.subject,
     this.content,
-    this.client,
-    this.clientDetail,
+    this.vendor,
+    this.vendorDetail,
     this.upVote,
     this.downVote,
     this.index,
@@ -56,9 +56,9 @@ class Post {
         assert(editedBy == null || editedAt != null,
             "editedAt should be set if editedBy is set"),
         assert(
-            (clientDetail == null && client == null) ||
-                (clientDetail != null && client != null),
-            "client and clientDetail should be set at the same time");
+            (vendorDetail == null && vendor == null) ||
+                (vendorDetail != null && vendor != null),
+            "vendor and vendorDetail should be set at the same time");
 
   Post vote(int value) {
     return Post(
@@ -69,8 +69,8 @@ class Post {
       createdAt: this.createdAt,
       subject: this.subject,
       content: this.content,
-      client: this.client,
-      clientDetail: this.clientDetail,
+      vendor: this.vendor,
+      vendorDetail: this.vendorDetail,
       upVote: this.upVote + value,
       downVote: this.downVote,
       index: this.index,
@@ -114,8 +114,8 @@ class Post {
       }
     }
 
-    Client client;
-    String clientDetail;
+    Vendor vendor;
+    String vendorDetail;
 
     if (json['from_client'] is String && json['from_client'].isNotEmpty) {
       var space = json['from_client'].indexOf(' ');
@@ -123,18 +123,18 @@ class Post {
         switch (int.parse(json['from_client'].substring(0, space))) {
           case 7:
           case 101:
-            client = Client.Apple;
-            clientDetail = json['from_client'].substring(space + 1).trim();
+            vendor = Vendor.Apple;
+            vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           case 8:
           case 100:
-            client = Client.Android;
-            clientDetail = json['from_client'].substring(space + 1).trim();
+            vendor = Vendor.Android;
+            vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           case 9:
           case 103:
-            client = Client.Windows;
-            clientDetail = json['from_client'].substring(space + 1).trim();
+            vendor = Vendor.Windows;
+            vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           default:
             break;
@@ -169,8 +169,8 @@ class Post {
       index: json['lou'],
       editedAt: editedAt,
       editedBy: editedBy,
-      client: client,
-      clientDetail: clientDetail,
+      vendor: vendor,
+      vendorDetail: vendorDetail,
       attachments: attachments,
       isComment: false,
     );

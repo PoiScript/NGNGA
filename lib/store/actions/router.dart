@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/models/category.dart';

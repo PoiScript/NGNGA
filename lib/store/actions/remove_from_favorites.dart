@@ -15,6 +15,7 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     await removeFromFavorites(
+      client: state.client,
       topicId: topicId,
       cookies: state.cookies,
     );

@@ -18,13 +18,12 @@ class DownvotePostAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     final res = await votePost(
+      client: state.client,
       value: -1,
       topicId: topicId,
       postId: postId,
       cookies: state.cookies,
     );
-
-    print("res.value ${res.value}");
 
     return state.copy(
       topics: state.topics

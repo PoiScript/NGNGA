@@ -18,6 +18,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
 
     if (firstPage == 0) {
       final response = await fetchTopicPosts(
+        client: state.client,
         topicId: topicId,
         page: 0,
         cookies: state.cookies,
@@ -40,6 +41,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
       );
     } else {
       final response = await fetchTopicPosts(
+        client: state.client,
         topicId: topicId,
         page: firstPage - 1,
         cookies: state.cookies,
@@ -75,6 +77,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
 
     if (lastPage < state.topics[topicId].topic.postsCount ~/ 20) {
       final response = await fetchTopicPosts(
+        client: state.client,
         topicId: topicId,
         page: lastPage + 1,
         cookies: state.cookies,
@@ -93,6 +96,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
       );
     } else {
       final response = await fetchTopicPosts(
+        client: state.client,
         topicId: topicId,
         page: lastPage,
         cookies: state.cookies,
@@ -131,6 +135,7 @@ class FetchPostsAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     var response = await fetchTopicPosts(
+      client: state.client,
       topicId: topicId,
       page: pageIndex,
       cookies: state.cookies,

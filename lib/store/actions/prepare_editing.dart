@@ -20,6 +20,7 @@ class PrepareEditingAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     final response = await prepareEditing(
+      client: state.client,
       action: action,
       categoryId: categoryId,
       topicId: topicId,

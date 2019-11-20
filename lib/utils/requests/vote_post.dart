@@ -28,6 +28,7 @@ class VoteResponse {
 }
 
 Future<VoteResponse> votePost({
+  @required Client client,
   @required int topicId,
   @required int postId,
   @required int value,
@@ -45,7 +46,7 @@ Future<VoteResponse> votePost({
 
   print(uri);
 
-  final res = await post(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
 
   print(res.body);
 
