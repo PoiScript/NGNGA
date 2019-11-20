@@ -16,8 +16,6 @@ import 'link_dialog.dart';
 class PostDialog extends StatefulWidget {
   final Map<int, User> users;
 
-  final StreamController<DateTime> everyMinutes;
-
   final Event<PostWrapper> fetchReplyEvt;
   final Function(int, int) fetchReply;
 
@@ -27,11 +25,7 @@ class PostDialog extends StatefulWidget {
     @required this.fetchReplyEvt,
   })  : assert(users != null),
         assert(fetchReply != null),
-        assert(fetchReplyEvt != null),
-        everyMinutes = StreamController.broadcast()
-          ..addStream(
-            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
-          );
+        assert(fetchReplyEvt != null);
 
   @override
   _PostDialogState createState() => _PostDialogState();
@@ -100,10 +94,9 @@ class _PostDialogState extends State<PostDialog> {
               ),
               const Spacer(),
               StreamBuilder<DateTime>(
-                initialData: DateTime.now(),
-                stream: widget.everyMinutes.stream,
+                stream: Stream.periodic(const Duration(minutes: 1)),
                 builder: (context, snapshot) => Text(
-                  duration(snapshot.data, post.createdAt),
+                  duration(DateTime.now(), post.createdAt),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),

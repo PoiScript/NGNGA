@@ -26,8 +26,6 @@ class CategoryPage extends StatelessWidget {
   final void Function(Category) saveCategory;
   final void Function(Category) removeCategory;
 
-  final StreamController<DateTime> everyMinutes;
-
   CategoryPage({
     @required this.topics,
     @required this.isSaved,
@@ -50,11 +48,7 @@ class CategoryPage extends StatelessWidget {
         assert(navigateToTopic != null),
         assert(navigateToCategory != null),
         assert(saveCategory != null),
-        assert(removeCategory != null),
-        everyMinutes = StreamController.broadcast()
-          ..addStream(
-            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
-          );
+        assert(removeCategory != null);
 
   Widget build(BuildContext context) {
     if (isLoading && topics.isEmpty) {
@@ -180,7 +174,6 @@ class ViewModel extends BaseModel<AppState> {
   void Function(Category) navigateToCategory;
   void Function(Category) saveCategory;
   void Function(Category) removeCategory;
-  Stream<DateTime> everyMinutes;
 
   ViewModel(this.categoryId);
 

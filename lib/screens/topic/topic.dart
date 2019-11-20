@@ -14,7 +14,7 @@ import 'package:ngnga/widgets/title_colorize.dart';
 
 import 'post_row.dart';
 
-class TopicPage extends StatelessWidget {
+class TopicPage extends StatefulWidget {
   final List<Post> posts;
   final Topic topic;
   final Map<int, User> users;
@@ -27,6 +27,8 @@ class TopicPage extends StatelessWidget {
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
 
+  final Future<void> Function() cancelListening;
+
   final Future<void> Function({
     int topicId,
     int postId,
@@ -37,8 +39,6 @@ class TopicPage extends StatelessWidget {
     int postId,
     int postIndex,
   }) downvotePost;
-
-  final StreamController<DateTime> everyMinutes;
 
   TopicPage({
     @required this.topic,
@@ -52,6 +52,7 @@ class TopicPage extends StatelessWidget {
     @required this.removeFromFavorites,
     @required this.upvotePost,
     @required this.downvotePost,
+    @required this.cancelListening,
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
@@ -62,14 +63,22 @@ class TopicPage extends StatelessWidget {
         assert(removeFromFavorites != null),
         assert(upvotePost != null),
         assert(downvotePost != null),
-        everyMinutes = StreamController.broadcast()
-          ..addStream(
-            Stream.periodic(const Duration(minutes: 1), (x) => DateTime.now()),
-          );
+        assert(cancelListening != null);
+
+  @override
+  _TopicPageState createState() => _TopicPageState();
+}
+
+class _TopicPageState extends State<TopicPage> {
+  @override
+  void dispose() {
+    super.dispose();
+    widget.cancelListening();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading && posts.isEmpty) {
+    if (widget.isLoading && widget.posts.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -78,8 +87,8 @@ class TopicPage extends StatelessWidget {
         child: EasyRefresh.builder(
           header: ClassicalHeader(),
           footer: ClassicalFooter(),
-          onRefresh: onRefresh,
-          onLoad: onLoad,
+          onRefresh: widget.onRefresh,
+          onLoad: widget.onLoad,
           enableControlFinishLoad: true,
           builder: _buildContent,
         ),
@@ -88,7 +97,7 @@ class TopicPage extends StatelessWidget {
         onPressed: () {
           Navigator.pushNamed(context, "/e", arguments: {
             "action": ACTION_REPLY,
-            "topicId": topic.id,
+            "topicId": widget.topic.id,
           });
         },
         child: Icon(Icons.add),
@@ -107,7 +116,7 @@ class TopicPage extends StatelessWidget {
       SliverAppBar(
         backgroundColor: Colors.white,
         title: TitleColorize(
-          topic,
+          widget.topic,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           displayLabel: false,
@@ -122,7 +131,7 @@ class TopicPage extends StatelessWidget {
               color: Colors.black,
             ),
             itemBuilder: (context) => [
-              isFavorited
+              widget.isFavorited
                   ? PopupMenuItem<Choice>(
                       value: Choice.RemoveFromFavorites,
                       child: Text(
@@ -141,7 +150,7 @@ class TopicPage extends StatelessWidget {
             onSelected: (choice) {
               switch (choice) {
                 case Choice.RemoveFromFavorites:
-                  removeFromFavorites().then((_) {
+                  widget.removeFromFavorites().then((_) {
                     Scaffold.of(context).showSnackBar(SnackBar(
                       content: Text("成功移出收藏"),
                       duration: Duration(seconds: 3),
@@ -149,7 +158,7 @@ class TopicPage extends StatelessWidget {
                   });
                   break;
                 case Choice.AddToFavorites:
-                  addToFavorites().then((_) {
+                  widget.addToFavorites().then((_) {
                     Scaffold.of(context).showSnackBar(SnackBar(
                       content: Text("成功加入收藏"),
                       duration: Duration(seconds: 3),
@@ -169,19 +178,18 @@ class TopicPage extends StatelessWidget {
           (context, index) {
             final int itemIndex = index ~/ 2;
             if (index.isOdd) {
-              final Post post = posts[itemIndex];
+              final Post post = widget.posts[itemIndex];
               return PostRow(
                 post: post,
-                user: users[post.userId],
-                topicId: topic.id,
-                everyMinutes: everyMinutes.stream,
-                upvote: () => upvotePost(
-                  topicId: topic.id,
+                user: widget.users[post.userId],
+                topicId: widget.topic.id,
+                upvote: () => widget.upvotePost(
+                  topicId: widget.topic.id,
                   postId: post.id,
                   postIndex: itemIndex,
                 ),
-                downvote: () => downvotePost(
-                  topicId: topic.id,
+                downvote: () => widget.downvotePost(
+                  topicId: widget.topic.id,
                   postId: post.id,
                   postIndex: itemIndex,
                 ),
@@ -195,15 +203,16 @@ class TopicPage extends StatelessWidget {
             }
             return null;
           },
-          childCount: posts.length > 0 ? (posts.length * 2 + 1) : 0,
+          childCount:
+              widget.posts.length > 0 ? (widget.posts.length * 2 + 1) : 0,
         ),
       ),
-      if (posts.last.index ~/ 20 < topic.postsCount ~/ 20) footer
+      if (widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20) footer
     ];
 
     return CustomScrollView(
       physics: physics,
-      semanticChildCount: posts.length,
+      semanticChildCount: widget.posts.length,
       slivers: slivers,
     );
   }
@@ -235,6 +244,7 @@ class TopicPageConnector extends StatelessWidget {
         isFavorited: vm.isFavorited,
         addToFavorites: vm.addToFavorites,
         removeFromFavorites: vm.removeFromFavorites,
+        cancelListening: vm.cancelListening,
       ),
     );
   }
@@ -260,6 +270,8 @@ class ViewModel extends BaseModel<AppState> {
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
+
+  Future<void> Function() cancelListening;
 
   Future<void> Function({
     int topicId,
@@ -290,6 +302,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.upvotePost,
     @required this.downvotePost,
   }) : super(equals: [isLoading, isFavorited, posts, topic, users]);
+    @required this.cancelListening,
 
   @override
   ViewModel fromStore() {
@@ -325,6 +338,9 @@ class ViewModel extends BaseModel<AppState> {
           postId: postId,
           postIndex: postIndex,
         ),
+      ),
+      cancelListening: () => dispatchFuture(
+        CancelListeningAction(),
       ),
     );
   }

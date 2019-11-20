@@ -21,7 +21,6 @@ class PostRow extends StatefulWidget {
   final Post post;
   final User user;
   final int topicId;
-  final Stream<DateTime> everyMinutes;
 
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
@@ -32,13 +31,11 @@ class PostRow extends StatefulWidget {
     @required this.topicId,
     @required this.upvote,
     @required this.downvote,
-    @required this.everyMinutes,
   })  : assert(post != null),
         assert(user != null),
         assert(topicId != null),
         assert(upvote != null),
-        assert(downvote != null),
-        assert(everyMinutes != null);
+        assert(downvote != null);
 
   @override
   _PostRowState createState() => _PostRowState();
@@ -207,10 +204,9 @@ class _PostRowState extends State<PostRow> {
 
         // post send date in duration format, updated by minutes
         StreamBuilder<DateTime>(
-          initialData: DateTime.now(),
-          stream: widget.everyMinutes,
+          stream: Stream.periodic(const Duration(minutes: 1)),
           builder: (context, snapshot) => Text(
-            duration(snapshot.data, widget.post.createdAt),
+            duration(DateTime.now(), widget.post.createdAt),
             style: Theme.of(context).textTheme.caption,
           ),
         ),

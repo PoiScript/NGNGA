@@ -7,6 +7,46 @@ import 'package:ngnga/utils/requests.dart';
 import 'is_loading.dart';
 import '../state.dart';
 
+StreamSubscription streamSub;
+int subscribedTopic;
+
+class StartListeningAction extends ReduxAction<AppState> {
+  final int topicId;
+
+  StartListeningAction(this.topicId);
+
+  @override
+  Future<AppState> reduce() async {
+    if (subscribedTopic != topicId) {
+      if (streamSub != null) {
+        await streamSub.cancel();
+      }
+
+      print("Start listening");
+
+      streamSub = Stream.periodic(const Duration(minutes: 1))
+          .listen((_) => dispatch(FetchNextPostsAction(topicId)));
+      subscribedTopic = topicId;
+    }
+    return null;
+  }
+}
+
+class CancelListeningAction extends ReduxAction<AppState> {
+  @override
+  Future<AppState> reduce() async {
+    subscribedTopic = null;
+    if (streamSub != null) {
+      await streamSub.cancel();
+      streamSub = null;
+    }
+
+    print("Cancel listening");
+
+    return null;
+  }
+}
+
 class FetchPreviousPostsAction extends ReduxAction<AppState> {
   final int topicId;
 
@@ -73,7 +113,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    var lastPage = state.topics[topicId].posts.last.index ~/ 20;
+    final lastPage = state.topics[topicId].posts.last.index ~/ 20;
 
     if (lastPage < state.topics[topicId].topic.postsCount ~/ 20) {
       final response = await fetchTopicPosts(
@@ -95,6 +135,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
           ),
       );
     } else {
+      await dispatchFuture(StartListeningAction(topicId));
+
       final response = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
@@ -134,12 +176,16 @@ class FetchPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    var response = await fetchTopicPosts(
+    final response = await fetchTopicPosts(
       client: state.client,
       topicId: topicId,
       page: pageIndex,
       cookies: state.cookies,
     );
+
+    if (pageIndex == (response.topic.postsCount ~/ 20)) {
+      await dispatchFuture(StartListeningAction(topicId));
+    }
 
     return state.copy(
       users: state.users..addEntries(response.users),
