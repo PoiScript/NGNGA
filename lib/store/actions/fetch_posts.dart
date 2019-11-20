@@ -24,7 +24,7 @@ class StartListeningNewReplyAction extends ReduxAction<AppState> {
 
       print("Start listening");
 
-      streamSub = Stream.periodic(const Duration(minutes: 1))
+      streamSub = Stream.periodic(const Duration(seconds: 20))
           .listen((_) => dispatch(_NewReplyAction(topicId)));
       subscribedTopic = topicId;
     }
@@ -142,6 +142,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
       );
 
       return state.copy(
+        lastUpdated: DateTime.now(),
         users: state.users..addEntries(response.users),
         topics: state.topics
           ..update(
@@ -163,6 +164,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
       final firstIndex = response.posts.first.index;
 
       return state.copy(
+        lastUpdated: DateTime.now(),
         users: state.users..addEntries(response.users),
         topics: state.topics
           ..update(
@@ -200,6 +202,7 @@ class FetchPostsAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
+      lastUpdated: DateTime.now(),
       users: state.users..addEntries(response.users),
       topics: state.topics
         ..update(

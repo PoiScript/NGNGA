@@ -74,7 +74,7 @@ class _PostRowState extends State<PostRow> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      padding: EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: children,

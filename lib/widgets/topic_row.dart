@@ -58,56 +58,64 @@ class TopicRow extends StatelessWidget {
           stream: Stream.periodic(Duration(minutes: 1), (x) => DateTime.now()),
           builder: (context, snapshot) => Row(
             children: <Widget>[
-              Container(width: 8.0),
               Container(
-                width: 46.0,
+                width: 64,
+                padding: EdgeInsets.only(top: 4, bottom: 8, left: 8, right: 8),
                 child: Text(
                   numberFormatter.format(topic.postsCount),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
-              Container(width: 4.0),
               Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        topic.author,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: Theme.of(context).textTheme.caption,
-                      ),
-                    ),
-                    Container(width: 4.0),
-                    Text(
-                      duration(snapshot.data, topic.createdAt),
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                  ],
-                ),
-              ),
-              Container(width: 8.0),
-              Expanded(
-                child: InkWell(
+                child: Container(
+                  padding: EdgeInsets.only(top: 4, bottom: 8),
                   child: Row(
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          topic.lastPoster,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: Theme.of(context).textTheme.caption,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 4),
+                          child: Text(
+                            topic.author,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: Theme.of(context).textTheme.caption,
+                          ),
                         ),
                       ),
-                      Container(width: 4.0),
                       Text(
-                        duration(snapshot.data, topic.lastPostedAt),
+                        duration(snapshot.data, topic.createdAt),
                         style: Theme.of(context).textTheme.caption,
                       ),
-                      Container(width: 8.0),
                     ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  child: Container(
+                    padding:
+                        EdgeInsets.only(top: 4, bottom: 8, right: 8, left: 8),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 4),
+                            child: Text(
+                              topic.lastPoster,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          duration(snapshot.data, topic.lastPostedAt),
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                      ],
+                    ),
                   ),
                   onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
                 ),

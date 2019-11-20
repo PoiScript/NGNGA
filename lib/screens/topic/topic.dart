@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
@@ -14,12 +15,15 @@ import 'package:ngnga/widgets/title_colorize.dart';
 
 import 'post_row.dart';
 
+final dateFormatter = DateFormat("HH:mm:ss");
+
 class TopicPage extends StatefulWidget {
   final List<Post> posts;
   final Topic topic;
   final Map<int, User> users;
   final Event<String> snackBarEvt;
 
+  final DateTime lastUpdated;
   final bool isLoading;
   final bool isFavorited;
 
@@ -37,6 +41,7 @@ class TopicPage extends StatefulWidget {
     int postId,
     int postIndex,
   }) upvotePost;
+
   final Future<void> Function({
     int topicId,
     int postId,
@@ -47,6 +52,7 @@ class TopicPage extends StatefulWidget {
     @required this.topic,
     @required this.posts,
     @required this.users,
+    @required this.lastUpdated,
     @required this.snackBarEvt,
     @required this.isLoading,
     @required this.onRefresh,
@@ -61,6 +67,7 @@ class TopicPage extends StatefulWidget {
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
+        assert(lastUpdated != null),
         assert(snackBarEvt != null),
         assert(isLoading != null),
         assert(onRefresh != null),
@@ -219,7 +226,7 @@ class _TopicPageState extends State<TopicPage> {
                 ),
               );
             }
-            return Divider();
+            return Divider(height: 0.0);
           },
           semanticIndexCallback: (widget, index) {
             if (index.isOdd) {
@@ -235,7 +242,38 @@ class _TopicPageState extends State<TopicPage> {
           ? footer
           : SliverToBoxAdapter(
               child: Container(
-                height: 64 + kFloatingActionButtonMargin,
+                height: 64 + kFloatingActionButtonMargin * 2 - 8,
+                padding: EdgeInsets.all(8.0),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.replay,
+                        color: Theme.of(context).textTheme.caption.color,
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          "Auto-update enabled.",
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          "Last Updated: ${dateFormatter.format(widget.lastUpdated)}",
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          "Update Interval: 20s",
+                          style: Theme.of(context).textTheme.caption,
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
     ];
@@ -262,10 +300,11 @@ class TopicPageConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(topicId),
       onInit: (store) => store.dispatch(FetchPostsAction(topicId, pageIndex)),
-      builder: (BuildContext context, ViewModel vm) => TopicPage(
+      builder: (context, vm) => TopicPage(
         posts: vm.posts,
         topic: vm.topic,
         users: vm.users,
+        lastUpdated: vm.lastUpdated,
         snackBarEvt: vm.snackBarEvt,
         isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
@@ -295,6 +334,8 @@ class ViewModel extends BaseModel<AppState> {
   Topic topic;
   List<Post> posts;
   Map<int, User> users;
+  DateTime lastUpdated;
+
   Event<String> snackBarEvt;
 
   bool isFavorited;
@@ -312,6 +353,7 @@ class ViewModel extends BaseModel<AppState> {
     int postId,
     int postIndex,
   }) upvotePost;
+
   Future<void> Function({
     int topicId,
     int postId,
@@ -327,6 +369,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topic,
     @required this.posts,
     @required this.users,
+    @required this.lastUpdated,
     @required this.snackBarEvt,
     @required this.isLoading,
     @required this.onRefresh,
@@ -340,6 +383,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.cancelListening,
   }) : super(equals: [
           isLoading,
+          lastUpdated,
           snackBarEvt,
           isFavorited,
           posts,
@@ -358,6 +402,7 @@ class ViewModel extends BaseModel<AppState> {
       users: state.users,
       snackBarEvt: state.snackBarEvt,
       isLoading: state.isLoading,
+      lastUpdated: state.lastUpdated,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
       isFavorited:

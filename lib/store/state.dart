@@ -114,6 +114,8 @@ class AppState {
   final List<String> cookies;
   final bool isLoading;
 
+  final DateTime lastUpdated;
+
   final Event<PostWrapper> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
   final Event<String> snackBarEvt;
@@ -128,6 +130,7 @@ class AppState {
     @required this.users,
     @required this.topics,
     @required this.categories,
+    @required this.lastUpdated,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
     @required this.snackBarEvt,
@@ -150,6 +153,7 @@ class AppState {
     Map<int, User> users,
     List<String> cookies,
     bool isLoading,
+    DateTime lastUpdated,
     Event<PostWrapper> fetchReplyEvt,
     Event<Editing> setEditing,
     Event<String> snackBarEvt,
@@ -162,6 +166,7 @@ class AppState {
       users: users ?? this.users,
       cookies: cookies ?? this.cookies,
       isLoading: isLoading ?? this.isLoading,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
       snackBarEvt: snackBarEvt ?? this.snackBarEvt,
@@ -176,6 +181,7 @@ class AppState {
       categories: Map(),
       topics: Map(),
       users: Map(),
+      lastUpdated: DateTime.now(),
       favorites: FavoriteState(favorites: [], favoriteCount: 0, lastPage: 0),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
