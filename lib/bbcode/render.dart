@@ -624,7 +624,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             ),
           ),
           material.Text(
-            reply.username,
+            reply.username ?? "#ANONYMOUS#",
             style: Theme.of(context)
                 .textTheme
                 .body2

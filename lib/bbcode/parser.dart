@@ -14,10 +14,29 @@ RegExp imageRegExp = RegExp(r"\[img\](.*?)\[/img\]");
 RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
 RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\](.*?)\[/url\]");
 
+// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp1 = RegExp(
-    r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]");
+  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+);
+// // [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid=xxx]xxxx[/uid] (xx-xx-xx xx:xx)[/b]
 RegExp replyRegExp2 = RegExp(
-    r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]");
+  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+);
+
+// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
+RegExp replyRegExp3 = RegExp(
+  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+);
+
+// [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid]xxxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx)[/b]
+RegExp replyRegExp4 = RegExp(
+  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+);
+
+// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-1]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
+RegExp replyReg5 = RegExp(
+  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+);
 
 LinkedList<Tag> parseBBCode(String content) {
   LinkedList<Tag> tags = LinkedList();
@@ -68,6 +87,57 @@ _parseBlock(String content, LinkedList<Tag> tags) {
         pageIndex: int.parse(match[3]),
         userId: int.parse(match[4]),
         username: match[5],
+        dateTime: DateTime.parse(match[6]),
+      ),
+      match.start,
+      match.end,
+    ));
+    content =
+        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+  }
+
+  for (var match in replyRegExp3.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      Reply(
+        postId: int.parse(match[1]),
+        topicId: int.parse(match[2]),
+        pageIndex: int.parse(match[3]),
+        // userId: int.parse(match[4]),
+        // username: match[4],
+        dateTime: DateTime.parse(match[5]),
+      ),
+      match.start,
+      match.end,
+    ));
+    content =
+        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+  }
+
+  for (var match in replyRegExp4.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      Reply(
+        postId: int.parse(match[1]),
+        topicId: int.parse(match[2]),
+        pageIndex: int.parse(match[3]),
+        // userId: int.parse(match[4]),
+        // username: match[5],
+        dateTime: DateTime.parse(match[5]),
+      ),
+      match.start,
+      match.end,
+    ));
+    content =
+        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+  }
+
+  for (var match in replyReg5.allMatches(content)) {
+    _tags.add(_TagWithPosition(
+      Reply(
+        postId: int.parse(match[1]),
+        topicId: int.parse(match[2]),
+        pageIndex: int.parse(match[3]),
+        userId: int.parse(match[4]),
+        // username: match[5],
         dateTime: DateTime.parse(match[6]),
       ),
       match.start,
