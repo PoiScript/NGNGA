@@ -1,33 +1,33 @@
 String duration(DateTime left, DateTime right) {
   Duration difference = left.difference(right);
-  if (difference.inDays > 7) {
-    switch (left.month) {
+  if (difference.inDays > 10) {
+    switch (right.month) {
       case DateTime.january:
-        return "Jan '${left.day}";
+        return "Jan '${right.day}";
       case DateTime.february:
-        return "Feb '${left.day}";
+        return "Feb '${right.day}";
       case DateTime.march:
-        return "Mar '${left.day}";
+        return "Mar '${right.day}";
       case DateTime.april:
-        return "Apr '${left.day}";
+        return "Apr '${right.day}";
       case DateTime.may:
-        return "May '${left.day}";
+        return "May '${right.day}";
       case DateTime.june:
-        return "Jun '${left.day}";
+        return "Jun '${right.day}";
       case DateTime.july:
-        return "Jul '${left.day}";
+        return "Jul '${right.day}";
       case DateTime.august:
-        return "Aug '${left.day}";
+        return "Aug '${right.day}";
       case DateTime.september:
-        return "Sep '${left.day}";
+        return "Sep '${right.day}";
       case DateTime.october:
-        return "Oct '${left.day}";
+        return "Oct '${right.day}";
       case DateTime.november:
-        return "Nov '${left.day}";
+        return "Nov '${right.day}";
       case DateTime.december:
-        return "Dec '${left.day}";
+        return "Dec '${right.day}";
     }
-    return "${left.day}";
+    return "${right.day}";
   } else if (difference.inDays > 0) {
     return "${difference.inDays}d";
   } else if (difference.inHours > 0) {
