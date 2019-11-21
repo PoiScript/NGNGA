@@ -14,10 +14,20 @@ class FetchFavorTopicsResponse {
   }) : assert(favorites != null && favoriteCount != null);
 
   factory FetchFavorTopicsResponse.fromJson(Map<String, dynamic> json) {
+    List<Favorite> favorites = [];
+
+    if (json["data"][0][0] is List) {
+      for (final value in json["data"][0][0]) {
+        favorites.add(Favorite.fromJson(value));
+      }
+    } else if (json["data"][0][0] is Map) {
+      for (final value in json["data"][0][0].values) {
+        favorites.add(Favorite.fromJson(value));
+      }
+    }
+
     return FetchFavorTopicsResponse._(
-      favorites: List.from(json["data"][0][0])
-          .map((value) => Favorite.fromJson(value))
-          .toList(),
+      favorites: favorites,
       favoriteCount: json["data"][0][1],
     );
   }
