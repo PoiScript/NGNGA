@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
@@ -12,19 +13,23 @@ import 'package:ngnga/widgets/topic_row.dart';
 
 const kExpandedHeight = 150.0;
 
-class CategoryPage extends StatelessWidget {
+final numberFormatter = NumberFormat("#,###,###,###");
+
+class CategoryPage extends StatefulWidget {
   final Category category;
   final List<Topic> topics;
   final int topicsCount;
   final bool isLoading;
   final bool isSaved;
+  final Event<String> snackBarEvt;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
   final void Function(Topic, int) navigateToTopic;
   final void Function(Category) navigateToCategory;
-  final void Function(Category) saveCategory;
-  final void Function(Category) removeCategory;
+
+  final VoidCallback saveCategory;
+  final VoidCallback removeCategory;
 
   CategoryPage({
     @required this.topics,
@@ -32,6 +37,7 @@ class CategoryPage extends StatelessWidget {
     @required this.category,
     @required this.topicsCount,
     @required this.isLoading,
+    @required this.snackBarEvt,
     @required this.onRefresh,
     @required this.onLoad,
     @required this.navigateToTopic,
@@ -43,6 +49,7 @@ class CategoryPage extends StatelessWidget {
         assert(topicsCount != null),
         assert(isLoading != null),
         assert(isSaved != null),
+        assert(snackBarEvt != null),
         assert(onRefresh != null),
         assert(onLoad != null),
         assert(navigateToTopic != null),
@@ -50,18 +57,43 @@ class CategoryPage extends StatelessWidget {
         assert(saveCategory != null),
         assert(removeCategory != null);
 
+  _CategoryPageState createState() => _CategoryPageState();
+}
+
+class _CategoryPageState extends State<CategoryPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  didUpdateWidget(CategoryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _consumeEvents();
+  }
+
+  _consumeEvents() {
+    String message = widget.snackBarEvt.consume();
+    if (message != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _scaffoldKey.currentState.showSnackBar(SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+          ));
+        }
+      });
+  }
+
   Widget build(BuildContext context) {
-    if (isLoading && topics.isEmpty) {
+    if (widget.isLoading && widget.topics.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
+      key: _scaffoldKey,
       body: Scrollbar(
         child: EasyRefresh.builder(
           header: ClassicalHeader(),
           footer: ClassicalFooter(),
-          onRefresh: onRefresh,
-          onLoad: onLoad,
+          onRefresh: widget.onRefresh,
+          onLoad: widget.onLoad,
           builder: (context, physics, header, footer) => CustomScrollView(
             physics: physics,
             slivers: <Widget>[
@@ -72,16 +104,16 @@ class CategoryPage extends StatelessWidget {
                 leading: const BackButton(color: Colors.black),
                 backgroundColor: Theme.of(context).backgroundColor,
                 actions: <Widget>[
-                  isSaved
+                  widget.isSaved
                       ? IconButton(
                           color: Colors.black,
                           icon: Icon(Icons.star),
-                          onPressed: () => removeCategory(category),
+                          onPressed: () => widget.removeCategory(),
                         )
                       : IconButton(
                           color: Colors.black,
                           icon: Icon(Icons.star_border),
-                          onPressed: () => saveCategory(category),
+                          onPressed: () => widget.saveCategory(),
                         ),
                   IconButton(
                     color: Colors.black,
@@ -95,7 +127,7 @@ class CategoryPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 58.0),
                     height: kToolbarHeight,
                     child: Text(
-                      category.title,
+                      widget.category.title,
                       style: Theme.of(context).textTheme.subhead,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -105,25 +137,37 @@ class CategoryPage extends StatelessWidget {
                 ),
               ),
               header,
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "${numberFormatter.format(widget.topicsCount)} topics",
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ),
+              ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final int itemIndex = index ~/ 2;
-                    if (index.isEven) {
-                      return TopicRowConnector(topics[itemIndex]);
+                    if (index.isOdd) {
+                      return TopicRowConnector(widget.topics[index ~/ 2]);
                     }
-                    return Divider(height: 0.0);
+                    return Divider(
+                      height: 1.0,
+                    );
                   },
                   semanticIndexCallback: (widget, localIndex) {
-                    if (localIndex.isEven) {
+                    if (localIndex.isOdd) {
                       return localIndex ~/ 2;
                     }
                     return null;
                   },
-                  childCount: topics.length * 2,
+                  childCount: widget.topics.length * 2 + 1,
                 ),
               ),
-              if (topics.length ~/ 35 != topicsCount ~/ 35) footer,
+              if (widget.topics.length ~/ 35 != widget.topicsCount ~/ 35)
+                footer,
             ],
           ),
         ),
@@ -148,6 +192,7 @@ class CategoryPageConnector extends StatelessWidget {
         topics: vm.topics,
         category: vm.category,
         topicsCount: vm.topicsCount,
+        snackBarEvt: vm.snackBarEvt,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
@@ -167,13 +212,16 @@ class ViewModel extends BaseModel<AppState> {
   int topicsCount;
   bool isLoading;
   bool isSaved;
+  Event<String> snackBarEvt;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
+
   void Function(Topic, int) navigateToTopic;
   void Function(Category) navigateToCategory;
-  void Function(Category) saveCategory;
-  void Function(Category) removeCategory;
+
+  VoidCallback saveCategory;
+  VoidCallback removeCategory;
 
   ViewModel(this.categoryId);
 
@@ -181,6 +229,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topics,
     @required this.isLoading,
     @required this.isSaved,
+    @required this.snackBarEvt,
     @required this.categoryId,
     @required this.category,
     @required this.topicsCount,
@@ -190,7 +239,14 @@ class ViewModel extends BaseModel<AppState> {
     @required this.navigateToCategory,
     @required this.saveCategory,
     @required this.removeCategory,
-  }) : super(equals: [isLoading, isSaved, topics, category, topicsCount]);
+  }) : super(equals: [
+          isLoading,
+          snackBarEvt,
+          isSaved,
+          topics,
+          category,
+          topicsCount,
+        ]);
 
   @override
   ViewModel fromStore() {
@@ -202,14 +258,16 @@ class ViewModel extends BaseModel<AppState> {
       category: categoryState.category,
       topics: categoryState.topics,
       topicsCount: categoryState.topicsCount,
+      snackBarEvt: state.snackBarEvt,
       onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>
           dispatch(NavigateToTopicAction(topic, page)),
       navigateToCategory: (category) =>
           dispatch(NavigateToCategoryAction(category)),
-      saveCategory: (category) => dispatch(AddCategoryAction(category)),
-      removeCategory: (category) => dispatch(RemoveCategoryAction(category)),
+      saveCategory: () => dispatch(AddCategoryAction(categoryState.category)),
+      removeCategory: () =>
+          dispatch(RemoveCategoryAction(categoryState.category)),
     );
   }
 }
