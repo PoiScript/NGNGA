@@ -74,3 +74,4 @@
 
 # fonts files, download at build time
 fonts/*.otf
+fonts/*.ttf

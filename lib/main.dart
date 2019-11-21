@@ -105,12 +105,14 @@ class MyApp extends StatelessWidget {
   }
 
   final ThemeData _theme = ThemeData(
-    fontFamily: "Noto Sans CJK SC",
+    fontFamily: "Roboto",
     textTheme: TextTheme(
       title: TitleTextStyle,
       subtitle: SubTitleTextStyle,
       caption: CaptionTextStyle,
+      subhead: SubheadTextStyle,
       body1: Body1TextStyle,
+      body2: Body2TextStyle,
     ),
   );
 }
