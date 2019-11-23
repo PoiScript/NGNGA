@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ngnga/screens/category/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/screens/home/home.dart';
-import 'package:ngnga/screens/new/new.dart';
+import 'package:ngnga/screens/welcome/welcome.dart';
 import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         navigatorKey: _navigatorKey,
         theme: _theme,
         // use "new" instead of "/new" to make sure it's a top-level route
-        initialRoute: state.cookies.isEmpty ? "new" : "/",
+        initialRoute: state.cookies.isEmpty ? "welcome" : "/",
       ),
     );
   }
@@ -91,8 +91,8 @@ class MyApp extends StatelessWidget {
           postId: arguments["postId"],
         );
         break;
-      case "new":
-        screen = NewPage();
+      case "welcome":
+        screen = WelcomePage();
         break;
       default:
         return null;
