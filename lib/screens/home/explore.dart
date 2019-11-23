@@ -10,21 +10,22 @@ import 'package:ngnga/widgets/category_row.dart';
 
 import 'popup_menu.dart';
 
-class Categories extends StatelessWidget {
+class Explore extends StatelessWidget {
   final List<Category> pinned;
 
-  Categories({
+  Explore({
     @required this.pinned,
   }) : assert(pinned != null);
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      physics: BouncingScrollPhysics(),
       slivers: <Widget>[
         SliverAppBar(
           automaticallyImplyLeading: false,
           title: Text(
-            "Categories",
+            "Explore",
             style: Theme.of(context).textTheme.body2,
           ),
           actions: <Widget>[
@@ -33,6 +34,7 @@ class Categories extends StatelessWidget {
           backgroundColor: Colors.white,
           pinned: true,
         ),
+        SliverToBoxAdapter(),
         SliverStickyHeader(
           header: Container(
             padding: EdgeInsets.symmetric(
@@ -83,15 +85,15 @@ class Categories extends StatelessWidget {
   }
 }
 
-class CategoriesConnector extends StatelessWidget {
-  CategoriesConnector();
+class ExploreConnector extends StatelessWidget {
+  ExploreConnector();
 
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
       onInit: (store) => store.dispatch(FetchFavoritesAction()),
-      builder: (context, vm) => Categories(
+      builder: (context, vm) => Explore(
         pinned: vm.pinned,
       ),
     );

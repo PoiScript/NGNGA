@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ngnga/screens/editor/editor.dart';
 
 enum Choice {
   JumpToSettingsPage,
+  JumpToEditorPage,
 }
 
 class PopupMenu extends StatelessWidget {
@@ -20,11 +22,24 @@ class PopupMenu extends StatelessWidget {
             style: Theme.of(context).textTheme.body1,
           ),
         ),
+        PopupMenuItem<Choice>(
+          value: Choice.JumpToEditorPage,
+          child: Text(
+            "Jump to EditorPage",
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
       ],
       onSelected: (choice) {
         switch (choice) {
           case Choice.JumpToSettingsPage:
             Navigator.pushNamed(context, "/s");
+            break;
+          case Choice.JumpToEditorPage:
+            Navigator.pushNamed(context, "/e", arguments: {
+              "action": ACTION_NOOP,
+            });
+            break;
         }
       },
     );

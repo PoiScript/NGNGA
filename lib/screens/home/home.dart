@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'explore.dart';
 import 'favorites.dart';
-import 'categories.dart';
 import 'inbox.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _selectedIndex == 0
           ? FavoritesConnector()
-          : _selectedIndex == 1 ? CategoriesConnector() : Inbox(),
+          : _selectedIndex == 1 ? ExploreConnector() : Inbox(),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(''),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.view_day),
+            icon: Icon(Icons.explore),
             title: Text(''),
           ),
           BottomNavigationBarItem(
