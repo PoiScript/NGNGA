@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/topic_row.dart';
@@ -60,9 +62,39 @@ class CategoryPage extends StatefulWidget {
   _CategoryPageState createState() => _CategoryPageState();
 }
 
-class _CategoryPageState extends State<CategoryPage> {
+class _CategoryPageState extends State<CategoryPage>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ScrollController _scrollController = ScrollController();
 
+  AnimationController _animationController;
+  Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
+        .animate(_animationController);
+
+    _scrollController.addListener(() {
+      final direction = _scrollController.position.userScrollDirection;
+      if (direction == ScrollDirection.reverse &&
+          _animationController.isCompleted) {
+        _animationController.reverse();
+      } else if (direction == ScrollDirection.forward &&
+          _animationController.isDismissed) {
+        _animationController.forward();
+      }
+    });
+  }
+
+  @required
   didUpdateWidget(CategoryPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     _consumeEvents();
@@ -95,6 +127,7 @@ class _CategoryPageState extends State<CategoryPage> {
           onRefresh: widget.onRefresh,
           onLoad: widget.onLoad,
           builder: (context, physics, header, footer) => CustomScrollView(
+            controller: _scrollController,
             physics: physics,
             slivers: <Widget>[
               SliverAppBar(
@@ -170,6 +203,19 @@ class _CategoryPageState extends State<CategoryPage> {
                 footer,
             ],
           ),
+        ),
+      ),
+      floatingActionButton: SlideTransition(
+        position: _offset,
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, "/e", arguments: {
+              "action": ACTION_NEW_TOPIC,
+              "categoryId": widget.category.id,
+            });
+          },
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blue,
         ),
       ),
     );

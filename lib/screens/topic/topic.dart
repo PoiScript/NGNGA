@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -36,17 +37,8 @@ class TopicPage extends StatefulWidget {
   final Future<void> Function() startListening;
   final Future<void> Function() cancelListening;
 
-  final Future<void> Function({
-    int topicId,
-    int postId,
-    int postIndex,
-  }) upvotePost;
-
-  final Future<void> Function({
-    int topicId,
-    int postId,
-    int postIndex,
-  }) downvotePost;
+  final Future<void> Function({int postId, int postIndex}) upvotePost;
+  final Future<void> Function({int postId, int postIndex}) downvotePost;
 
   TopicPage({
     @required this.topic,
@@ -83,19 +75,45 @@ class TopicPage extends StatefulWidget {
   _TopicPageState createState() => _TopicPageState();
 }
 
-class _TopicPageState extends State<TopicPage> {
+class _TopicPageState extends State<TopicPage>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ScrollController _scrollController = ScrollController();
+  AnimationController _animationController;
+  Animation<Offset> _offset;
 
   @override
   void initState() {
     super.initState();
+
     widget.startListening();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
+        .animate(_animationController);
+
+    _scrollController.addListener(() {
+      final direction = _scrollController.position.userScrollDirection;
+      if (direction == ScrollDirection.reverse &&
+          _animationController.isCompleted) {
+        _animationController.reverse();
+      } else if (direction == ScrollDirection.forward &&
+          _animationController.isDismissed) {
+        _animationController.forward();
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     widget.cancelListening();
+    _scrollController.dispose();
+    _animationController.dispose();
   }
 
   @override
@@ -134,15 +152,18 @@ class _TopicPageState extends State<TopicPage> {
           builder: _buildContent,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, "/e", arguments: {
-            "action": ACTION_REPLY,
-            "topicId": widget.topic.id,
-          });
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+      floatingActionButton: SlideTransition(
+        position: _offset,
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, "/e", arguments: {
+              "action": ACTION_REPLY,
+              "topicId": widget.topic.id,
+            });
+          },
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blue,
+        ),
       ),
     );
   }
@@ -215,12 +236,10 @@ class _TopicPageState extends State<TopicPage> {
                 user: widget.users[post.userId],
                 topicId: widget.topic.id,
                 upvote: () => widget.upvotePost(
-                  topicId: widget.topic.id,
                   postId: post.id,
                   postIndex: itemIndex,
                 ),
                 downvote: () => widget.downvotePost(
-                  topicId: widget.topic.id,
                   postId: post.id,
                   postIndex: itemIndex,
                 ),
@@ -238,7 +257,8 @@ class _TopicPageState extends State<TopicPage> {
               widget.posts.length > 0 ? (widget.posts.length * 2 + 1) : 0,
         ),
       ),
-      widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20
+      widget.posts.isNotEmpty &&
+              widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20
           ? footer
           : SliverToBoxAdapter(
               child: Container(
@@ -247,12 +267,12 @@ class _TopicPageState extends State<TopicPage> {
                 alignment: Alignment.centerLeft,
                 child: Row(
                   children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(
+                    IconButton(
+                      icon: Icon(
                         Icons.replay,
                         color: Theme.of(context).textTheme.caption.color,
                       ),
+                      onPressed: () {},
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -262,9 +282,13 @@ class _TopicPageState extends State<TopicPage> {
                           "Auto-update enabled.",
                           style: Theme.of(context).textTheme.caption,
                         ),
-                        Text(
-                          "Last Updated: ${dateFormatter.format(widget.lastUpdated)}",
-                          style: Theme.of(context).textTheme.caption,
+                        StreamBuilder(
+                          initialData: DateTime.now(),
+                          stream: Stream.periodic(const Duration(seconds: 1)),
+                          builder: (context, snapshot) => Text(
+                            "Last Updated: ${dateFormatter.format(widget.lastUpdated)} (${DateTime.now().difference(widget.lastUpdated).inSeconds}s ago)",
+                            style: Theme.of(context).textTheme.caption,
+                          ),
                         ),
                         Text(
                           "Update Interval: 20s",
@@ -279,6 +303,7 @@ class _TopicPageState extends State<TopicPage> {
     ];
 
     return CustomScrollView(
+      controller: _scrollController,
       physics: physics,
       semanticChildCount: widget.posts.length,
       slivers: slivers,
@@ -349,13 +374,11 @@ class ViewModel extends BaseModel<AppState> {
   Future<void> Function() cancelListening;
 
   Future<void> Function({
-    int topicId,
     int postId,
     int postIndex,
   }) upvotePost;
 
   Future<void> Function({
-    int topicId,
     int postId,
     int postIndex,
   }) downvotePost;
@@ -394,7 +417,6 @@ class ViewModel extends BaseModel<AppState> {
   @override
   ViewModel fromStore() {
     final topic = state.topics[topicId];
-
     return ViewModel.build(
       topicId: topicId,
       posts: topic.posts,
@@ -414,14 +436,14 @@ class ViewModel extends BaseModel<AppState> {
       removeFromFavorites: () => dispatchFuture(
         RemoveFromFavoritesAction(topicId: topicId),
       ),
-      upvotePost: ({topicId, postId, postIndex}) => dispatchFuture(
+      upvotePost: ({postId, postIndex}) => dispatchFuture(
         UpvotePostAction(
           topicId: topicId,
           postId: postId,
           postIndex: postIndex,
         ),
       ),
-      downvotePost: ({topicId, postId, postIndex}) => dispatchFuture(
+      downvotePost: ({postId, postIndex}) => dispatchFuture(
         DownvotePostAction(
           topicId: topicId,
           postId: postId,
