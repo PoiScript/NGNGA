@@ -1,18 +1,22 @@
-import 'dart:collection';
-
 import 'package:html_unescape/html_unescape.dart';
 
 import 'tag.dart';
 import 'sticker.dart';
 
-RegExp uidRegExp = RegExp(r"(Post by )?\[uid=(\d*)\](.*?)\[/uid\]");
-RegExp pidRegExp =
-    RegExp(r"(Reply to )?\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
-RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
-RegExp fontRegExp = RegExp(r"\[font(=[^\s\]]*)?\](.*?)\[/font\]");
-RegExp imageRegExp = RegExp(r"\[img\](.*?)\[/img\]");
-RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
-RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\](.*?)\[/url\]");
+final RegExp headingRegExp = RegExp(r"===(.*?)===");
+
+final RegExp alignStartRegExp = RegExp(r"\[align=([^\s\]]*)\]");
+final RegExp sizeStartRegExp = RegExp(r"\[size=([^\s\]]*)\]");
+final RegExp fontStartRegExp = RegExp(r"\[font=([^\s\]]*)\]");
+final RegExp colorStartRegExp = RegExp(r"\[color=([^\s\]]*)\]");
+final RegExp collapseStartRegExp = RegExp(r"\[collapse(=[^\s\]]*)?\]");
+final RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\]([^\[\]]*?)\[/url\]");
+
+final RegExp uidRegExp = RegExp(r"\[uid=(\d*)\](.*?)\[/uid\]");
+final RegExp pidRegExp = RegExp(r"\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
+final RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
+final RegExp imageRegExp = RegExp(r"\[img\]([^\[\]]*?)\[/img\]");
+final RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp1 = RegExp(
@@ -33,37 +37,25 @@ RegExp replyRegExp4 = RegExp(
   r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
 );
 
-// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-1]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
+// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-xxx]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
 RegExp replyReg5 = RegExp(
   r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
 
-LinkedList<Tag> parseBBCode(String content) {
-  LinkedList<Tag> tags = LinkedList();
+// [tid=xxx]Topic[/tid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
+RegExp replyReg6 = RegExp(
+  r"\[tid=(\d*)\]Topic\[/tid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+);
 
-  var unescape = new HtmlUnescape();
-  var unescaped = unescape.convert(content);
+final unescape = new HtmlUnescape();
 
-  _parseBlock(unescaped, tags);
+List<Tag> parseBBCode(String raw) {
+  List<_TagSpan> spans = List();
 
-  var _pre = tags.first;
-
-  while (_pre != null) {
-    var pre = _pre.next;
-    if (_pre.type == TagType.Text) {
-      _parseInlines((_pre as Text).content, _pre);
-    }
-    _pre = pre;
-  }
-
-  return tags;
-}
-
-_parseBlock(String content, LinkedList<Tag> tags) {
-  List<_TagWithPosition> _tags = List();
+  String content = unescape.convert(raw);
 
   for (var match in replyRegExp1.allMatches(content)) {
-    _tags.add(_TagWithPosition(
+    spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
@@ -73,14 +65,15 @@ _parseBlock(String content, LinkedList<Tag> tags) {
         dateTime: DateTime.parse(match[6]),
       ),
       match.start,
-      match.end,
+      match.start + 1,
+      false,
     ));
     content =
-        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
   for (var match in replyRegExp2.allMatches(content)) {
-    _tags.add(_TagWithPosition(
+    spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
@@ -90,334 +83,290 @@ _parseBlock(String content, LinkedList<Tag> tags) {
         dateTime: DateTime.parse(match[6]),
       ),
       match.start,
-      match.end,
+      match.start + 1,
+      false,
     ));
     content =
-        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
   for (var match in replyRegExp3.allMatches(content)) {
-    _tags.add(_TagWithPosition(
+    spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
-        // userId: int.parse(match[4]),
-        // username: match[4],
         dateTime: DateTime.parse(match[5]),
       ),
       match.start,
-      match.end,
+      match.start + 1,
+      false,
     ));
     content =
-        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
   for (var match in replyRegExp4.allMatches(content)) {
-    _tags.add(_TagWithPosition(
+    spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
-        // userId: int.parse(match[4]),
-        // username: match[5],
         dateTime: DateTime.parse(match[5]),
       ),
       match.start,
-      match.end,
+      match.start + 1,
+      false,
     ));
     content =
-        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
   for (var match in replyReg5.allMatches(content)) {
-    _tags.add(_TagWithPosition(
+    spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
         userId: int.parse(match[4]),
-        // username: match[5],
         dateTime: DateTime.parse(match[6]),
       ),
       match.start,
-      match.end,
+      match.start + 1,
+      false,
     ));
     content =
-        "${content.substring(0, match.start)}${'_' * (match.end - match.start)}${content.substring(match.end)}";
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  var lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[quote]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/quote]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(QuoteStart(), start, start + "[quote]".length));
-    _tags.add(_TagWithPosition(QuoteEnd(), end, end + "[/quote]".length));
-
-    lastEnd = end + "[/quote]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[collapse", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var bracketEnd = content.indexOf("]", start + "[collapse".length);
-
-    if (bracketEnd == -1) {
-      break;
-    }
-
-    String description;
-
-    if (bracketEnd != start + "[collapse".length) {
-      if (content[start + "[collapse".length] != "=") {
-        lastEnd = bracketEnd;
-        continue;
-      }
-      description = content.substring(start + "[collapse=".length, bracketEnd);
-    }
-
-    var end = content.indexOf("[/collapse]", bracketEnd + 1);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(
-        _TagWithPosition(CollapseStart(description), start, bracketEnd + 1));
-    _tags.add(_TagWithPosition(CollapseEnd(), end, end + "[/collapse]".length));
-
-    lastEnd = end + "[/collapse]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[b]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/b]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(BoldStart(), start, start + "[b]".length));
-    _tags.add(_TagWithPosition(BoldEnd(), end, end + "[/b]".length));
-
-    lastEnd = end + "[/b]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[i]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/i]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(ItalicStart(), start, start + "[i]".length));
-    _tags.add(_TagWithPosition(ItalicEnd(), end, end + "[/i]".length));
-
-    lastEnd = end + "[/i]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[del]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/del]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(DeleteStart(), start, start + "[del]".length));
-    _tags.add(_TagWithPosition(DeleteEnd(), end, end + "[/del]".length));
-
-    lastEnd = end + "[/del]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[u]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/u]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(UnderlineStart(), start, start + "[u]".length));
-    _tags.add(_TagWithPosition(UnderlineEnd(), end, end + "[/u]".length));
-
-    lastEnd = end + "[/u]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[size=", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var bracketEnd = content.indexOf("]", start);
-
-    var sizeStr = content.substring(start + "[size=".length, bracketEnd).trim();
-
-    if (bracketEnd == -1) {
-      break;
-    }
-
-    if (sizeStr.endsWith("%")) {
-      sizeStr = sizeStr.substring(0, sizeStr.length - 1);
-    }
-
-    int size = int.tryParse(sizeStr);
-
-    if (size == null) {
-      lastEnd = bracketEnd;
-      continue;
-    }
-
-    var end = content.indexOf("[/size]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(SizeStart(), start, bracketEnd + 1));
-    _tags.add(_TagWithPosition(SizeEnd(), end, end + "[/size]".length));
-
-    lastEnd = end + "[/size]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[color=", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var bracketEnd = content.indexOf("]", start);
-
-    if (bracketEnd == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/color]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(
-      ColorStart(
-        content.substring(start + "[color=".length, bracketEnd).trim(),
+  for (var match in replyReg6.allMatches(content)) {
+    spans.add(_TagSpan(
+      Reply(
+        topicId: int.parse(match[1]),
+        userId: int.parse(match[2]),
+        username: match[3],
+        dateTime: DateTime.parse(match[4]),
       ),
-      start,
-      bracketEnd + 1,
+      match.start,
+      match.start + 1,
+      false,
     ));
-    _tags.add(_TagWithPosition(ColorEnd(), end, end + "[/color]".length));
-
-    lastEnd = end + "[/color]".length;
+    content =
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  if (_tags.isEmpty) {
-    tags.add(ParagraphStart());
-    tags.add(Text(content));
-    tags.add(ParagraphEnd());
-  } else {
-    _tags.sort((a, b) => a.start.compareTo(b.start));
+  spans
+    // styling
+    ..addAll("[b]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(BoldStart(), match, false),
+        ))
+    ..addAll("[/b]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(BoldEnd(), match, true),
+        ))
+    ..addAll("[i]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ItalicStart(), match, false),
+        ))
+    ..addAll("[/i]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ItalicEnd(), match, true),
+        ))
+    ..addAll("[u]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(UnderlineStart(), match, false),
+        ))
+    ..addAll("[/u]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(UnderlineEnd(), match, true),
+        ))
+    ..addAll("[del]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(DeleteStart(), match, false),
+        ))
+    ..addAll("[/del]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(DeleteEnd(), match, true),
+        ))
+    ..addAll(sizeStartRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(SizeStart(), match, false),
+        ))
+    ..addAll("[/size]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(SizeEnd(), match, true),
+        ))
+    ..addAll(fontStartRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(FontStart(), match, false),
+        ))
+    ..addAll("[/font]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(FontEnd(), match, true),
+        ))
+    ..addAll(colorStartRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ColorStart(match[1]), match, false),
+        ))
+    ..addAll("[/color]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ColorEnd(), match, true),
+        ))
+    ..addAll("[h]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(HeadingStart(), match, false),
+        ))
+    ..addAll("[/h]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(HeadingEnd(), match, true),
+        ))
+    // containers
+    // ..addAll(alignStartRegExp.allMatches(content).map(
+    //       (match) => _TagSpan.fromMatch(AlignStart(), match, false),
+    //     ))
+    // ..addAll("[/align]".allMatches(content).map(
+    //       (match) => _TagSpan.fromMatch(AlignEnd(), match, true),
+    //     ))
+    // ..addAll(headingRegExp.allMatches(content).expand((match) => [
+    //       _TagSpan(HeadingStart(), match.start, match.start + 3, false),
+    //       _TagSpan(HeadingEnd(), match.end - 3, match.end, true),
+    //     ]))
+    ..addAll("[quote]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(QuoteStart(), match, false),
+        ))
+    ..addAll("[/quote]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(QuoteEnd(), match, true),
+        ))
+    ..addAll(collapseStartRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(
+              CollapseStart(match[1]?.substring(1)), match, false),
+        ))
+    ..addAll("[/collapse]".allMatches(content).map(
+          (match) => _TagSpan.fromMatch(CollapseEnd(), match, true),
+        ))
+    ..addAll(linkRegExp.allMatches(content).expand((match) => [
+          _TagSpan(
+            LinkStart(match[1]?.substring(1) ?? match[2]),
+            match.start,
+            match.start + 5 + (match[1]?.length ?? 0),
+            false,
+          ),
+          _TagSpan(LinkEnd(), match.end - 6, match.end, false),
+        ]))
+    // inline objects
+    ..addAll(uidRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(
+              Uid(int.parse(match[1]), match[2]), match, false),
+        ))
+    ..addAll(metionsRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(Metions(match[1]), match, false),
+        ))
+    ..addAll(imageRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(
+            imageUrlToPath.containsKey(match[1])
+                ? Sticker(imageUrlToPath[match[1]])
+                : Image(match[1]),
+            match,
+            false,
+          ),
+        ))
+    ..addAll(stickerRegExp
+        .allMatches(content)
+        .where((match) => stickerNameToPath.containsKey(match[1]))
+        .map(
+          (match) => _TagSpan.fromMatch(
+              Sticker(stickerNameToPath[match[1]]), match, false),
+        ))
+    ..addAll(pidRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(
+            Pid(int.parse(match[2]), int.parse(match[3]), int.parse(match[4]),
+                match[5]),
+            match,
+            false,
+          ),
+        ));
 
-    int lastEnd = 0;
-    bool openingParagraph = false;
+  if (spans.isEmpty) return [ParagraphStart(), Text(content), ParagraphEnd()];
 
-    for (_TagWithPosition tagWihtPosition in _tags) {
-      if (tagWihtPosition.start != lastEnd) {
-        var text = content.substring(lastEnd, tagWihtPosition.start).trim();
-        if (text.isNotEmpty) {
-          if (!openingParagraph) {
-            tags.add(ParagraphStart());
-            openingParagraph = true;
-          }
-          tags.add(Text(text));
-        }
-      }
+  spans.sort((a, b) => a.start.compareTo(b.start));
 
-      lastEnd = tagWihtPosition.end;
+  for (int i = 0; i < spans.length; i++) {
+    if (spans[i].removed) continue;
 
-      switch (tagWihtPosition.tag.type) {
-        case TagType.HeadingStart:
-        case TagType.HeadingEnd:
-        case TagType.Reply:
-        case TagType.Rule:
-        case TagType.CollapseStart:
-        case TagType.CollapseEnd:
-        case TagType.AlignStart:
-        case TagType.AlignEnd:
-        case TagType.TableStart:
-        case TagType.TableEnd:
-        case TagType.QuoteStart:
-        case TagType.QuoteEnd:
-          if (openingParagraph) {
-            tags.add(ParagraphEnd());
-            openingParagraph = false;
-          }
-          break;
-        default: // inlines
-          if (!openingParagraph) {
-            tags.add(ParagraphStart());
-            openingParagraph = true;
-          }
-          break;
-      }
-
-      tags.add(tagWihtPosition.tag);
+    switch (spans[i].tag.type) {
+      case TagType.QuoteStart:
+        _handleQuote(spans, i);
+        break;
+      case TagType.CollapseStart:
+        _handleCollapse(spans, i);
+        break;
+      case TagType.BoldStart:
+        _handleStyling(spans, i, TagType.BoldStart, TagType.BoldEnd);
+        break;
+      case TagType.FontStart:
+        _handleStyling(spans, i, TagType.FontStart, TagType.FontEnd);
+        break;
+      case TagType.ColorStart:
+        _handleStyling(spans, i, TagType.ColorStart, TagType.ColorEnd);
+        break;
+      case TagType.SizeStart:
+        _handleStyling(spans, i, TagType.SizeStart, TagType.SizeEnd);
+        break;
+      case TagType.UnderlineStart:
+        _handleStyling(spans, i, TagType.UnderlineStart, TagType.UnderlineEnd);
+        break;
+      case TagType.ItalicStart:
+        _handleStyling(spans, i, TagType.ItalicStart, TagType.ItalicEnd);
+        break;
+      case TagType.DeleteStart:
+        _handleStyling(spans, i, TagType.DeleteStart, TagType.DeleteEnd);
+        break;
+      case TagType.HeadingStart:
+        _handleStyling(spans, i, TagType.HeadingStart, TagType.HeadingEnd);
+        break;
+      case TagType.LinkStart:
+        _handleLink(spans, i);
+        break;
+      case TagType.TableStart:
+        // TODO: Handle this case.
+        break;
+      case TagType.TableRowStart:
+        // TODO: Handle this case.
+        break;
+      case TagType.TableCellStart:
+        // TODO: Handle this case.
+        break;
+      case TagType.AlignStart:
+        _hanldeAlign(spans, i);
+        break;
+      case TagType.QuoteEnd:
+      case TagType.TableEnd:
+      case TagType.CollapseEnd:
+      case TagType.BoldEnd:
+      case TagType.FontEnd:
+      case TagType.ColorEnd:
+      case TagType.UnderlineEnd:
+      case TagType.ItalicEnd:
+      case TagType.DeleteEnd:
+      case TagType.LinkEnd:
+      case TagType.SizeEnd:
+      case TagType.HeadingEnd:
+      case TagType.TableRowEnd:
+      case TagType.TableCellEnd:
+      case TagType.AlignEnd:
+        // end tag, ignored
+        break;
+      case TagType.Image:
+      case TagType.Sticker:
+      case TagType.Metions:
+      case TagType.Rule:
+      case TagType.Pid:
+      case TagType.Uid:
+      case TagType.Reply:
+        // non-contianer, ignored
+        break;
+      case TagType.ParagraphStart:
+      case TagType.ParagraphEnd:
+      case TagType.Text:
+        // unreachable
+        break;
     }
+  }
 
-    if (lastEnd < content.length) {
-      var text = content.substring(lastEnd).trim();
+  List<Tag> tags = [];
+  int lastEnd = 0;
+  bool openingParagraph = false;
+
+  for (_TagSpan span in spans) {
+    if (span.removed) continue;
+
+    if (span.start != lastEnd) {
+      String text = content.substring(lastEnd, span.start).trim();
       if (text.isNotEmpty) {
         if (!openingParagraph) {
           tags.add(ParagraphStart());
@@ -427,264 +376,221 @@ _parseBlock(String content, LinkedList<Tag> tags) {
       }
     }
 
-    if (openingParagraph) {
-      tags.add(ParagraphEnd());
+    lastEnd = span.end;
+
+    switch (span.tag.type) {
+      case TagType.HeadingStart:
+      case TagType.HeadingEnd:
+      case TagType.Reply:
+      case TagType.Rule:
+      case TagType.CollapseStart:
+      case TagType.CollapseEnd:
+      case TagType.AlignStart:
+      case TagType.AlignEnd:
+      case TagType.TableStart:
+      case TagType.TableEnd:
+      case TagType.QuoteStart:
+      case TagType.QuoteEnd:
+        if (openingParagraph) {
+          tags.add(ParagraphEnd());
+          openingParagraph = false;
+        }
+        break;
+      default: // inlines
+        if (!openingParagraph) {
+          tags.add(ParagraphStart());
+          openingParagraph = true;
+        }
+        break;
     }
+
+    tags.add(span.tag);
+  }
+
+  if (lastEnd < content.length) {
+    String text = content.substring(lastEnd).trim();
+    if (text.isNotEmpty) {
+      if (!openingParagraph) {
+        tags.add(ParagraphStart());
+        openingParagraph = true;
+      }
+      tags.add(Text(text));
+    }
+  }
+
+  if (openingParagraph) tags.add(ParagraphEnd());
+
+  return tags;
+}
+
+_handleStyling(
+    List<_TagSpan> spans, int start, TagType startTag, TagType endTag) {
+  int end = _findEndTag(spans, start, startTag, endTag);
+
+  if (end == -1 || !spans[end].removed) {
+    spans[start].removed = true;
+  } else {
+    spans[end].removed = false;
   }
 }
 
-_parseInlines(String content, Tag previous) {
-  List<_TagWithPosition> _tags = List();
+_hanldeAlign(List<_TagSpan> spans, int start) {
+  int end = _findEndTag(spans, start, TagType.AlignStart, TagType.AlignEnd);
 
-  var lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[url", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var bracketEnd = content.indexOf("]", start);
-
-    if (bracketEnd == -1) {
-      break;
-    }
-
-    String url;
-
-    if (bracketEnd != start + "[url".length) {
-      if (content[start + "[url".length] != "=") {
-        lastEnd = bracketEnd;
-        continue;
-      }
-      url = content.substring(start + "[url=".length, bracketEnd).trim();
-    }
-
-    var end = content.indexOf("[/url]", bracketEnd);
-
-    if (end == -1) {
-      break;
-    }
-
-    if (url == null) {
-      _tags.add(_TagWithPosition(
-        PlainLink(content.substring(bracketEnd + 1, end)),
-        start,
-        end + "[/url]".length,
-      ));
-    } else {
-      // TODO: call parse_link_content
-      _tags.add(_TagWithPosition(LinkStart(url), start, bracketEnd));
-      _tags.add(_TagWithPosition(
-          Text(content.substring(bracketEnd + 1, end)), bracketEnd, end));
-      _tags.add(_TagWithPosition(LinkEnd(), end, end + "[/url]".length));
-    }
-
-    lastEnd = end + "[/url]".length;
+  if (end == -1 || !spans[end].removed) {
+    spans[start].removed = true;
+    return;
   }
 
-  lastEnd = 0;
+  List<_TagSpan> opening = [];
 
-  while (true) {
-    var start = content.indexOf("[@", lastEnd);
+  for (int i = start + 1; i < end; i++) {
+    _TagSpan span = spans[i];
 
-    if (start == -1) {
-      break;
-    }
+    if (span.removed) continue;
 
-    var end = content.indexOf("]", start);
+    if (span.tag.type == TagType.CollapseStart ||
+        span.tag.type == TagType.QuoteStart) {
+      opening.add(span);
+    } else if (span.tag.type == TagType.CollapseEnd) {
+      int start = opening
+          .lastIndexWhere((span) => span.tag.type == TagType.CollapseStart);
 
-    if (end == -1) {
-      break;
-    }
-
-    var username = content.substring(start + "[@".length, end);
-
-    if (!username.contains("\n")) {
-      _tags.add(_TagWithPosition(Metions(username), start, end + "]".length));
-    }
-
-    lastEnd = end + "]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[s:", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    var sticker = content.substring(start + "[s:".length, end);
-
-    var path = stickerNameToPath[sticker];
-    if (path != null) {
-      _tags.add(_TagWithPosition(Sticker(path), start, end + "]".length));
-    }
-
-    lastEnd = end + "]".length;
-  }
-
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[img]", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var end = content.indexOf("[/img]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    var url = content.substring(start + "[img]".length, end);
-
-    if (!url.contains("\n")) {
-      if (imageUrlToPath[url] == null) {
-        _tags.add(_TagWithPosition(Image(url), start, end + "[/img]".length));
+      if (start != -1) {
+        opening.removeAt(start);
       } else {
-        _tags.add(_TagWithPosition(
-            Sticker(imageUrlToPath[url]), start, end + "[/img]".length));
+        spans[end].removed = true;
+        spans[start].removed = true;
+        return;
+      }
+    } else if (span.tag.type == TagType.QuoteEnd) {
+      int start =
+          opening.lastIndexWhere((span) => span.tag.type == TagType.QuoteEnd);
+
+      if (start != -1) {
+        opening.removeAt(start);
+      } else {
+        spans[end].removed = true;
+        spans[start].removed = true;
+        return;
       }
     }
-
-    lastEnd = end + "[/img]".length;
   }
 
-  lastEnd = 0;
-
-  while (true) {
-    var start = content.indexOf("[uid=", lastEnd);
-
-    if (start == -1) {
-      break;
-    }
-
-    var bracketEnd = content.indexOf("]", start);
-
-    if (bracketEnd == -1) {
-      lastEnd = bracketEnd;
-      continue;
-    }
-
-    var userId = int.tryParse(
-        content.substring(start + "[uid=".length, bracketEnd).trim());
-
-    if (userId == null) {
-      lastEnd = bracketEnd;
-      continue;
-    }
-
-    var end = content.indexOf("[/uid]", start);
-
-    if (end == -1) {
-      break;
-    }
-
-    _tags.add(_TagWithPosition(
-      Uid(userId, content.substring(bracketEnd + 1, end).trim()),
-      start,
-      end + "[/uid]".length,
-    ));
-
-    lastEnd = end + "[/uid]".length;
-  }
-
-  for (RegExpMatch match in pidRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Pid(
-        int.parse(match[2]),
-        int.parse(match[3]),
-        int.parse(match[4]),
-        match[5],
-      ),
-      match.start,
-      match.end,
-    ));
-  }
-
-  if (_tags.isNotEmpty) {
-    _tags.sort((a, b) => a.start.compareTo(b.start));
-
-    var _pre = previous;
-    int lastEnd = 0;
-
-    for (_TagWithPosition tagWihtPosition in _tags) {
-      if (tagWihtPosition.start != lastEnd) {
-        var tag = Text(content.substring(lastEnd, tagWihtPosition.start));
-        _pre.insertAfter(tag);
-        _pre = tag;
-      }
-      lastEnd = tagWihtPosition.end;
-      _pre.insertAfter(tagWihtPosition.tag);
-      _pre = tagWihtPosition.tag;
-    }
-
-    if (lastEnd != content.length) {
-      _pre.insertAfter(Text(content.substring(lastEnd)));
-    }
-
-    previous.unlink();
+  if (opening.isNotEmpty) {
+    spans[end].removed = true;
+    spans[start].removed = true;
   }
 }
 
-_parseLinkContent(String content, Tag previous) {
-  List<_TagWithPosition> _tags = List();
+_handleCollapse(List<_TagSpan> spans, int start) {
+  int end = spans.indexWhere((t) => t.tag.type == TagType.CollapseEnd, start);
 
-  for (RegExpMatch match in metionsRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Metions(match[1]),
-      match.start,
-      match.end,
-    ));
+  if (end != -1 && spans[end].removed) {
+    spans[end].removed = false;
+  } else {
+    spans[start].removed = true;
+  }
+}
+
+_handleQuote(List<_TagSpan> spans, int start) {
+  int end = _findEndTag(spans, start, TagType.QuoteStart, TagType.QuoteEnd);
+
+  if (end == -1 || !spans[end].removed) {
+    spans[start].removed = true;
+    return;
   }
 
-  for (RegExpMatch match in stickerRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Sticker(match[1]),
-      match.start,
-      match.end,
-    ));
+  spans[end].removed = false;
+
+  List<_TagSpan> opening = [];
+
+  for (int i = start + 1; i < end; i++) {
+    _TagSpan span = spans[i];
+
+    if (span.removed) continue;
+
+    if (span.tag.type == TagType.CollapseStart) {
+      opening.add(span);
+    } else if (span.tag.type == TagType.CollapseEnd) {
+      if (opening.isNotEmpty) {
+        opening.removeLast();
+      } else {
+        spans[end].removed = true;
+        spans[start].removed = true;
+        return;
+      }
+    }
   }
 
-  for (RegExpMatch match in imageRegExp.allMatches(content)) {
-    _tags.add(_TagWithPosition(
-      Image(match[1]),
-      match.start,
-      match.end,
-    ));
+  if (opening.isNotEmpty) {
+    spans[end].removed = true;
+    spans[start].removed = true;
   }
+}
 
-  if (_tags.isNotEmpty) {
-    _tags.sort((a, b) => a.start.compareTo(b.start));
+_handleLink(List<_TagSpan> spans, int start) {
+  const allowedChildren = [
+    BoldStart,
+    BoldEnd,
+    FontStart,
+    FontEnd,
+    ColorStart,
+    ColorEnd,
+    SizeStart,
+    SizeEnd,
+    UnderlineStart,
+    UnderlineEnd,
+    ItalicStart,
+    ItalicEnd,
+    DeleteStart,
+    DeleteEnd,
+    Image,
+  ];
 
-    var _pre = previous;
-    var iter = _tags.iterator;
+  int end = _findEndTag(spans, start, TagType.LinkStart, TagType.LinkEnd);
 
-    while (iter.moveNext()) {
-      _pre.insertAfter(iter.current.tag);
-      _pre = iter.current.tag;
+  for (int i = start; i < end - start; i++) {
+    final tag = spans[i];
+    if (!tag.removed && !allowedChildren.contains(tag.tag.type)) {
+      spans[start].removed = true;
+      spans[end].removed = true;
+      break;
     }
   }
 }
 
-class _TagWithPosition {
+int _findEndTag(
+  List<_TagSpan> spans,
+  int start,
+  TagType startTag,
+  TagType endTag,
+) {
+  int depth = 1;
+  for (int i = start; i < spans.length; i++) {
+    if (spans[i].tag.type == startTag) {
+      depth += 1;
+    } else if (spans[i].tag.type == endTag) {
+      depth -= 1;
+
+      if (depth == 1) return i;
+    }
+  }
+  return -1;
+}
+
+class _TagSpan {
   final Tag tag;
   final int start;
   final int end;
 
-  _TagWithPosition(this.tag, this.start, this.end);
+  bool removed = false;
+
+  _TagSpan(this.tag, this.start, this.end, this.removed);
+
+  _TagSpan.fromMatch(this.tag, Match match, this.removed)
+      : start = match.start,
+        end = match.end;
 
   @override
   String toString() {

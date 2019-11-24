@@ -1,6 +1,13 @@
 import "dart:collection";
 
-import 'package:flutter/foundation.dart';
+bool listEquals<T>(List<T> a, List<T> b) {
+  if (a == null) return b == null;
+  if (b == null || a.length != b.length) return false;
+  for (int index = 0; index < a.length; index += 1) {
+    if (a[index] != b[index]) return false;
+  }
+  return true;
+}
 
 enum TagType {
   // [quote]
@@ -49,8 +56,6 @@ enum TagType {
   LinkStart,
   // [/url]
   LinkEnd,
-  // [url]xxx[/url]
-  PlainLink,
   // [s:xxx]
   Sticker,
   // [h]
@@ -77,6 +82,14 @@ enum TagType {
   AlignStart,
   // [/align]
   AlignEnd,
+  // // [list]
+  // ListStart,
+  // // [/list]
+  // ListEnd,
+  // // [*]
+  // ListItemStart,
+  // ListItemEnd,
+
   Text,
   ParagraphStart,
   ParagraphEnd,
@@ -141,7 +154,7 @@ class CollapseEnd extends Tag {
 class CollapseStart extends Tag {
   final String description;
 
-  CollapseStart(description)
+  CollapseStart(String description)
       : this.description = description ?? "点击显示隐藏的内容",
         super(TagType.CollapseStart, props: [description]);
 }
@@ -206,8 +219,8 @@ class LinkStart extends Tag {
   final String url;
 
   LinkStart(this.url)
-      : assert(url != null),
-        super(TagType.LinkStart);
+      : assert(url != null && url.isNotEmpty),
+        super(TagType.LinkStart, props: [url]);
 }
 
 class Metions extends Tag {
@@ -238,14 +251,6 @@ class Pid extends Tag {
         assert(pageIndex != null),
         assert(content != null),
         super(TagType.Pid, props: [postId, topicId, pageIndex, content]);
-}
-
-class PlainLink extends Tag {
-  final String url;
-
-  PlainLink(this.url)
-      : assert(url != null),
-        super(TagType.PlainLink, props: [url]);
 }
 
 class QuoteEnd extends Tag {
@@ -342,10 +347,10 @@ class Reply extends Tag {
     this.username,
     this.dateTime,
   })  : assert(topicId != null),
-        assert(pageIndex != null),
-        assert(postId != null),
-        assert(userId != null),
-        assert(username != null),
+        // assert(pageIndex != null),
+        // assert(postId != null),
+        // assert(userId != null),
+        // assert(username != null),
         assert(dateTime != null),
         super(TagType.Reply, props: [
           topicId,
@@ -356,3 +361,19 @@ class Reply extends Tag {
           dateTime,
         ]);
 }
+
+// class ListStart extends Tag {
+//   ListStart() : super(TagType.ListStart);
+// }
+
+// class ListEnd extends Tag {
+//   ListEnd() : super(TagType.ListEnd);
+// }
+
+// class ListItemStart extends Tag {
+//   ListItemStart() : super(TagType.ListItemStart);
+// }
+
+// class ListItemEnd extends Tag {
+//   ListItemEnd() : super(TagType.ListItemEnd);
+// }

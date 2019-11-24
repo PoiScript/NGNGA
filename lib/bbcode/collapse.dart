@@ -31,7 +31,7 @@ class _CollapseState extends State<Collapse> {
                   _expanded
                       ? Icon(Icons.arrow_drop_down)
                       : Icon(Icons.arrow_right),
-                  Text("${widget.description}.."),
+                  Expanded(child: Text("${widget.description}..")),
                 ],
               ),
             ),
