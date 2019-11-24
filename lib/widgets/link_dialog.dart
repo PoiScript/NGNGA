@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LinkDialog extends StatelessWidget {
   final String url;
@@ -7,23 +8,30 @@ class LinkDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return SimpleDialog(
       title: Text(
-        "Opening Link",
-        textAlign: TextAlign.center,
+        "链接",
         style: Theme.of(context).textTheme.subtitle,
       ),
-      content: Text(
-        url,
-        textAlign: TextAlign.center,
-        style:
-            Theme.of(context).textTheme.body2.copyWith(color: Colors.lightBlue),
-      ),
-      actions: <Widget>[
-        FlatButton(
-          onPressed: null,
-          child: Text("Ok"),
-        )
+      children: <Widget>[
+        Text(
+          url,
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .body2
+              .copyWith(color: Colors.lightBlue),
+        ),
+        Container(
+          alignment: Alignment.centerRight,
+          child: FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+              launch(url);
+            },
+            child: Text("打开"),
+          ),
+        ),
       ],
     );
   }
