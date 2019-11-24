@@ -1,24 +1,14 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/screens/editor/sticker.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
-class ToolbarIcon extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  ToolbarIcon({this.icon, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Icon(icon, size: 30.0),
-      onTap: onTap,
-    );
-  }
-}
+import 'sticker.dart';
+import 'styling.dart';
 
 // use int instead of enum to indicate edit action, so it can be passed from routing argument
 const int ACTION_NEW_TOPIC = 0;
@@ -26,6 +16,7 @@ const int ACTION_QUOTE = 1;
 const int ACTION_REPLY = 2;
 const int ACTION_MODIFY = 3;
 const int ACTION_COMMENT = 4;
+const int ACTION_NOOP = 5;
 
 class EditorPage extends StatefulWidget {
   final Event<Editing> setEditingEvt;
@@ -42,16 +33,26 @@ class EditorPage extends StatefulWidget {
   _EditorPageState createState() => _EditorPageState();
 }
 
+enum DisplayToolbar {
+  styling,
+  sticker,
+}
+
 class _EditorPageState extends State<EditorPage> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  final FocusNode _subjectFocusNode = FocusNode();
+  final FocusNode _contentFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  bool showToolbar = false;
+  bool disableToolbar = false;
+
+  DisplayToolbar displayToolbar;
 
   bool isPreviewing = false;
   bool isSending = false;
   bool isLoading = true;
-  OverlayEntry overlayEntry;
 
   String attachUrl;
 
@@ -59,95 +60,36 @@ class _EditorPageState extends State<EditorPage> {
   void initState() {
     super.initState();
 
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        _displayOverlay();
-      } else {
-        _removeOverlay();
+    _contentFocusNode.addListener(() {
+      if (_contentFocusNode.hasFocus) {
+        setState(() {
+          disableToolbar = false;
+        });
+      }
+    });
+
+    _subjectFocusNode.addListener(() {
+      if (_subjectFocusNode.hasFocus) {
+        setState(() {
+          showToolbar = false;
+          disableToolbar = true;
+        });
       }
     });
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    _removeOverlay();
-  }
-
-  _removeOverlay() {
-    if (overlayEntry != null) {
-      overlayEntry.remove();
-      overlayEntry = null;
-    }
-  }
-
-  _displayOverlay() {
-    overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        right: 0.0,
-        left: 0.0,
-        child: Container(
-          alignment: Alignment.center,
-          color: Theme.of(context).cardColor,
-          child: Wrap(
-            children: <Widget>[
-              ToolbarIcon(
-                icon: Icons.format_bold,
-                onTap: () => _insertPair("[b]", "[/b]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.format_italic,
-                onTap: () => _insertPair("[i]", "[/i]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.format_underlined,
-                onTap: () => _insertPair("[u]", "[/u]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.format_quote,
-                onTap: () => _insertPair("[quote]", "[/quote]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.format_strikethrough,
-                onTap: () => _insertPair("[del]", "[/del]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.format_list_bulleted,
-                onTap: () {},
-              ),
-              ToolbarIcon(
-                icon: Icons.title,
-                onTap: () => _insertPair("[h]", "[/h]"),
-              ),
-              ToolbarIcon(
-                icon: Icons.code,
-                onTap: () => _insertPair("[code]", "[/code]"),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    OverlayState overlayState = Overlay.of(context);
-    overlayState.insert(overlayEntry);
-  }
-
-  @override
   void didUpdateWidget(EditorPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    consumeEvents();
+    _consumeEvents();
   }
 
-  consumeEvents() {
+  _consumeEvents() {
     Editing editing = widget.setEditingEvt.consume();
     if (editing != null)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
+          setState(() => isLoading = false);
           _subjectController.text = editing.subject;
           _contentController.text = editing.content;
         }
@@ -179,7 +121,6 @@ class _EditorPageState extends State<EditorPage> {
               FlatButton(
                 child: isPreviewing ? Text("Edit") : Text("Preview"),
                 onPressed: () {
-                  if (!isPreviewing) _removeOverlay();
                   setState(() => isPreviewing = !isPreviewing);
                 },
               ),
@@ -197,31 +138,43 @@ class _EditorPageState extends State<EditorPage> {
                 children: <Widget>[
                   if (!isPreviewing)
                     TextField(
+                      focusNode: _subjectFocusNode,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         labelText: 'Subject',
                         border: InputBorder.none,
                       ),
                       controller: _subjectController,
+                      style: Theme.of(context)
+                          .textTheme
+                          .subhead
+                          .copyWith(fontFamily: "Noto Sans CJK SC"),
                     ),
                   if (!isPreviewing)
                     TextField(
-                      focusNode: _focusNode,
+                      focusNode: _contentFocusNode,
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(
                         labelText: 'Content',
                         border: InputBorder.none,
                       ),
-                      maxLines: null,
                       controller: _contentController,
+                      maxLines: null,
                       autofocus: true,
+                      style: Theme.of(context)
+                          .textTheme
+                          .body1
+                          .copyWith(fontFamily: "Noto Sans CJK SC"),
                     ),
                   if (isPreviewing && _subjectController.text.isNotEmpty)
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
                         _subjectController.text,
-                        style: Theme.of(context).textTheme.subhead,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subhead
+                            .copyWith(fontFamily: "Noto Sans CJK SC"),
                       ),
                     ),
                   if (isPreviewing && _contentController.text.isNotEmpty)
@@ -240,7 +193,94 @@ class _EditorPageState extends State<EditorPage> {
             ),
           ),
         ),
-        if (isSending) ModalBarrier(color: Colors.red.withOpacity(0.4)),
+        Positioned(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          right: 0.0,
+          left: 0.0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Divider(height: 0.0),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  height: showToolbar ? 250.0 : 0.0,
+                  padding:
+                      const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                  child: displayToolbar == DisplayToolbar.sticker
+                      ? EditorSticker(
+                          insertSticker: (name) => _insertContent("[s:$name]"),
+                        )
+                      : EditorStyling(
+                          insertBold: () => _insertPair("[b]", "[/b]"),
+                          insertItalic: () => _insertPair("[i]", "[/i]"),
+                          insertUnderline: () => _insertPair("[u]", "[/u]"),
+                          insertDelete: () => _insertPair("[del]", "[/del]"),
+                          insertQuote: () => _insertPair("[quote]", "[/quote]"),
+                          insertHeading: () => _insertPair("[h]", "[/h]"),
+                        ),
+                ),
+                Row(
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GestureDetector(
+                        child: Icon(Icons.add_box, size: 24.0),
+                        onTap: disableToolbar
+                            ? null
+                            : () {
+                                SystemChannels.textInput
+                                    .invokeMethod('TextInput.hide');
+                                setState(() {
+                                  if (showToolbar) {
+                                    if (displayToolbar ==
+                                        DisplayToolbar.styling) {
+                                      showToolbar = false;
+                                    } else {
+                                      displayToolbar = DisplayToolbar.styling;
+                                    }
+                                  } else {
+                                    showToolbar = true;
+                                    displayToolbar = DisplayToolbar.styling;
+                                  }
+                                });
+                              },
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GestureDetector(
+                        child: Icon(Icons.face, size: 24.0),
+                        onTap: disableToolbar
+                            ? null
+                            : () {
+                                SystemChannels.textInput
+                                    .invokeMethod('TextInput.hide');
+                                setState(() {
+                                  if (showToolbar) {
+                                    if (displayToolbar ==
+                                        DisplayToolbar.sticker) {
+                                      showToolbar = false;
+                                    } else {
+                                      displayToolbar = DisplayToolbar.sticker;
+                                    }
+                                  } else {
+                                    showToolbar = true;
+                                    displayToolbar = DisplayToolbar.sticker;
+                                  }
+                                });
+                              },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -283,8 +323,6 @@ class _EditorPageState extends State<EditorPage> {
   Future<void> _submit() async {
     setState(() => isSending = true);
 
-    _removeOverlay();
-
     await widget.applyEditing(
       _subjectController.text,
       _contentController.text,
@@ -310,7 +348,8 @@ class EditorPageConnector extends StatelessWidget {
             action == ACTION_QUOTE ||
             action == ACTION_REPLY ||
             action == ACTION_MODIFY ||
-            action == ACTION_COMMENT),
+            action == ACTION_COMMENT ||
+            action == ACTION_NOOP),
         assert(action != ACTION_NEW_TOPIC ||
             (categoryId != null && topicId == null && postId == null)),
         assert(
