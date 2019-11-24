@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ngnga/models/category.dart';
 
 const int _MASK_LOCKED = 1024;
@@ -37,14 +39,15 @@ class Topic {
   final TitleColor titleColor;
   final TitleStyle titleStyle;
 
-  final DateTime lastPostedAt;
-  final DateTime createdAt;
-  final int postsCount;
-  final List<int> ancestors;
-  final String label;
-
   final String author;
+  final DateTime createdAt;
+
   final String lastPoster;
+  final DateTime lastPostedAt;
+
+  final int postsCount;
+
+  final String label;
 
   final bool isLocked;
   final bool hasAttachment;
@@ -59,7 +62,6 @@ class Topic {
     this.lastPostedAt,
     this.postsCount,
     this.label,
-    this.ancestors,
     this.author,
     this.lastPoster,
     this.isLocked,
@@ -69,29 +71,80 @@ class Topic {
         assert(title != null),
         assert(createdAt != null),
         assert(lastPostedAt != null),
-        assert(postsCount != null),
-        assert(ancestors != null);
+        assert(postsCount != null);
 
   factory Topic.fromJson(Map<String, dynamic> json) {
-    List<int> ancestors = [];
     String label;
 
     if (json['parent'] is List) {
-      List parent = List.from(json['parent']);
-      label = parent.removeLast();
-      ancestors = List<int>.from(parent);
+      label = json['parent'].last;
     } else if (json['parent'] is Map) {
-      List parent = (Map.from(json['parent']).entries.toList()
-            ..sort((a, b) => a.key.compareTo(b.key)))
-          .map((e) => e.value)
-          .toList();
-      label = parent.removeLast();
-      ancestors = List<int>.from(parent);
+      label = json['parent']['2'];
     }
 
-    var titleColor;
-    var titleStyle;
+    TitleColor titleColor;
+    TitleStyle titleStyle;
     Category category;
+
+    if (json['topic_misc'] is String) {
+      final bytes = base64.decode(
+        json['topic_misc'].length % 4 == 3
+            ? "${json['topic_misc']}="
+            : json['topic_misc'].length % 4 == 2
+                ? "${json['topic_misc']}=="
+                : json['topic_misc'],
+      );
+
+      var index = 0;
+
+      while (index < bytes.length) {
+        if (bytes[index] == 1 && index + 4 < bytes.length) {
+          final bits = (bytes[index + 1] << 24) +
+              (bytes[index + 2] << 16) +
+              (bytes[index + 3] << 8) +
+              bytes[index + 4];
+
+          if (bits != null) {
+            if (bits & _MASK_COLOR_RED == _MASK_COLOR_RED) {
+              titleColor = TitleColor.Red;
+            } else if (bits & _MASK_COLOR_BLUE == _MASK_COLOR_BLUE) {
+              titleColor = TitleColor.Blue;
+            } else if (bits & _MASK_COLOR_GREEN == _MASK_COLOR_GREEN) {
+              titleColor = TitleColor.Green;
+            } else if (bits & _MASK_COLOR_ORANGE == _MASK_COLOR_ORANGE) {
+              titleColor = TitleColor.Orange;
+            } else if (bits & _MASK_COLOR_SILVER == _MASK_COLOR_SILVER) {
+              titleColor = TitleColor.Silver;
+            }
+
+            if (bits & _MASK_STYLE_BOLD == _MASK_STYLE_BOLD) {
+              titleStyle = TitleStyle.Bold;
+            } else if (bits & _MASK_STYLE_ITALIC == _MASK_STYLE_ITALIC) {
+              titleStyle = TitleStyle.Italic;
+            } else if (bits & _MASK_STYLE_UNDERLINE == _MASK_STYLE_UNDERLINE) {
+              titleStyle = TitleStyle.Underline;
+            }
+          }
+
+          index += 5;
+        } else if (bytes[index] == 3 && index + 4 < bytes.length) {
+          final bits = (bytes[index + 1] << 24) +
+              (bytes[index + 2] << 16) +
+              (bytes[index + 3] << 8) +
+              bytes[index + 4];
+
+          category = Category(
+            id: bits,
+            title: json['subject'],
+            isSubcategory: false,
+          );
+
+          index += 5;
+        } else {
+          index += 1;
+        }
+      }
+    }
 
     if (json['topic_misc_var'] is Map) {
       Map<String, int> misc = Map<String, int>.from(json['topic_misc_var']);
@@ -149,7 +202,6 @@ class Topic {
         json['lastpost'] * 1000,
       ),
       postsCount: json['replies'],
-      ancestors: ancestors,
       label: label,
       author: json['authorid'] is int
           ? (json['author'] is String
