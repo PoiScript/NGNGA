@@ -174,7 +174,7 @@ class PostWrapper {
 class AppState {
   final FavoriteState favorites;
   final SettingsState settings;
-  final List<Category> savedCategories;
+  final List<Category> pinned;
   final Map<int, User> users;
   final Map<int, CategoryState> categories;
   final Map<int, TopicState> topics;
@@ -193,7 +193,7 @@ class AppState {
     @required this.isLoading,
     @required this.settings,
     @required this.favorites,
-    @required this.savedCategories,
+    @required this.pinned,
     @required this.users,
     @required this.topics,
     @required this.categories,
@@ -205,7 +205,7 @@ class AppState {
   })  : assert(categories != null),
         assert(settings != null),
         assert(favorites != null),
-        assert(savedCategories != null),
+        assert(pinned != null),
         assert(isLoading != null),
         assert(users != null),
         assert(topics != null),
@@ -218,7 +218,7 @@ class AppState {
   AppState copy({
     SettingsState settings,
     FavoriteState favorites,
-    List<Category> savedCategories,
+    List<Category> pinned,
     Map<int, CategoryState> categories,
     Map<int, TopicState> topics,
     Map<int, User> users,
@@ -231,7 +231,7 @@ class AppState {
   }) {
     return AppState._(
       settings: settings ?? this.settings,
-      savedCategories: savedCategories ?? this.savedCategories,
+      pinned: pinned ?? this.pinned,
       favorites: favorites ?? this.favorites,
       categories: categories ?? this.categories,
       topics: topics ?? this.topics,
@@ -248,7 +248,7 @@ class AppState {
   factory AppState.empty() {
     return AppState._(
       settings: SettingsState.empty(),
-      savedCategories: List(),
+      pinned: List(),
       isLoading: false,
       categories: Map(),
       topics: Map(),

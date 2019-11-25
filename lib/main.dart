@@ -8,34 +8,26 @@ import 'package:ngnga/screens/welcome/welcome.dart';
 import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
-import 'package:ngnga/store/persistor.dart';
+import 'package:ngnga/store/actions/state_persist.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
 main() async {
-  final persistor = await JsonPersistor.init();
+  final store = Store<AppState>(
+    initialState: AppState.empty(),
+    // actionObservers: [Log<AppState>.printer()],
+    // modelObserver: DefaultModelObserver(),
+  );
 
-  var initialState = await persistor.readState();
+  await store.dispatchFuture(LoadState());
 
-  if (initialState == null) {
-    initialState = AppState.empty();
-    await persistor.saveInitialState(initialState);
-  }
-
-  return runApp(MyApp(
-    persistor: persistor,
-    state: initialState,
-  ));
+  return runApp(MyApp(store: store));
 }
 
 class MyApp extends StatelessWidget {
-  final Persistor persistor;
-  final AppState state;
+  final Store<AppState> store;
 
-  MyApp({
-    @required this.persistor,
-    @required this.state,
-  });
+  MyApp({@required this.store});
 
   @override
   Widget build(BuildContext context) {
@@ -43,20 +35,14 @@ class MyApp extends StatelessWidget {
 
     NavigateAction.setNavigatorKey(_navigatorKey);
 
-    final _store = Store<AppState>(
-      initialState: state,
-      // actionObservers: [Log<AppState>.printer()],
-      // modelObserver: DefaultModelObserver(),
-    );
-
     return StoreProvider<AppState>(
-      store: _store,
+      store: store,
       child: MaterialApp(
         onGenerateRoute: _routes,
         navigatorKey: _navigatorKey,
         theme: _theme,
-        // use "new" instead of "/new" to make sure it's a top-level route
-        initialRoute: state.cookies.isEmpty ? "welcome" : "/",
+        // use "welcome" instead of "/welcome" to make sure it's a top-level route
+        initialRoute: store.state.settings.uid == null ? "welcome" : "/",
       ),
     );
   }

@@ -3,57 +3,36 @@ import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/store/state.dart';
 
-class RemoveCategoryAction extends ReduxAction<AppState> {
+import 'state_persist.dart';
+
+class RemoveFromPinnedAction extends ReduxAction<AppState> {
   final Category category;
 
-  RemoveCategoryAction(this.category);
+  RemoveFromPinnedAction(this.category);
 
   @override
   Future<AppState> reduce() async {
     return state.copy(
       categorySnackBarEvt: Event("Removed"),
-      savedCategories: state.savedCategories..remove(category),
+      pinned: state.pinned..remove(category),
     );
   }
+
+  void after() => dispatch(SaveState());
 }
 
-class AddCategoryAction extends ReduxAction<AppState> {
+class AddToPinnedAction extends ReduxAction<AppState> {
   final Category category;
 
-  AddCategoryAction(this.category);
+  AddToPinnedAction(this.category);
 
   @override
   Future<AppState> reduce() async {
     return state.copy(
       categorySnackBarEvt: Event("Added"),
-      savedCategories: state.savedCategories..add(category),
+      pinned: state.pinned..add(category),
     );
   }
-}
 
-class ClearCategoriesAction extends ReduxAction<AppState> {
-  @override
-  Future<AppState> reduce() async {
-    return state.copy(savedCategories: []);
-  }
-}
-
-class SaveCookiesAction extends ReduxAction<AppState> {
-  final List<String> cookies;
-
-  SaveCookiesAction(this.cookies);
-
-  @override
-  Future<AppState> reduce() async {
-    return state.copy(cookies: cookies);
-  }
-}
-
-class ClearCookiesAction extends ReduxAction<AppState> {
-  @override
-  Future<AppState> reduce() async {
-    return state.copy(
-      cookies: [],
-    );
-  }
+  void after() => dispatch(SaveState());
 }
