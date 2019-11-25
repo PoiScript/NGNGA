@@ -25,62 +25,80 @@ class EditorStyling extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 6,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
+    return SingleChildScrollView(
+      child: Wrap(
+        children: <Widget>[
+          ToolbarIcon(
+            icon: Icons.format_bold,
+            onTap: insertBold,
+            description: "Bold",
           ),
-          delegate: SliverChildListDelegate(
-            [
-              ToolbarIcon(
-                icon: Icons.format_bold,
-                onTap: insertBold,
-              ),
-              ToolbarIcon(
-                icon: Icons.format_italic,
-                onTap: insertItalic,
-              ),
-              ToolbarIcon(
-                icon: Icons.format_underlined,
-                onTap: insertUnderline,
-              ),
-              ToolbarIcon(
-                icon: Icons.format_quote,
-                onTap: insertQuote,
-              ),
-              ToolbarIcon(
-                icon: Icons.format_strikethrough,
-                onTap: insertDelete,
-              ),
-              ToolbarIcon(
-                icon: Icons.format_list_bulleted,
-                onTap: () {},
-              ),
-              ToolbarIcon(
-                icon: Icons.title,
-                onTap: insertHeading,
-              ),
-            ],
+          ToolbarIcon(
+            icon: Icons.format_italic,
+            onTap: insertItalic,
+            description: "Italic",
           ),
-        ),
-      ],
+          ToolbarIcon(
+            icon: Icons.format_underlined,
+            onTap: insertUnderline,
+            description: "Underline",
+          ),
+          ToolbarIcon(
+            icon: Icons.format_quote,
+            onTap: insertQuote,
+            description: "Quote",
+          ),
+          ToolbarIcon(
+            icon: Icons.format_strikethrough,
+            onTap: insertDelete,
+            description: "Delete",
+          ),
+          ToolbarIcon(
+            icon: Icons.format_list_bulleted,
+            onTap: () {},
+            description: "List",
+          ),
+          ToolbarIcon(
+            icon: Icons.title,
+            onTap: insertHeading,
+            description: "Heading",
+          ),
+        ],
+      ),
     );
   }
 }
 
 class ToolbarIcon extends StatelessWidget {
   final IconData icon;
+  final String description;
   final VoidCallback onTap;
 
-  ToolbarIcon({this.icon, this.onTap});
+  ToolbarIcon({
+    @required this.icon,
+    @required this.description,
+    @required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Icon(icon, size: 30.0),
+    return InkResponse(
+      child: Container(
+        width: 68.0,
+        height: 68.0,
+        padding: const EdgeInsets.all(4.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Icon(icon, size: 30.0),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.caption,
+            )
+          ],
+        ),
+      ),
       onTap: onTap,
     );
   }

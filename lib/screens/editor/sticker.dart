@@ -241,9 +241,14 @@ class EditorSticker extends StatelessWidget {
 
   Widget _buildSticky(BuildContext context, String name, List<String> pack) {
     return SliverStickyHeader(
-      header: Text(
-        name,
-        style: Theme.of(context).textTheme.caption,
+      header: Container(
+        padding: const EdgeInsets.all(2.0),
+        constraints: const BoxConstraints(minWidth: double.infinity),
+        color: Theme.of(context).cardColor,
+        child: Text(
+          name,
+          style: Theme.of(context).textTheme.caption,
+        ),
       ),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

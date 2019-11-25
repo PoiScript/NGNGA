@@ -46,7 +46,7 @@ class _EditorPageState extends State<EditorPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool showToolbar = false;
-  bool disableToolbar = false;
+  bool disableToolbar = true;
 
   DisplayToolbar displayToolbar;
 
@@ -61,19 +61,12 @@ class _EditorPageState extends State<EditorPage> {
     super.initState();
 
     _contentFocusNode.addListener(() {
-      if (_contentFocusNode.hasFocus) {
-        setState(() {
-          disableToolbar = false;
-        });
-      }
+      setState(() => disableToolbar = !_contentFocusNode.hasFocus);
     });
 
     _subjectFocusNode.addListener(() {
       if (_subjectFocusNode.hasFocus) {
-        setState(() {
-          showToolbar = false;
-          disableToolbar = true;
-        });
+        setState(() => showToolbar = false);
       }
     });
   }
@@ -102,56 +95,63 @@ class _EditorPageState extends State<EditorPage> {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Stack(
-      children: <Widget>[
-        Scaffold(
-          key: _scaffoldKey,
-          appBar: AppBar(
-            leading: const BackButton(color: Colors.black),
-            elevation: 0.0,
-            title: Text(
-              "Editor",
-              style: Theme.of(context)
-                  .textTheme
-                  .body1
-                  .copyWith(color: Colors.black),
-            ),
-            backgroundColor: Colors.white,
-            actions: <Widget>[
-              FlatButton(
-                child: isPreviewing ? Text("Edit") : Text("Preview"),
-                onPressed: () {
-                  setState(() => isPreviewing = !isPreviewing);
-                },
+    return WillPopScope(
+      onWillPop: () async {
+        if (showToolbar) {
+          setState(() => showToolbar = false);
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          leading: const BackButton(color: Colors.black),
+          elevation: 0.0,
+          title: Text("Editor"),
+          backgroundColor: Colors.white,
+          // actions: <Widget>[
+          //   IconButton(
+          //     icon: Icon(Icons.undo, color: Colors.black),
+          //     onPressed: () {},
+          //   ),
+          //   IconButton(
+          //     icon: Icon(Icons.redo, color: Colors.black),
+          //     onPressed: () {},
+          //   ),
+          // ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              TextField(
+                readOnly: isPreviewing,
+                focusNode: _subjectFocusNode,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  labelText: 'Subject',
+                  border: InputBorder.none,
+                ),
+                controller: _subjectController,
+                style: Theme.of(context)
+                    .textTheme
+                    .subhead
+                    .copyWith(fontFamily: "Noto Sans CJK SC"),
               ),
-              FlatButton(
-                child: Text("Send"),
-                onPressed: () => _submit(),
-              ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  if (!isPreviewing)
-                    TextField(
-                      focusNode: _subjectFocusNode,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        labelText: 'Subject',
-                        border: InputBorder.none,
+              isPreviewing
+                  ? Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: BBCodeRender(
+                        data: _contentController.text,
+                        // TODO
+                        openLink: (x) => {},
+                        openPost: (x, y, z) => {},
+                        openUser: (x) => {},
                       ),
-                      controller: _subjectController,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subhead
-                          .copyWith(fontFamily: "Noto Sans CJK SC"),
-                    ),
-                  if (!isPreviewing)
-                    TextField(
+                    )
+                  : TextField(
+                      readOnly: isPreviewing,
                       focusNode: _contentFocusNode,
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(
@@ -166,123 +166,83 @@ class _EditorPageState extends State<EditorPage> {
                           .body1
                           .copyWith(fontFamily: "Noto Sans CJK SC"),
                     ),
-                  if (isPreviewing && _subjectController.text.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        _subjectController.text,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subhead
-                            .copyWith(fontFamily: "Noto Sans CJK SC"),
-                      ),
-                    ),
-                  if (isPreviewing && _contentController.text.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: BBCodeRender(
-                        data: _contentController.text,
-                        // TODO
-                        openLink: (x) => {},
-                        openPost: (x, y, z) => {},
-                        openUser: (x) => {},
-                      ),
-                    ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _submit,
+          child: Icon(Icons.send),
+          backgroundColor: Colors.blue,
+        ),
+        bottomSheet: BottomAppBar(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.add_box),
+                    onPressed: disableToolbar
+                        ? null
+                        : () => _toggleToolbar(DisplayToolbar.styling),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.face),
+                    onPressed: disableToolbar
+                        ? null
+                        : () => _toggleToolbar(DisplayToolbar.sticker),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.attach_file),
+                    onPressed: () {},
+                  ),
+                  IconButton(
+                    icon: isPreviewing ? Icon(Icons.edit) : Icon(Icons.style),
+                    onPressed: () {
+                      setState(() => isPreviewing = !isPreviewing);
+                    },
+                  ),
                 ],
               ),
-            ),
+              AnimatedContainer(
+                constraints: const BoxConstraints(minWidth: double.infinity),
+                duration: const Duration(milliseconds: 500),
+                height: (!disableToolbar && showToolbar) ? 150.0 : 0.0,
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: displayToolbar == DisplayToolbar.sticker
+                    ? EditorSticker(
+                        insertSticker: (name) => _insertContent("[s:$name]"),
+                      )
+                    : EditorStyling(
+                        insertBold: () => _insertPair("[b]", "[/b]"),
+                        insertItalic: () => _insertPair("[i]", "[/i]"),
+                        insertUnderline: () => _insertPair("[u]", "[/u]"),
+                        insertDelete: () => _insertPair("[del]", "[/del]"),
+                        insertQuote: () => _insertPair("[quote]", "[/quote]"),
+                        insertHeading: () => _insertPair("[h]", "[/h]"),
+                      ),
+              ),
+            ],
           ),
         ),
-        Positioned(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          right: 0.0,
-          left: 0.0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Divider(height: 0.0),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  height: showToolbar ? 250.0 : 0.0,
-                  padding:
-                      const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                  child: displayToolbar == DisplayToolbar.sticker
-                      ? EditorSticker(
-                          insertSticker: (name) => _insertContent("[s:$name]"),
-                        )
-                      : EditorStyling(
-                          insertBold: () => _insertPair("[b]", "[/b]"),
-                          insertItalic: () => _insertPair("[i]", "[/i]"),
-                          insertUnderline: () => _insertPair("[u]", "[/u]"),
-                          insertDelete: () => _insertPair("[del]", "[/del]"),
-                          insertQuote: () => _insertPair("[quote]", "[/quote]"),
-                          insertHeading: () => _insertPair("[h]", "[/h]"),
-                        ),
-                ),
-                Row(
-                  children: <Widget>[
-                    Container(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
-                        child: Icon(Icons.add_box, size: 24.0),
-                        onTap: disableToolbar
-                            ? null
-                            : () {
-                                SystemChannels.textInput
-                                    .invokeMethod('TextInput.hide');
-                                setState(() {
-                                  if (showToolbar) {
-                                    if (displayToolbar ==
-                                        DisplayToolbar.styling) {
-                                      showToolbar = false;
-                                    } else {
-                                      displayToolbar = DisplayToolbar.styling;
-                                    }
-                                  } else {
-                                    showToolbar = true;
-                                    displayToolbar = DisplayToolbar.styling;
-                                  }
-                                });
-                              },
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
-                        child: Icon(Icons.face, size: 24.0),
-                        onTap: disableToolbar
-                            ? null
-                            : () {
-                                SystemChannels.textInput
-                                    .invokeMethod('TextInput.hide');
-                                setState(() {
-                                  if (showToolbar) {
-                                    if (displayToolbar ==
-                                        DisplayToolbar.sticker) {
-                                      showToolbar = false;
-                                    } else {
-                                      displayToolbar = DisplayToolbar.sticker;
-                                    }
-                                  } else {
-                                    showToolbar = true;
-                                    displayToolbar = DisplayToolbar.sticker;
-                                  }
-                                });
-                              },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
+  }
+
+  _toggleToolbar(DisplayToolbar toolbar) {
+    setState(() {
+      if (showToolbar) {
+        if (displayToolbar == toolbar) {
+          showToolbar = false;
+        } else {
+          displayToolbar = toolbar;
+        }
+      } else {
+        showToolbar = true;
+        displayToolbar = toolbar;
+      }
+    });
   }
 
   _insertContent(String content) {
