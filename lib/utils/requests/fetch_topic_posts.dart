@@ -20,12 +20,14 @@ class FetchTopicPostsResponse {
   factory FetchTopicPostsResponse.fromJson(Map<String, dynamic> json) {
     List<MapEntry<int, User>> users = [];
 
-    for (var entry in Map.from(json["data"]["__U"]).entries) {
+    for (final entry in Map.from(json["data"]["__U"]).entries) {
       try {
         final userId = int.parse(entry.key);
         final user = User.fromJson(entry.value);
         users.add(MapEntry(userId, user));
-      } catch (_) {}
+      } on FormatException {} catch (e) {
+        rethrow;
+      }
     }
 
     return FetchTopicPostsResponse._(
