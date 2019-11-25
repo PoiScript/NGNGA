@@ -98,7 +98,7 @@ class ViewModel extends BaseModel<AppState> {
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      pinned: state.savedCategories,
+      pinned: state.pinned,
     );
   }
 }

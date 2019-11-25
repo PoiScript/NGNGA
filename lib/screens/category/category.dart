@@ -30,8 +30,8 @@ class CategoryPage extends StatefulWidget {
   final void Function(Topic, int) navigateToTopic;
   final void Function(Category) navigateToCategory;
 
-  final VoidCallback saveCategory;
-  final VoidCallback removeCategory;
+  final VoidCallback addToPinned;
+  final VoidCallback removeFromPinned;
 
   CategoryPage({
     @required this.topics,
@@ -44,8 +44,8 @@ class CategoryPage extends StatefulWidget {
     @required this.onLoad,
     @required this.navigateToTopic,
     @required this.navigateToCategory,
-    @required this.saveCategory,
-    @required this.removeCategory,
+    @required this.addToPinned,
+    @required this.removeFromPinned,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
@@ -56,8 +56,8 @@ class CategoryPage extends StatefulWidget {
         assert(onLoad != null),
         assert(navigateToTopic != null),
         assert(navigateToCategory != null),
-        assert(saveCategory != null),
-        assert(removeCategory != null);
+        assert(addToPinned != null),
+        assert(removeFromPinned != null);
 
   _CategoryPageState createState() => _CategoryPageState();
 }
@@ -141,12 +141,12 @@ class _CategoryPageState extends State<CategoryPage>
                       ? IconButton(
                           color: Colors.black,
                           icon: Icon(Icons.star),
-                          onPressed: () => widget.removeCategory(),
+                          onPressed: widget.removeFromPinned,
                         )
                       : IconButton(
                           color: Colors.black,
                           icon: Icon(Icons.star_border),
-                          onPressed: () => widget.saveCategory(),
+                          onPressed: widget.addToPinned,
                         ),
                   IconButton(
                     color: Colors.black,
@@ -243,8 +243,8 @@ class CategoryPageConnector extends StatelessWidget {
         onLoad: vm.onLoad,
         navigateToTopic: vm.navigateToTopic,
         navigateToCategory: vm.navigateToCategory,
-        saveCategory: vm.saveCategory,
-        removeCategory: vm.removeCategory,
+        addToPinned: vm.addToPinned,
+        removeFromPinned: vm.removeFromPinned,
       ),
     );
   }
@@ -266,8 +266,8 @@ class ViewModel extends BaseModel<AppState> {
   void Function(Topic, int) navigateToTopic;
   void Function(Category) navigateToCategory;
 
-  VoidCallback saveCategory;
-  VoidCallback removeCategory;
+  VoidCallback addToPinned;
+  VoidCallback removeFromPinned;
 
   ViewModel(this.categoryId);
 
@@ -283,8 +283,8 @@ class ViewModel extends BaseModel<AppState> {
     @required this.onLoad,
     @required this.navigateToTopic,
     @required this.navigateToCategory,
-    @required this.saveCategory,
-    @required this.removeCategory,
+    @required this.addToPinned,
+    @required this.removeFromPinned,
   }) : super(equals: [
           isLoading,
           snackBarEvt,
@@ -300,7 +300,7 @@ class ViewModel extends BaseModel<AppState> {
     return ViewModel.build(
       categoryId: categoryId,
       isLoading: state.isLoading,
-      isSaved: state.savedCategories.contains(categoryState.category),
+      isSaved: state.pinned.contains(categoryState.category),
       category: categoryState.category,
       topics: categoryState.topics,
       topicsCount: categoryState.topicsCount,
@@ -311,9 +311,9 @@ class ViewModel extends BaseModel<AppState> {
           dispatch(NavigateToTopicAction(topic, page)),
       navigateToCategory: (category) =>
           dispatch(NavigateToCategoryAction(category)),
-      saveCategory: () => dispatch(AddCategoryAction(categoryState.category)),
-      removeCategory: () =>
-          dispatch(RemoveCategoryAction(categoryState.category)),
+      addToPinned: () => dispatch(AddToPinnedAction(categoryState.category)),
+      removeFromPinned: () =>
+          dispatch(RemoveFromPinnedAction(categoryState.category)),
     );
   }
 }
