@@ -13,8 +13,39 @@ class Collapse extends StatefulWidget {
   _CollapseState createState() => _CollapseState();
 }
 
-class _CollapseState extends State<Collapse> {
+class _CollapseState extends State<Collapse>
+    with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  Animation<double> _size;
   bool _expanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    );
+
+    _size = Tween(begin: 0.0, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(Collapse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_expanded) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,18 +67,24 @@ class _CollapseState extends State<Collapse> {
               ),
             ),
             onTap: () {
-              setState(() {
-                _expanded = !_expanded;
-              });
+              switch (_controller.status) {
+                case AnimationStatus.completed:
+                  _controller.reverse();
+                  setState(() => _expanded = false);
+                  break;
+                case AnimationStatus.dismissed:
+                  _controller.forward();
+                  setState(() => _expanded = true);
+                  break;
+                default:
+                  break;
+              }
             },
           ),
-          AnimatedCrossFade(
-            duration: const Duration(milliseconds: 500),
-            firstChild: Container(),
-            secondChild: widget.child,
-            crossFadeState: _expanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
+          SizeTransition(
+            axisAlignment: -1.0,
+            sizeFactor: _size,
+            child: widget.child,
           ),
         ],
       ),

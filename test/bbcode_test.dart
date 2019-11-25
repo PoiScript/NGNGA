@@ -139,5 +139,20 @@ void main() {
         ParagraphEnd(),
       ],
     ));
+
+    assert(listEquals(
+      parseBBCode("[quote][collapse][url]example.com[/url][/collapse][/quote]"),
+      [
+        QuoteStart(),
+        CollapseStart(null),
+        ParagraphStart(),
+        LinkStart("example.com"),
+        Text("example.com"),
+        LinkEnd(),
+        ParagraphEnd(),
+        CollapseEnd(),
+        QuoteEnd(),
+      ],
+    ));
   });
 }

@@ -45,7 +45,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         .body1
         .copyWith(fontFamily: "Noto Sans CJK SC");
 
-    List<Widget> _children = [];
+    List<Widget> children = [];
 
     while (iter.moveNext()) {
       switch (iter.current.type) {
@@ -58,28 +58,28 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _applyStyle(context, iter.current);
           break;
         case TagType.ParagraphStart:
-          _children.add(_buildParagraph(context, iter));
+          children.add(_buildParagraph(context, iter));
           break;
         case TagType.Reply:
-          _children.add(_buildReply(context, iter.current as Reply, true));
+          children.add(_buildReply(context, iter.current as Reply, true));
           break;
         case TagType.CollapseStart:
-          _children.add(_buildCollapse(context, iter));
+          children.add(_buildCollapse(context, iter));
           break;
         case TagType.QuoteStart:
-          _children.add(_buildQuote(context, iter));
+          children.add(_buildQuote(context, iter));
           break;
         case TagType.TableStart:
-          _children.add(_buildTable(context, iter));
+          children.add(_buildTable(context, iter));
           break;
         case TagType.HeadingStart:
-          _children.add(_buildHeading(context, iter));
+          children.add(_buildHeading(context, iter));
           break;
         case TagType.Rule:
-          _children.add(_buildRule(context));
+          children.add(_buildRule(context));
           break;
         case TagType.AlignStart:
-          _children.add(_buildHeading(context, iter));
+          children.add(_buildHeading(context, iter));
           // TODO:
           iter.moveNext();
           break;
@@ -114,9 +114,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
+    if (children.length == 1) {
+      return children[0];
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: _children,
+      children: children,
     );
   }
 
@@ -189,6 +193,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.TableCellEnd:
           throw "Unexecpted element: ${iter.current}.";
       }
+    }
+
+    if (spans.length == 1) {
+      return Container(
+        padding: EdgeInsets.only(bottom: 6.0),
+        child: RichText(text: spans[0]),
+      );
     }
 
     return Container(
@@ -268,6 +279,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         case TagType.ParagraphEnd:
           throw "Unexpected element: ${iter.current}.";
       }
+    }
+
+    if (children.length == 1) {
+      return Collapse(
+        description: description,
+        child: children[0],
+      );
     }
 
     return Collapse(
@@ -352,6 +370,24 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
+    if (children.length == 1) {
+      return Container(
+        constraints: const BoxConstraints(minWidth: double.infinity),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: 5.0,
+              color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+            ),
+          ),
+          color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
+        ),
+        padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
+        margin: EdgeInsets.only(bottom: 8.0),
+        child: children[0],
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -387,7 +423,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   Widget _buildHeading(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.HeadingStart);
 
-    List<Widget> _children = [];
+    List<Widget> children = [];
 
     final previousSize = style.fontSize;
     style =
@@ -417,7 +453,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _applyStyle(context, iter.current);
           break;
         case TagType.ParagraphStart:
-          _children.add(_buildParagraph(context, iter));
+          children.add(_buildParagraph(context, iter));
           break;
         case TagType.ParagraphEnd:
         case TagType.AlignStart:
@@ -452,20 +488,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     return Container(
       padding: EdgeInsets.only(bottom: 6.0),
       child: Column(
-        children: _children,
+        children: children,
       ),
     );
   }
 
   Widget _buildRule(BuildContext context) {
-    return DecoratedBox(
-      child: const SizedBox(),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(width: 5.0, color: Colors.grey.shade300),
-        ),
-      ),
-    );
+    return Divider();
   }
 
   Widget _buildReply(BuildContext context, Reply reply, bool wrapQuote) {
@@ -520,7 +549,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     }
   }
 
-  TextSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
+  InlineSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current.type == TagType.LinkStart);
 
     final url = (iter.current as LinkStart).url;
@@ -528,7 +557,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     final recognizer = TapGestureRecognizer()
       ..onTap = () => widget.openLink(url);
 
-    List<InlineSpan> _spans = [];
+    List<InlineSpan> spans = [];
 
     outerloop:
     while (iter.moveNext()) {
@@ -555,17 +584,17 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           _applyStyle(context, iter.current);
           break;
         case TagType.Text:
-          _spans.add(TextSpan(
+          spans.add(TextSpan(
             recognizer: recognizer,
             text: (iter.current as Text).content,
             style: style.copyWith(color: Colors.blue),
           ));
           break;
         case TagType.Image:
-          _spans.add(_buildImage(context, iter.current as Image));
+          spans.add(_buildImage(context, iter.current as Image));
           break;
         case TagType.Sticker:
-          _spans.add(_buildSticker(context, iter.current as Sticker));
+          spans.add(_buildSticker(context, iter.current as Sticker));
           break;
         case TagType.Metions:
         case TagType.Pid:
@@ -593,10 +622,14 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
-    return TextSpan(children: _spans);
+    if (spans.length == 1) {
+      return spans[0];
+    }
+
+    return TextSpan(children: spans);
   }
 
-  WidgetSpan _buildImage(BuildContext context, Image image) {
+  InlineSpan _buildImage(BuildContext context, Image image) {
     var url;
 
     if (image.url.startsWith("./")) {
@@ -637,7 +670,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  WidgetSpan _buildSticker(BuildContext context, Sticker sticker) {
+  InlineSpan _buildSticker(BuildContext context, Sticker sticker) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: Container(
@@ -647,7 +680,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  WidgetSpan _buildPid(BuildContext context, Pid pid) {
+  InlineSpan _buildPid(BuildContext context, Pid pid) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -664,7 +697,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  WidgetSpan _buildUid(BuildContext context, Uid uid) {
+  InlineSpan _buildUid(BuildContext context, Uid uid) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -691,7 +724,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  WidgetSpan _buildMetions(BuildContext context, Metions metions) {
+  InlineSpan _buildMetions(BuildContext context, Metions metions) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -718,7 +751,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  TextSpan _buildText(BuildContext context, Text text) {
+  InlineSpan _buildText(BuildContext context, Text text) {
     return TextSpan(text: text.content, style: style);
   }
 

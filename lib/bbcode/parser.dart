@@ -9,7 +9,7 @@ final RegExp alignStartRegExp = RegExp(r"\[align=([^\s\]]*)\]");
 final RegExp sizeStartRegExp = RegExp(r"\[size=([^\s\]]*)\]");
 final RegExp fontStartRegExp = RegExp(r"\[font=([^\s\]]*)\]");
 final RegExp colorStartRegExp = RegExp(r"\[color=([^\s\]]*)\]");
-final RegExp collapseStartRegExp = RegExp(r"\[collapse(=[^\s\]]*)?\]");
+final RegExp collapseStartRegExp = RegExp(r"\[collapse(=[^\]]*)?\]");
 final RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\]([^\[\]]*?)\[/url\]");
 
 final RegExp uidRegExp = RegExp(r"\[uid=(\d*)\](.*?)\[/uid\]");
@@ -17,6 +17,8 @@ final RegExp pidRegExp = RegExp(r"\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
 final RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
 final RegExp imageRegExp = RegExp(r"\[img\]([^\[\]]*?)\[/img\]");
 final RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
+
+final RegExp ruleRegExp = RegExp(r"^\s*={5,}\s*$", multiLine: true);
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp1 = RegExp(
@@ -38,12 +40,12 @@ RegExp replyRegExp4 = RegExp(
 );
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-xxx]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
-RegExp replyReg5 = RegExp(
+RegExp replyRegExp5 = RegExp(
   r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
 
 // [tid=xxx]Topic[/tid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
-RegExp replyReg6 = RegExp(
+RegExp replyRegExp6 = RegExp(
   r"\[tid=(\d*)\]Topic\[/tid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
 
@@ -54,7 +56,11 @@ List<Tag> parseBBCode(String raw) {
 
   String content = unescape.convert(raw);
 
-  for (var match in replyRegExp1.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp1.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
@@ -72,7 +78,11 @@ List<Tag> parseBBCode(String raw) {
         "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  for (var match in replyRegExp2.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp2.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
@@ -90,7 +100,11 @@ List<Tag> parseBBCode(String raw) {
         "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  for (var match in replyRegExp3.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp3.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
@@ -106,7 +120,11 @@ List<Tag> parseBBCode(String raw) {
         "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  for (var match in replyRegExp4.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp4.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
@@ -122,7 +140,11 @@ List<Tag> parseBBCode(String raw) {
         "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  for (var match in replyReg5.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp5.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         postId: int.parse(match[1]),
@@ -139,7 +161,11 @@ List<Tag> parseBBCode(String raw) {
         "${content.substring(0, match.start)}_${content.substring(match.end)}";
   }
 
-  for (var match in replyReg6.allMatches(content)) {
+  while (true) {
+    var match = replyRegExp6.firstMatch(content);
+
+    if (match == null) break;
+
     spans.add(_TagSpan(
       Reply(
         topicId: int.parse(match[1]),
@@ -239,6 +265,9 @@ List<Tag> parseBBCode(String raw) {
           _TagSpan(LinkEnd(), match.end - 6, match.end, false),
         ]))
     // inline objects
+    ..addAll(ruleRegExp.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(Rule(), match, false),
+        ))
     ..addAll(uidRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
               Uid(int.parse(match[1]), match[2]), match, false),
@@ -280,37 +309,35 @@ List<Tag> parseBBCode(String raw) {
 
     switch (spans[i].tag.type) {
       case TagType.QuoteStart:
-        _handleQuote(spans, i);
+        _findQuoteEndTag(spans, i);
         break;
       case TagType.CollapseStart:
-        _handleCollapse(spans, i);
+        _findCollapseEndTag(spans, i);
         break;
       case TagType.BoldStart:
-        _handleStyling(spans, i, TagType.BoldStart, TagType.BoldEnd);
+        _findStylingEndTag(spans, i, TagType.BoldStart, TagType.BoldEnd);
         break;
       case TagType.FontStart:
-        _handleStyling(spans, i, TagType.FontStart, TagType.FontEnd);
+        _findStylingEndTag(spans, i, TagType.FontStart, TagType.FontEnd);
         break;
       case TagType.ColorStart:
-        _handleStyling(spans, i, TagType.ColorStart, TagType.ColorEnd);
+        _findStylingEndTag(spans, i, TagType.ColorStart, TagType.ColorEnd);
         break;
       case TagType.SizeStart:
-        _handleStyling(spans, i, TagType.SizeStart, TagType.SizeEnd);
+        _findStylingEndTag(spans, i, TagType.SizeStart, TagType.SizeEnd);
         break;
       case TagType.UnderlineStart:
-        _handleStyling(spans, i, TagType.UnderlineStart, TagType.UnderlineEnd);
+        _findStylingEndTag(
+            spans, i, TagType.UnderlineStart, TagType.UnderlineEnd);
         break;
       case TagType.ItalicStart:
-        _handleStyling(spans, i, TagType.ItalicStart, TagType.ItalicEnd);
+        _findStylingEndTag(spans, i, TagType.ItalicStart, TagType.ItalicEnd);
         break;
       case TagType.DeleteStart:
-        _handleStyling(spans, i, TagType.DeleteStart, TagType.DeleteEnd);
+        _findStylingEndTag(spans, i, TagType.DeleteStart, TagType.DeleteEnd);
         break;
       case TagType.HeadingStart:
-        _handleStyling(spans, i, TagType.HeadingStart, TagType.HeadingEnd);
-        break;
-      case TagType.LinkStart:
-        _handleLink(spans, i);
+        _findStylingEndTag(spans, i, TagType.HeadingStart, TagType.HeadingEnd);
         break;
       case TagType.TableStart:
         // TODO: Handle this case.
@@ -322,38 +349,33 @@ List<Tag> parseBBCode(String raw) {
         // TODO: Handle this case.
         break;
       case TagType.AlignStart:
-        _hanldeAlign(spans, i);
+        _findAlignEndTag(spans, i);
         break;
-      case TagType.QuoteEnd:
-      case TagType.TableEnd:
-      case TagType.CollapseEnd:
-      case TagType.BoldEnd:
-      case TagType.FontEnd:
-      case TagType.ColorEnd:
-      case TagType.UnderlineEnd:
-      case TagType.ItalicEnd:
-      case TagType.DeleteEnd:
-      case TagType.LinkEnd:
-      case TagType.SizeEnd:
-      case TagType.HeadingEnd:
-      case TagType.TableRowEnd:
-      case TagType.TableCellEnd:
-      case TagType.AlignEnd:
-        // end tag, ignored
+      default:
         break;
-      case TagType.Image:
-      case TagType.Sticker:
-      case TagType.Metions:
-      case TagType.Rule:
-      case TagType.Pid:
-      case TagType.Uid:
-      case TagType.Reply:
-        // non-contianer, ignored
+    }
+  }
+
+  for (int i = 0; i < spans.length; i++) {
+    if (spans[i].removed) continue;
+
+    switch (spans[i].tag.type) {
+      case TagType.AlignStart:
+        _handleAlignMisnested(spans, i);
         break;
-      case TagType.ParagraphStart:
-      case TagType.ParagraphEnd:
-      case TagType.Text:
-        // unreachable
+      case TagType.QuoteStart:
+        _handleQuoteMisnested(spans, i);
+        break;
+      case TagType.TableStart:
+        // TODO: Handle this case.
+        break;
+      case TagType.TableRowStart:
+        // TODO: Handle this case.
+        break;
+      case TagType.TableCellStart:
+        // TODO: Handle this case.
+        break;
+      default:
         break;
     }
   }
@@ -423,7 +445,7 @@ List<Tag> parseBBCode(String raw) {
   return tags;
 }
 
-_handleStyling(
+_findStylingEndTag(
     List<_TagSpan> spans, int start, TagType startTag, TagType endTag) {
   int end = _findEndTag(spans, start, startTag, endTag);
 
@@ -434,13 +456,18 @@ _handleStyling(
   }
 }
 
-_hanldeAlign(List<_TagSpan> spans, int start) {
+_findAlignEndTag(List<_TagSpan> spans, int start) {
   int end = _findEndTag(spans, start, TagType.AlignStart, TagType.AlignEnd);
 
   if (end == -1 || !spans[end].removed) {
     spans[start].removed = true;
-    return;
+  } else {
+    spans[end].removed = false;
   }
+}
+
+_handleAlignMisnested(List<_TagSpan> spans, int start) {
+  int end = _findEndTag(spans, start, TagType.AlignStart, TagType.AlignEnd);
 
   List<_TagSpan> opening = [];
 
@@ -453,22 +480,22 @@ _hanldeAlign(List<_TagSpan> spans, int start) {
         span.tag.type == TagType.QuoteStart) {
       opening.add(span);
     } else if (span.tag.type == TagType.CollapseEnd) {
-      int start = opening
+      int collapseStart = opening
           .lastIndexWhere((span) => span.tag.type == TagType.CollapseStart);
 
-      if (start != -1) {
-        opening.removeAt(start);
+      if (collapseStart != -1) {
+        opening.removeAt(collapseStart);
       } else {
         spans[end].removed = true;
         spans[start].removed = true;
         return;
       }
     } else if (span.tag.type == TagType.QuoteEnd) {
-      int start =
+      int quoteStart =
           opening.lastIndexWhere((span) => span.tag.type == TagType.QuoteEnd);
 
-      if (start != -1) {
-        opening.removeAt(start);
+      if (quoteStart != -1) {
+        opening.removeAt(quoteStart);
       } else {
         spans[end].removed = true;
         spans[start].removed = true;
@@ -483,7 +510,7 @@ _hanldeAlign(List<_TagSpan> spans, int start) {
   }
 }
 
-_handleCollapse(List<_TagSpan> spans, int start) {
+_findCollapseEndTag(List<_TagSpan> spans, int start) {
   int end = spans.indexWhere((t) => t.tag.type == TagType.CollapseEnd, start);
 
   if (end != -1 && spans[end].removed) {
@@ -493,15 +520,18 @@ _handleCollapse(List<_TagSpan> spans, int start) {
   }
 }
 
-_handleQuote(List<_TagSpan> spans, int start) {
+_findQuoteEndTag(List<_TagSpan> spans, int start) {
   int end = _findEndTag(spans, start, TagType.QuoteStart, TagType.QuoteEnd);
 
   if (end == -1 || !spans[end].removed) {
     spans[start].removed = true;
-    return;
+  } else {
+    spans[end].removed = false;
   }
+}
 
-  spans[end].removed = false;
+_handleQuoteMisnested(List<_TagSpan> spans, int start) {
+  int end = _findEndTag(spans, start, TagType.QuoteStart, TagType.QuoteEnd);
 
   List<_TagSpan> opening = [];
 
@@ -513,8 +543,11 @@ _handleQuote(List<_TagSpan> spans, int start) {
     if (span.tag.type == TagType.CollapseStart) {
       opening.add(span);
     } else if (span.tag.type == TagType.CollapseEnd) {
-      if (opening.isNotEmpty) {
-        opening.removeLast();
+      int collapseStart = opening
+          .lastIndexWhere((span) => span.tag.type == TagType.CollapseStart);
+
+      if (collapseStart != -1) {
+        opening.removeAt(collapseStart);
       } else {
         spans[end].removed = true;
         spans[start].removed = true;
@@ -529,7 +562,7 @@ _handleQuote(List<_TagSpan> spans, int start) {
   }
 }
 
-_handleLink(List<_TagSpan> spans, int start) {
+_findLinkEndTag(List<_TagSpan> spans, int start) {
   const allowedChildren = [
     BoldStart,
     BoldEnd,

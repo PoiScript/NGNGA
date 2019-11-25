@@ -309,7 +309,7 @@ class Text extends Tag {
   final String content;
 
   Text(this.content)
-      : assert(content != null && content.isNotEmpty),
+      : assert(content != null),
         super(TagType.Text, props: [content]);
 }
 
