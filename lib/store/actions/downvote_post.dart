@@ -26,7 +26,7 @@ class DownvotePostAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      snackBarEvt: Event(res.message),
+      topicSnackBarEvt: Event(res.message),
       topics: state.topics
         ..update(
           topicId,

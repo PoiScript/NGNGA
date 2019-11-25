@@ -118,7 +118,8 @@ class AppState {
 
   final Event<PostWrapper> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
-  final Event<String> snackBarEvt;
+  final Event<String> categorySnackBarEvt;
+  final Event<String> topicSnackBarEvt;
 
   final Client client = Client();
 
@@ -133,7 +134,8 @@ class AppState {
     @required this.lastUpdated,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
-    @required this.snackBarEvt,
+    @required this.categorySnackBarEvt,
+    @required this.topicSnackBarEvt,
   })  : assert(categories != null),
         assert(favorites != null),
         assert(savedCategories != null),
@@ -143,7 +145,8 @@ class AppState {
         assert(categories != null),
         assert(fetchReplyEvt != null),
         assert(setEditingEvt != null),
-        assert(snackBarEvt != null);
+        assert(categorySnackBarEvt != null),
+        assert(topicSnackBarEvt != null);
 
   AppState copy({
     FavoriteState favorites,
@@ -156,7 +159,8 @@ class AppState {
     DateTime lastUpdated,
     Event<PostWrapper> fetchReplyEvt,
     Event<Editing> setEditing,
-    Event<String> snackBarEvt,
+    Event<String> categorySnackBarEvt,
+    Event<String> topicSnackBarEvt,
   }) {
     return AppState._(
       savedCategories: savedCategories ?? this.savedCategories,
@@ -169,7 +173,8 @@ class AppState {
       lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
-      snackBarEvt: snackBarEvt ?? this.snackBarEvt,
+      categorySnackBarEvt: categorySnackBarEvt ?? this.categorySnackBarEvt,
+      topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
     );
   }
 
@@ -185,7 +190,8 @@ class AppState {
       favorites: FavoriteState(favorites: [], favoriteCount: 0, lastPage: 0),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
-      snackBarEvt: Event.spent(),
+      categorySnackBarEvt: Event.spent(),
+      topicSnackBarEvt: Event.spent(),
     );
   }
 }

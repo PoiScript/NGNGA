@@ -422,7 +422,7 @@ class ViewModel extends BaseModel<AppState> {
       posts: topic.posts,
       topic: topic.topic,
       users: state.users,
-      snackBarEvt: state.snackBarEvt,
+      snackBarEvt: state.topicSnackBarEvt,
       isLoading: state.isLoading,
       lastUpdated: state.lastUpdated,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),

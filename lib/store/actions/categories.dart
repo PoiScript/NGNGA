@@ -11,7 +11,7 @@ class RemoveCategoryAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     return state.copy(
-      snackBarEvt: Event("Removed"),
+      categorySnackBarEvt: Event("Removed"),
       savedCategories: state.savedCategories..remove(category),
     );
   }
@@ -25,7 +25,7 @@ class AddCategoryAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     return state.copy(
-      snackBarEvt: Event("Added"),
+      categorySnackBarEvt: Event("Added"),
       savedCategories: state.savedCategories..add(category),
     );
   }

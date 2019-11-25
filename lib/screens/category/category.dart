@@ -304,7 +304,7 @@ class ViewModel extends BaseModel<AppState> {
       category: categoryState.category,
       topics: categoryState.topics,
       topicsCount: categoryState.topicsCount,
-      snackBarEvt: state.snackBarEvt,
+      snackBarEvt: state.categorySnackBarEvt,
       onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
       navigateToTopic: (topic, page) =>

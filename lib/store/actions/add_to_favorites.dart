@@ -21,7 +21,7 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      snackBarEvt: Event("成功加入收藏"),
+      topicSnackBarEvt: Event("成功加入收藏"),
     );
   }
 
