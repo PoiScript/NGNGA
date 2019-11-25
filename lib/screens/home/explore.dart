@@ -8,8 +8,6 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/categories.dart';
 import 'package:ngnga/widgets/category_row.dart';
 
-import 'popup_menu.dart';
-
 class Explore extends StatelessWidget {
   final List<Category> pinned;
 
@@ -22,18 +20,6 @@ class Explore extends StatelessWidget {
     return CustomScrollView(
       physics: BouncingScrollPhysics(),
       slivers: <Widget>[
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            "Explore",
-            style: Theme.of(context).textTheme.body2,
-          ),
-          actions: <Widget>[
-            PopupMenu(),
-          ],
-          backgroundColor: Colors.white,
-          pinned: true,
-        ),
         SliverToBoxAdapter(),
         SliverStickyHeader(
           header: Container(
