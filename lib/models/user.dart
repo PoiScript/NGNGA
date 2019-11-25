@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class User {
   final int id;
   final String username;
@@ -17,31 +19,57 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<String> avatars = [];
+
     if (json['avatar'] is String) {
       if (json['avatar'].startsWith(r"/*$js$*/")) {
-        // TODO: json-style avatar object
-      } else {
-        String string = json['avatar'].replaceAll("%7C", "|");
-        var lastEnd = 0;
-        for (var match in RegExp(r"https?://").allMatches(string)) {
-          if (match.start != 0) {
-            avatars.add(string.substring(lastEnd, match.start));
+        final map = jsonDecode(json['avatar'].substring(8));
+        for (final value in map.values) {
+          if (value is! String) continue;
+
+          if (value.startsWith("https://") || value.startsWith("http://")) {
+            avatars.add(value);
+          } else if (value.startsWith(".a/")) {
+            avatars.add(parseAvatar(value));
           }
-          lastEnd = match.start;
         }
-        if (lastEnd != string.length) {
-          avatars.add(string.substring(lastEnd));
+      } else {
+        for (final value in json['avatar'].replaceAll("%7C", "|").split("|")) {
+          if (value.startsWith("https://") || value.startsWith("http://")) {
+            avatars.add(value);
+          } else if (value.startsWith(".a/")) {
+            avatars.add(parseAvatar(value));
+          }
         }
       }
     }
 
     return User(
       id: json['uid'],
-      username: json['username'],
+      username: json['uid'] <= 0 ? "#ANONYMOUS#" : json['username'],
       avatars: avatars,
-      signature: json['signature'],
+      signature: json['signature'] ?? json['sign'],
       postsCount: json['postnum'],
-      createdAt: json['regDate'],
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        json['regdate'] ?? 0 * 1000,
+      ),
     );
   }
+}
+
+String parseAvatar(String avatar) {
+  String path = int.parse(
+    avatar.substring(3, avatar.indexOf('_')),
+  ).toRadixString(16);
+
+  String a = path.length >= 3
+      ? path.substring(path.length - 3, path.length)
+      : path.padLeft(3, '0');
+  String b = path.length >= 6
+      ? path.substring(path.length - 6, path.length - 3)
+      : path.substring(0, path.length - 3).padLeft(3, '0');
+  String c = path.length >= 9
+      ? path.substring(path.length - 9, path.length - 6)
+      : path.substring(0, path.length - 6).padLeft(3, '0');
+
+  return "http://img.nga.cn/avatars/2002/$a/$b/$c/${avatar.substring(3)}";
 }
