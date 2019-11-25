@@ -17,10 +17,11 @@ class FavoritesResponse {
 
 Future<FavoritesResponse> addToFavorites({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int topicId,
-  @required List<String> cookies,
 }) async {
-  final uri = Uri.https("nga.178.com", "nuke.php", {
+  final uri = Uri.https(baseUrl, "nuke.php", {
     "__lib": "topic_favor",
     "__act": "topic_favor",
     "action": "add",
@@ -30,9 +31,7 @@ Future<FavoritesResponse> addToFavorites({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
-
-  print(res.body);
+  final res = await client.post(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 
@@ -41,10 +40,11 @@ Future<FavoritesResponse> addToFavorites({
 
 Future<FavoritesResponse> removeFromFavorites({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int topicId,
-  @required List<String> cookies,
 }) async {
-  final uri = Uri.https("nga.178.com", "nuke.php", {
+  final uri = Uri.https(baseUrl, "nuke.php", {
     "__lib": "topic_favor",
     "__act": "topic_favor",
     "action": "del",
@@ -56,9 +56,7 @@ Future<FavoritesResponse> removeFromFavorites({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
-
-  print(res.body);
+  final res = await client.post(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 

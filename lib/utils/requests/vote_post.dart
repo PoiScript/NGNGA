@@ -29,12 +29,13 @@ class VoteResponse {
 
 Future<VoteResponse> votePost({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int topicId,
   @required int postId,
   @required int value,
-  @required List<String> cookies,
 }) async {
-  final uri = Uri.https("nga.178.com", "nuke.php", {
+  final uri = Uri.https(baseUrl, "nuke.php", {
     "__lib": "topic_recommend",
     "__act": "add",
     "tid": topicId.toString(),
@@ -46,9 +47,7 @@ Future<VoteResponse> votePost({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
-
-  print(res.body);
+  final res = await client.post(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 

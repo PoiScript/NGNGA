@@ -19,7 +19,8 @@ class FetchTopicsAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       page: 0,
       isSubcategory: state.categories[categoryId].category.isSubcategory,
-      cookies: state.cookies,
+      cookie: state.cookie,
+      baseUrl: state.baseUrl,
     );
 
     return state.copy(
@@ -56,7 +57,8 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       page: lastPage + 1,
       isSubcategory: state.categories[categoryId].category.isSubcategory,
-      cookies: state.cookies,
+      cookie: state.cookie,
+      baseUrl: state.baseUrl,
     );
 
     return state.copy(

@@ -45,11 +45,12 @@ class ApplyEditingResponse {
 
 Future<PrepareEditingResponse> prepareEditing({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int action,
   @required int categoryId,
   @required int topicId,
   @required int postId,
-  @required List<String> cookies,
 }) async {
   final query = _getQuery(
     action: action,
@@ -58,11 +59,11 @@ Future<PrepareEditingResponse> prepareEditing({
     postId: postId,
   );
 
-  final uri = "https://nga.178.com/post.php?${query.toString()}";
+  final uri = "https://$baseUrl/post.php?${query.toString()}";
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 
@@ -71,11 +72,12 @@ Future<PrepareEditingResponse> prepareEditing({
 
 Future<ApplyEditingResponse> applyEditing({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int action,
   @required int categoryId,
   @required int topicId,
   @required int postId,
-  @required List<String> cookies,
   @required String subject,
   @required String content,
 }) async {
@@ -99,11 +101,11 @@ Future<ApplyEditingResponse> applyEditing({
   }
 
   // we're manually encode url here, so we have to concatenate it by hand
-  final uri = "https://nga.178.com/post.php?${query.toString()}";
+  final uri = "https://$baseUrl/post.php?${query.toString()}";
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.post(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 

@@ -22,7 +22,8 @@ class DownvotePostAction extends ReduxAction<AppState> {
       value: -1,
       topicId: topicId,
       postId: postId,
-      cookies: state.cookies,
+      cookie: state.cookie,
+      baseUrl: state.baseUrl,
     );
 
     return state.copy(

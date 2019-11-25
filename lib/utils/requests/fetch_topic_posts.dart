@@ -39,11 +39,12 @@ class FetchTopicPostsResponse {
 
 Future<FetchTopicPostsResponse> fetchTopicPosts({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int topicId,
   @required int page,
-  @required List<String> cookies,
 }) async {
-  final uri = Uri.https("nga.178.com", "read.php", {
+  final uri = Uri.https(baseUrl, "read.php", {
     "tid": topicId.toString(),
     "page": (page + 1).toString(),
     "__output": "11",
@@ -51,7 +52,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 

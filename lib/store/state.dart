@@ -8,6 +8,65 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 
+enum NgaDomain {
+  nga178com,
+  nagbbscom,
+  bbsngacn,
+}
+
+enum BackgroundColor {
+  white,
+  black,
+  grey,
+}
+
+enum PrimaryColor {
+  red,
+}
+
+class SettingsState {
+  final NgaDomain domain;
+  final BackgroundColor backgroundColor;
+  final PrimaryColor primaryColor;
+  final String uid;
+  final String cid;
+
+  SettingsState({
+    @required this.uid,
+    @required this.cid,
+    @required this.domain,
+    @required this.backgroundColor,
+    @required this.primaryColor,
+  })  : assert(domain != null),
+        assert(backgroundColor != null),
+        assert(primaryColor != null);
+
+  SettingsState.empty()
+      : this(
+          uid: null,
+          cid: null,
+          domain: NgaDomain.nga178com,
+          backgroundColor: BackgroundColor.white,
+          primaryColor: PrimaryColor.red,
+        );
+
+  SettingsState copy({
+    domain,
+    backgroundColor,
+    primaryColor,
+    uid,
+    cid,
+  }) {
+    return SettingsState(
+      uid: uid ?? this.uid,
+      cid: cid ?? this.cid,
+      domain: domain ?? this.domain,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      primaryColor: primaryColor ?? this.primaryColor,
+    );
+  }
+}
+
 class FavoriteState {
   final List<Favorite> favorites;
   final int favoriteCount;
@@ -20,6 +79,13 @@ class FavoriteState {
   })  : assert(favorites != null),
         assert(favoriteCount != null),
         assert(lastPage != null);
+
+  FavoriteState.empty()
+      : this(
+          favorites: const [],
+          favoriteCount: 0,
+          lastPage: 0,
+        );
 
   FavoriteState copy({
     List<Favorite> favorites,
@@ -107,11 +173,11 @@ class PostWrapper {
 
 class AppState {
   final FavoriteState favorites;
+  final SettingsState settings;
   final List<Category> savedCategories;
   final Map<int, User> users;
   final Map<int, CategoryState> categories;
   final Map<int, TopicState> topics;
-  final List<String> cookies;
   final bool isLoading;
 
   final DateTime lastUpdated;
@@ -125,9 +191,9 @@ class AppState {
 
   AppState._({
     @required this.isLoading,
+    @required this.settings,
     @required this.favorites,
     @required this.savedCategories,
-    @required this.cookies,
     @required this.users,
     @required this.topics,
     @required this.categories,
@@ -137,6 +203,7 @@ class AppState {
     @required this.categorySnackBarEvt,
     @required this.topicSnackBarEvt,
   })  : assert(categories != null),
+        assert(settings != null),
         assert(favorites != null),
         assert(savedCategories != null),
         assert(isLoading != null),
@@ -149,12 +216,12 @@ class AppState {
         assert(topicSnackBarEvt != null);
 
   AppState copy({
+    SettingsState settings,
     FavoriteState favorites,
     List<Category> savedCategories,
     Map<int, CategoryState> categories,
     Map<int, TopicState> topics,
     Map<int, User> users,
-    List<String> cookies,
     bool isLoading,
     DateTime lastUpdated,
     Event<PostWrapper> fetchReplyEvt,
@@ -163,12 +230,12 @@ class AppState {
     Event<String> topicSnackBarEvt,
   }) {
     return AppState._(
+      settings: settings ?? this.settings,
       savedCategories: savedCategories ?? this.savedCategories,
       favorites: favorites ?? this.favorites,
       categories: categories ?? this.categories,
       topics: topics ?? this.topics,
       users: users ?? this.users,
-      cookies: cookies ?? this.cookies,
       isLoading: isLoading ?? this.isLoading,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
@@ -180,18 +247,33 @@ class AppState {
 
   factory AppState.empty() {
     return AppState._(
-      cookies: List(),
+      settings: SettingsState.empty(),
       savedCategories: List(),
       isLoading: false,
       categories: Map(),
       topics: Map(),
       users: Map(),
       lastUpdated: DateTime.now(),
-      favorites: FavoriteState(favorites: [], favoriteCount: 0, lastPage: 0),
+      favorites: FavoriteState.empty(),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
       categorySnackBarEvt: Event.spent(),
       topicSnackBarEvt: Event.spent(),
     );
   }
+
+  String get baseUrl {
+    switch (settings.domain) {
+      case NgaDomain.nga178com:
+        return "nga.178.com";
+      case NgaDomain.bbsngacn:
+        return "bbs.nga.cn";
+      case NgaDomain.nagbbscom:
+        return "ngabbs.com";
+    }
+    return null;
+  }
+
+  String get cookie =>
+      "ngaPassportUid=${settings.uid};ngaPassportCid=${settings.cid};";
 }

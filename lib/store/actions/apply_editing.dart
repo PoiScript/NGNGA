@@ -29,7 +29,8 @@ class ApplyEditingAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       topicId: topicId,
       postId: postId,
-      cookies: state.cookies,
+      cookie: state.cookie,
+      baseUrl: state.baseUrl,
       subject: subject,
       content: content,
     );

@@ -79,7 +79,8 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: 0,
-        cookies: state.cookies,
+        cookie: state.cookie,
+        baseUrl: state.baseUrl,
       );
 
       return state.copy(
@@ -102,7 +103,8 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: firstPage - 1,
-        cookies: state.cookies,
+        cookie: state.cookie,
+        baseUrl: state.baseUrl,
       );
 
       return state.copy(
@@ -138,7 +140,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage + 1,
-        cookies: state.cookies,
+        cookie: state.cookie,
+        baseUrl: state.baseUrl,
       );
 
       return state.copy(
@@ -158,7 +161,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage,
-        cookies: state.cookies,
+        cookie: state.cookie,
+        baseUrl: state.baseUrl,
       );
 
       final firstIndex = response.posts.first.index;
@@ -198,7 +202,8 @@ class FetchPostsAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       page: pageIndex,
-      cookies: state.cookies,
+      cookie: state.cookie,
+      baseUrl: state.baseUrl,
     );
 
     return state.copy(

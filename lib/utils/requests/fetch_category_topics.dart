@@ -28,18 +28,19 @@ class FetchCategoryTopicsResponse {
 
 Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
   @required Client client,
+  @required String baseUrl,
+  @required String cookie,
   @required int categoryId,
   @required int page,
   @required bool isSubcategory,
-  @required List<String> cookies,
 }) async {
   final uri = isSubcategory
-      ? Uri.https("nga.178.com", "thread.php", {
+      ? Uri.https(baseUrl, "thread.php", {
           "stid": categoryId.toString(),
           "page": (page + 1).toString(),
           "__output": "11",
         })
-      : Uri.https("nga.178.com", "thread.php", {
+      : Uri.https(baseUrl, "thread.php", {
           "fid": categoryId.toString(),
           "page": (page + 1).toString(),
           "__output": "11",
@@ -47,7 +48,7 @@ Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookies.join(";")});
+  final res = await client.get(uri, headers: {"cookie": cookie});
 
   final json = jsonDecode(res.body);
 
