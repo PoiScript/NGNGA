@@ -76,8 +76,7 @@ class CategoryState {
     @required this.maxPage,
   })  : assert(topicIds != null),
         assert(topicsCount >= 0),
-        assert(maxPage >= 0),
-        assert(lastPage >= 0);
+        assert(maxPage >= lastPage);
 
   CategoryState copy({
     List<int> topicIds,
@@ -108,7 +107,8 @@ class TopicState {
     @required this.maxPage,
     @required this.postIds,
     @required this.postsCount,
-  }) : assert(postIds != null && firstPage >= 0 && lastPage >= 0);
+  })  : assert(postIds != null),
+        assert(maxPage >= lastPage && lastPage >= firstPage && firstPage >= 0);
 
   TopicState copy({
     int firstPage,
@@ -162,7 +162,6 @@ class AppState {
 
   final Event<Option<Post>> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
-  final Event<String> categorySnackBarEvt;
   final Event<String> topicSnackBarEvt;
 
   final Client client = Client();
@@ -180,7 +179,6 @@ class AppState {
     @required this.lastUpdated,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
-    @required this.categorySnackBarEvt,
     @required this.topicSnackBarEvt,
   })  : assert(categoryStates != null),
         assert(settings != null),
@@ -193,7 +191,6 @@ class AppState {
         assert(categoryStates != null),
         assert(fetchReplyEvt != null),
         assert(setEditingEvt != null),
-        assert(categorySnackBarEvt != null),
         assert(topicSnackBarEvt != null);
 
   AppState copy({
@@ -209,7 +206,6 @@ class AppState {
     DateTime lastUpdated,
     Event<Option<Post>> fetchReplyEvt,
     Event<Editing> setEditing,
-    Event<String> categorySnackBarEvt,
     Event<String> topicSnackBarEvt,
   }) {
     return AppState._(
@@ -225,7 +221,6 @@ class AppState {
       lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
-      categorySnackBarEvt: categorySnackBarEvt ?? this.categorySnackBarEvt,
       topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
     );
   }
@@ -257,7 +252,6 @@ class AppState {
       ),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
-      categorySnackBarEvt: Event.spent(),
       topicSnackBarEvt: Event.spent(),
     );
   }

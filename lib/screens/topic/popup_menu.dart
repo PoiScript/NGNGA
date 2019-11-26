@@ -1,23 +1,29 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 enum Choice {
-  AddToFavorites,
-  RemoveFromFavorites,
-  CopyLinkToClipboard,
-  JumpToPage,
+  addToFavorites,
+  removeFromFavorites,
+  copyLinkToClipboard,
+  jumpToPage,
 }
 
 class PopupMenu extends StatelessWidget {
+  final int topicId;
+  final String baseUrl;
+
   final bool isFavorited;
   final Future<void> Function() addToFavorites;
   final Future<void> Function() removeFromFavorites;
 
   PopupMenu({
     Key key,
+    @required this.topicId,
+    @required this.baseUrl,
     @required this.isFavorited,
     @required this.addToFavorites,
     @required this.removeFromFavorites,
@@ -31,29 +37,47 @@ class PopupMenu extends StatelessWidget {
         color: Colors.black,
       ),
       itemBuilder: (context) => [
-        isFavorited
-            ? PopupMenuItem<Choice>(
-                value: Choice.RemoveFromFavorites,
-                child: Text(
-                  "Remove from Favorites",
-                  style: Theme.of(context).textTheme.body1,
-                ),
-              )
-            : PopupMenuItem<Choice>(
-                value: Choice.AddToFavorites,
-                child: Text(
-                  "Add to Favorites",
-                  style: Theme.of(context).textTheme.body1,
-                ),
-              ),
+        if (isFavorited)
+          PopupMenuItem<Choice>(
+            value: Choice.removeFromFavorites,
+            child: Text(
+              "Remove from Favorites",
+              style: Theme.of(context).textTheme.body1,
+            ),
+          ),
+        if (!isFavorited)
+          PopupMenuItem<Choice>(
+            value: Choice.addToFavorites,
+            child: Text(
+              "Add to Favorites",
+              style: Theme.of(context).textTheme.body1,
+            ),
+          ),
+        PopupMenuItem<Choice>(
+          value: Choice.copyLinkToClipboard,
+          child: Text(
+            "Copy Link to clipboard",
+            style: Theme.of(context).textTheme.body1,
+          ),
+        )
       ],
-      onSelected: (choice) {
+      onSelected: (choice) async {
         switch (choice) {
-          case Choice.RemoveFromFavorites:
+          case Choice.removeFromFavorites:
             removeFromFavorites();
             break;
-          case Choice.AddToFavorites:
+          case Choice.addToFavorites:
             addToFavorites();
+            break;
+          case Choice.copyLinkToClipboard:
+            await Clipboard.setData(ClipboardData(
+              text: Uri.https(baseUrl, "read.php", {
+                "tid": topicId.toString(),
+              }).toString(),
+            ));
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text("copied"),
+            ));
             break;
           default:
             break;
@@ -75,6 +99,8 @@ class PopupMenuConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(topicId),
       builder: (context, vm) => PopupMenu(
+        topicId: topicId,
+        baseUrl: vm.baseUrl,
         isFavorited: vm.isFavorited,
         addToFavorites: vm.addToFavorites,
         removeFromFavorites: vm.removeFromFavorites,
@@ -86,6 +112,8 @@ class PopupMenuConnector extends StatelessWidget {
 class ViewModel extends BaseModel<AppState> {
   final topicId;
 
+  String baseUrl;
+
   bool isFavorited;
   Future<void> Function() addToFavorites;
   Future<void> Function() removeFromFavorites;
@@ -94,6 +122,7 @@ class ViewModel extends BaseModel<AppState> {
 
   ViewModel.build({
     @required this.topicId,
+    @required this.baseUrl,
     @required this.isFavorited,
     @required this.addToFavorites,
     @required this.removeFromFavorites,
@@ -103,6 +132,7 @@ class ViewModel extends BaseModel<AppState> {
   ViewModel fromStore() {
     return ViewModel.build(
       topicId: topicId,
+      baseUrl: state.settings.baseUrl,
       isFavorited: state.favoriteState.topicIds.contains(topicId),
       addToFavorites: () => dispatchFuture(
         AddToFavoritesAction(topicId: topicId),

@@ -1,5 +1,4 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/store/state.dart';
 
@@ -11,9 +10,8 @@ class RemoveFromPinnedAction extends ReduxAction<AppState> {
   RemoveFromPinnedAction(this.categoryId);
 
   @override
-  Future<AppState> reduce() async {
+  AppState reduce() {
     return state.copy(
-      categorySnackBarEvt: Event("Removed"),
       pinned: state.pinned..remove(categoryId),
     );
   }
@@ -27,9 +25,8 @@ class AddToPinnedAction extends ReduxAction<AppState> {
   AddToPinnedAction(this.categoryId);
 
   @override
-  Future<AppState> reduce() async {
+  AppState reduce() {
     return state.copy(
-      categorySnackBarEvt: Event("Added"),
       pinned: state.pinned..add(categoryId),
     );
   }
