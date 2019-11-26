@@ -2,7 +2,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
-import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/categories.dart';
 import 'package:ngnga/widgets/category_row.dart';
@@ -77,7 +76,6 @@ class ExploreConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
-      onInit: (store) => store.dispatch(FetchFavoritesAction()),
       builder: (context, vm) => Explore(
         pinned: vm.pinned,
       ),

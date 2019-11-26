@@ -42,9 +42,13 @@ class NavigateToTopicAction extends ReduxAction<AppState> {
 
     return state.copy(
       topicStates: state.topicStates
-        ..putIfAbsent(
+        ..update(
           topicId,
-          () => TopicState(
+          (topicState) => topicState.copy(
+            postIds: topicState.firstPage != page ? List() : null,
+            postsCount: topicState.firstPage != page ? 0 : null,
+          ),
+          ifAbsent: () => TopicState(
             firstPage: page,
             lastPage: page,
             maxPage: page,

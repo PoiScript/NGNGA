@@ -497,10 +497,12 @@ class _PostRowState extends State<PostRow> {
 
 class PostRowConnector extends StatelessWidget {
   final Post post;
+  final User user;
 
   const PostRowConnector({
     Key key,
     @required this.post,
+    @required this.user,
   }) : super(key: key);
 
   @override
@@ -513,8 +515,8 @@ class PostRowConnector extends StatelessWidget {
       ),
       builder: (context, vm) => PostRow(
         post: post,
+        user: user,
         sentByMe: vm.sentByMe,
-        user: vm.user,
         upvote: vm.upvote,
         downvote: vm.downvote,
       ),
@@ -527,7 +529,6 @@ class ViewModel extends BaseModel<AppState> {
   final int userId;
   final int topicId;
 
-  User user;
   bool sentByMe;
 
   Future<void> Function() upvote;
@@ -543,11 +544,10 @@ class ViewModel extends BaseModel<AppState> {
     @required this.postId,
     @required this.topicId,
     @required this.userId,
-    @required this.user,
     @required this.upvote,
     @required this.downvote,
     @required this.sentByMe,
-  }) : super(equals: [user]);
+  });
 
   @override
   ViewModel fromStore() {
@@ -555,7 +555,6 @@ class ViewModel extends BaseModel<AppState> {
       postId: postId,
       topicId: topicId,
       userId: userId,
-      user: state.users[userId],
       sentByMe: userId.toString() == state.settings.uid,
       upvote: () => dispatchFuture(
         UpvotePostAction(

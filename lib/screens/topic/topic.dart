@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:ngnga/models/post.dart';
 
 import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -22,6 +23,7 @@ final dateFormatter = DateFormat("HH:mm:ss");
 class TopicPage extends StatefulWidget {
   final Topic topic;
   final List<Post> posts;
+  final List<User> users;
   final bool reachMaxPage;
 
   final Event<String> snackBarEvt;
@@ -32,12 +34,14 @@ class TopicPage extends StatefulWidget {
   TopicPage({
     @required this.topic,
     @required this.posts,
+    @required this.users,
     @required this.reachMaxPage,
     @required this.snackBarEvt,
     @required this.onRefresh,
     @required this.onLoad,
   })  : assert(topic != null),
         assert(posts != null),
+        assert(users != null),
         assert(reachMaxPage != null),
         assert(snackBarEvt != null),
         assert(onRefresh != null),
@@ -166,6 +170,7 @@ class _TopicPageState extends State<TopicPage>
             final int itemIndex = index ~/ 2;
             if (index.isOdd) {
               return PostRowConnector(
+                user: widget.users[itemIndex],
                 post: widget.posts[itemIndex],
               );
             }
@@ -214,6 +219,7 @@ class TopicPageConnector extends StatelessWidget {
       builder: (context, vm) => TopicPage(
         topic: vm.topic,
         posts: vm.posts,
+        users: vm.users,
         reachMaxPage: vm.reachMaxPage,
         snackBarEvt: vm.snackBarEvt,
         onRefresh: vm.onRefresh,
@@ -223,18 +229,12 @@ class TopicPageConnector extends StatelessWidget {
   }
 }
 
-enum Choice {
-  AddToFavorites,
-  RemoveFromFavorites,
-  CopyLinkToClipboard,
-  JumpToPage,
-}
-
 class ViewModel extends BaseModel<AppState> {
   final topicId;
 
   Topic topic;
   List<Post> posts;
+  List<User> users;
   bool reachMaxPage;
 
   Event<String> snackBarEvt;
@@ -248,18 +248,29 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topicId,
     @required this.topic,
     @required this.posts,
+    @required this.users,
     @required this.reachMaxPage,
     @required this.snackBarEvt,
     @required this.onRefresh,
     @required this.onLoad,
-  }) : super(equals: [snackBarEvt, reachMaxPage, posts, topic]);
+  }) : super(equals: [snackBarEvt, reachMaxPage, posts, users, topic]);
 
   @override
   ViewModel fromStore() {
     final topicState = state.topicStates[topicId];
+
+    List<Post> posts = [];
+    List<User> users = [];
+
+    for (int id in topicState.postIds) {
+      posts.add(state.posts[id]);
+      users.add(state.users[state.posts[id].userId]);
+    }
+
     return ViewModel.build(
       topicId: topicId,
-      posts: topicState.postIds.map((id) => state.posts[id]).toList(),
+      posts: posts,
+      users: users,
       reachMaxPage: topicState.lastPage == topicState.maxPage,
       topic: state.topics[topicId],
       snackBarEvt: state.topicSnackBarEvt,
