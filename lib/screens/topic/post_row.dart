@@ -23,6 +23,7 @@ final dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
 class PostRow extends StatefulWidget {
   final Post post;
   final User user;
+  final bool sentByMe;
 
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
@@ -30,10 +31,12 @@ class PostRow extends StatefulWidget {
   PostRow({
     @required this.post,
     @required this.user,
+    @required this.sentByMe,
     @required this.upvote,
     @required this.downvote,
   })  : assert(post != null),
         assert(user != null),
+        assert(sentByMe != null),
         assert(upvote != null),
         assert(downvote != null);
 
@@ -311,6 +314,14 @@ class _PostRowState extends State<PostRow> {
             style: Theme.of(context).textTheme.body1,
           ),
         ),
+      if (widget.sentByMe)
+        PopupMenuItem<Choice>(
+          value: Choice.EditThisPost,
+          child: Text(
+            "Edit This Post",
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
       PopupMenuItem<Choice>(
         value: Choice.ReplyToThisPost,
         child: Text(
@@ -342,6 +353,13 @@ class _PostRowState extends State<PostRow> {
         break;
       case Choice.DispalyInRichText:
         setState(() => _displayMode = DisplayMode.RichText);
+        break;
+      case Choice.EditThisPost:
+        Navigator.pushNamed(context, "/e", arguments: {
+          "action": ACTION_MODIFY,
+          "topicId": widget.post.topicId,
+          "postId": widget.post.id,
+        });
         break;
       case Choice.ReplyToThisPost:
         Navigator.pushNamed(context, "/e", arguments: {
@@ -495,6 +513,7 @@ class PostRowConnector extends StatelessWidget {
       ),
       builder: (context, vm) => PostRow(
         post: post,
+        sentByMe: vm.sentByMe,
         user: vm.user,
         upvote: vm.upvote,
         downvote: vm.downvote,
@@ -509,6 +528,7 @@ class ViewModel extends BaseModel<AppState> {
   final int topicId;
 
   User user;
+  bool sentByMe;
 
   Future<void> Function() upvote;
   Future<void> Function() downvote;
@@ -526,6 +546,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.user,
     @required this.upvote,
     @required this.downvote,
+    @required this.sentByMe,
   }) : super(equals: [user]);
 
   @override
@@ -535,6 +556,7 @@ class ViewModel extends BaseModel<AppState> {
       topicId: topicId,
       userId: userId,
       user: state.users[userId],
+      sentByMe: userId.toString() == state.settings.uid,
       upvote: () => dispatchFuture(
         UpvotePostAction(
           topicId: topicId,
@@ -554,6 +576,7 @@ class ViewModel extends BaseModel<AppState> {
 enum Choice {
   DisplayInBBCode,
   DispalyInRichText,
+  EditThisPost,
   ReplyToThisPost,
   QuoteFromThisPost,
   CommentOnThisPost,
