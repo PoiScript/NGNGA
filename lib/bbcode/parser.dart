@@ -54,7 +54,7 @@ final unescape = new HtmlUnescape();
 List<Tag> parseBBCode(String raw) {
   List<_TagSpan> spans = List();
 
-  String content = unescape.convert(raw);
+  String content = unescape.convert(unescape.convert(raw));
 
   while (true) {
     var match = replyRegExp1.firstMatch(content);
