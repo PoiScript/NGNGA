@@ -3,16 +3,16 @@ import 'package:ngnga/store/state.dart';
 
 import 'state_persist.dart';
 
-class ChangeDomainAction extends ReduxAction<AppState> {
-  final NgaDomain domain;
+class ChangeBaseUrlAction extends ReduxAction<AppState> {
+  final String baseUrl;
 
-  ChangeDomainAction(this.domain);
+  ChangeBaseUrlAction(this.baseUrl);
 
   @override
   AppState reduce() {
     return state.copy(
       settings: state.settings.copy(
-        domain: domain,
+        baseUrl: baseUrl,
       ),
     );
   }

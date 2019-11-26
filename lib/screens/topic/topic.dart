@@ -5,71 +5,43 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'package:ngnga/models/post.dart';
+
 import 'package:ngnga/models/topic.dart';
-import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
+import 'popup_menu.dart';
 import 'post_row.dart';
+import 'update_indicator.dart';
 
 final dateFormatter = DateFormat("HH:mm:ss");
 
 class TopicPage extends StatefulWidget {
-  final List<Post> posts;
   final Topic topic;
-  final Map<int, User> users;
+  final List<Post> posts;
+  final bool reachMaxPage;
+
   final Event<String> snackBarEvt;
-
-  final DateTime lastUpdated;
-  final bool isLoading;
-  final bool isFavorited;
-
-  final Future<void> Function() addToFavorites;
-  final Future<void> Function() removeFromFavorites;
 
   final Future<void> Function() onLoad;
   final Future<void> Function() onRefresh;
 
-  final Future<void> Function() startListening;
-  final Future<void> Function() cancelListening;
-
-  final Future<void> Function({int postId, int postIndex}) upvotePost;
-  final Future<void> Function({int postId, int postIndex}) downvotePost;
-
   TopicPage({
     @required this.topic,
     @required this.posts,
-    @required this.users,
-    @required this.lastUpdated,
+    @required this.reachMaxPage,
     @required this.snackBarEvt,
-    @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.isFavorited,
-    @required this.addToFavorites,
-    @required this.removeFromFavorites,
-    @required this.upvotePost,
-    @required this.downvotePost,
-    @required this.startListening,
-    @required this.cancelListening,
   })  : assert(topic != null),
         assert(posts != null),
-        assert(users != null),
-        assert(lastUpdated != null),
+        assert(reachMaxPage != null),
         assert(snackBarEvt != null),
-        assert(isLoading != null),
         assert(onRefresh != null),
-        assert(onLoad != null),
-        assert(addToFavorites != null),
-        assert(removeFromFavorites != null),
-        assert(upvotePost != null),
-        assert(downvotePost != null),
-        assert(startListening != null),
-        assert(cancelListening != null);
+        assert(onLoad != null);
 
   @override
   _TopicPageState createState() => _TopicPageState();
@@ -85,8 +57,6 @@ class _TopicPageState extends State<TopicPage>
   @override
   void initState() {
     super.initState();
-
-    widget.startListening();
 
     _animationController = AnimationController(
       vsync: this,
@@ -111,7 +81,6 @@ class _TopicPageState extends State<TopicPage>
   @override
   void dispose() {
     super.dispose();
-    widget.cancelListening();
     _scrollController.dispose();
     _animationController.dispose();
   }
@@ -137,7 +106,7 @@ class _TopicPageState extends State<TopicPage>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading && widget.posts.isEmpty) {
+    if (widget.posts.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -187,41 +156,7 @@ class _TopicPageState extends State<TopicPage>
         titleSpacing: 0.0,
         leading: const BackButton(color: Colors.black),
         actions: <Widget>[
-          PopupMenuButton<Choice>(
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.black,
-            ),
-            itemBuilder: (context) => [
-              widget.isFavorited
-                  ? PopupMenuItem<Choice>(
-                      value: Choice.RemoveFromFavorites,
-                      child: Text(
-                        "Remove from Favorites",
-                        style: Theme.of(context).textTheme.body1,
-                      ),
-                    )
-                  : PopupMenuItem<Choice>(
-                      value: Choice.AddToFavorites,
-                      child: Text(
-                        "Add to Favorites",
-                        style: Theme.of(context).textTheme.body1,
-                      ),
-                    ),
-            ],
-            onSelected: (choice) {
-              switch (choice) {
-                case Choice.RemoveFromFavorites:
-                  widget.removeFromFavorites();
-                  break;
-                case Choice.AddToFavorites:
-                  widget.addToFavorites();
-                  break;
-                default:
-                  break;
-              }
-            },
-          ),
+          PopupMenuConnector(topicId: widget.topic.id),
         ],
       ),
       header,
@@ -230,19 +165,8 @@ class _TopicPageState extends State<TopicPage>
           (context, index) {
             final int itemIndex = index ~/ 2;
             if (index.isOdd) {
-              final Post post = widget.posts[itemIndex];
-              return PostRow(
-                post: post,
-                user: widget.users[post.userId],
-                topicId: widget.topic.id,
-                upvote: () => widget.upvotePost(
-                  postId: post.id,
-                  postIndex: itemIndex,
-                ),
-                downvote: () => widget.downvotePost(
-                  postId: post.id,
-                  postIndex: itemIndex,
-                ),
+              return PostRowConnector(
+                post: widget.posts[itemIndex],
               );
             }
             return Divider(height: 0.0);
@@ -257,49 +181,11 @@ class _TopicPageState extends State<TopicPage>
               widget.posts.length > 0 ? (widget.posts.length * 2 + 1) : 0,
         ),
       ),
-      widget.posts.isNotEmpty &&
-              widget.posts.last.index ~/ 20 < widget.topic.postsCount ~/ 20
-          ? footer
-          : SliverToBoxAdapter(
-              child: Container(
-                height: 64 + kFloatingActionButtonMargin * 2 - 8,
-                padding: EdgeInsets.all(8.0),
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(
-                        Icons.replay,
-                        color: Theme.of(context).textTheme.caption.color,
-                      ),
-                      onPressed: () {},
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          "Auto-update enabled.",
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                        StreamBuilder(
-                          initialData: DateTime.now(),
-                          stream: Stream.periodic(const Duration(seconds: 1)),
-                          builder: (context, snapshot) => Text(
-                            "Last Updated: ${dateFormatter.format(widget.lastUpdated)} (${DateTime.now().difference(widget.lastUpdated).inSeconds}s ago)",
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        ),
-                        Text(
-                          "Update Interval: 20s",
-                          style: Theme.of(context).textTheme.caption,
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+      widget.reachMaxPage
+          ? SliverToBoxAdapter(
+              child: UpdateIndicatorConnector(topicId: widget.topic.id),
+            )
+          : footer,
     ];
 
     return CustomScrollView(
@@ -326,21 +212,12 @@ class TopicPageConnector extends StatelessWidget {
       model: ViewModel(topicId),
       onInit: (store) => store.dispatch(FetchPostsAction(topicId, pageIndex)),
       builder: (context, vm) => TopicPage(
-        posts: vm.posts,
         topic: vm.topic,
-        users: vm.users,
-        lastUpdated: vm.lastUpdated,
+        posts: vm.posts,
+        reachMaxPage: vm.reachMaxPage,
         snackBarEvt: vm.snackBarEvt,
-        isLoading: vm.isLoading,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
-        upvotePost: vm.upvotePost,
-        downvotePost: vm.downvotePost,
-        isFavorited: vm.isFavorited,
-        addToFavorites: vm.addToFavorites,
-        removeFromFavorites: vm.removeFromFavorites,
-        startListening: vm.startListening,
-        cancelListening: vm.cancelListening,
       ),
     );
   }
@@ -358,32 +235,12 @@ class ViewModel extends BaseModel<AppState> {
 
   Topic topic;
   List<Post> posts;
-  Map<int, User> users;
-  DateTime lastUpdated;
+  bool reachMaxPage;
 
   Event<String> snackBarEvt;
 
-  bool isFavorited;
-  Future<void> Function() addToFavorites;
-  Future<void> Function() removeFromFavorites;
-
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
-
-  Future<void> Function() startListening;
-  Future<void> Function() cancelListening;
-
-  Future<void> Function({
-    int postId,
-    int postIndex,
-  }) upvotePost;
-
-  Future<void> Function({
-    int postId,
-    int postIndex,
-  }) downvotePost;
-
-  bool isLoading;
 
   ViewModel(this.topicId);
 
@@ -391,71 +248,23 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topicId,
     @required this.topic,
     @required this.posts,
-    @required this.users,
-    @required this.lastUpdated,
+    @required this.reachMaxPage,
     @required this.snackBarEvt,
-    @required this.isLoading,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.isFavorited,
-    @required this.addToFavorites,
-    @required this.removeFromFavorites,
-    @required this.upvotePost,
-    @required this.downvotePost,
-    @required this.startListening,
-    @required this.cancelListening,
-  }) : super(equals: [
-          isLoading,
-          lastUpdated,
-          snackBarEvt,
-          isFavorited,
-          posts,
-          topic,
-          users,
-        ]);
+  }) : super(equals: [snackBarEvt, reachMaxPage, posts, topic]);
 
   @override
   ViewModel fromStore() {
-    final topic = state.topics[topicId];
+    final topicState = state.topicStates[topicId];
     return ViewModel.build(
       topicId: topicId,
-      posts: topic.posts,
-      topic: topic.topic,
-      users: state.users,
+      posts: topicState.postIds.map((id) => state.posts[id]).toList(),
+      reachMaxPage: topicState.lastPage == topicState.maxPage,
+      topic: state.topics[topicId],
       snackBarEvt: state.topicSnackBarEvt,
-      isLoading: state.isLoading,
-      lastUpdated: state.lastUpdated,
       onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
-      isFavorited:
-          state.favorites.favorites.indexWhere((f) => f.topic.id == topicId) !=
-              -1,
-      addToFavorites: () => dispatchFuture(
-        AddToFavoritesAction(topicId: topicId),
-      ),
-      removeFromFavorites: () => dispatchFuture(
-        RemoveFromFavoritesAction(topicId: topicId),
-      ),
-      upvotePost: ({postId, postIndex}) => dispatchFuture(
-        UpvotePostAction(
-          topicId: topicId,
-          postId: postId,
-          postIndex: postIndex,
-        ),
-      ),
-      downvotePost: ({postId, postIndex}) => dispatchFuture(
-        DownvotePostAction(
-          topicId: topicId,
-          postId: postId,
-          postIndex: postIndex,
-        ),
-      ),
-      startListening: () => dispatchFuture(
-        StartListeningNewReplyAction(topicId),
-      ),
-      cancelListening: () => dispatchFuture(
-        CancelListeningNewReplyAction(),
-      ),
     );
   }
 }

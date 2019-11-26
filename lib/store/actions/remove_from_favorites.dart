@@ -18,7 +18,7 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(

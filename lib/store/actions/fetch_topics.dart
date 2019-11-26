@@ -5,7 +5,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:ngnga/utils/requests.dart';
 
 import '../state.dart';
-import 'is_loading.dart';
 
 class FetchTopicsAction extends ReduxAction<AppState> {
   final int categoryId;
@@ -14,31 +13,32 @@ class FetchTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final response = await fetchCategoryTopics(
+    final res = await fetchCategoryTopics(
       client: state.client,
       categoryId: categoryId,
       page: 0,
-      isSubcategory: state.categories[categoryId].category.isSubcategory,
+      isSubcategory: state.categories[categoryId].isSubcategory,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
-      categories: state.categories
+      categoryStates: state.categoryStates
         ..update(
           categoryId,
           (categoryState) => categoryState.copy(
-            topics: List.of(response.topics),
-            topicsCount: response.topicCount,
+            topicIds: res.topics.map((topic) => topic.id).toList(),
+            topicsCount: res.topicCount,
             lastPage: 0,
+            maxPage: res.maxPage,
           ),
         ),
+      topics: state.topics
+        ..addEntries(res.topics.map((topic) => MapEntry(topic.id, topic))),
+      categories: state.categories
+        ..addEntries(res.categories.map((cat) => MapEntry(cat.id, cat))),
     );
   }
-
-  void before() => dispatch(IsLoadingAction(true));
-
-  void after() => dispatch(IsLoadingAction(false));
 }
 
 class FetchNextTopicsAction extends ReduxAction<AppState> {
@@ -48,33 +48,36 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final lastPage = state.categories[categoryId].lastPage;
+    final lastPage = state.categoryStates[categoryId].lastPage;
 
-    assert(lastPage <= (state.categories[categoryId].topicsCount / 35).ceil());
-
-    final response = await fetchCategoryTopics(
+    final res = await fetchCategoryTopics(
       client: state.client,
       categoryId: categoryId,
       page: lastPage + 1,
-      isSubcategory: state.categories[categoryId].category.isSubcategory,
+      isSubcategory: state.categories[categoryId].isSubcategory,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
+    List<int> topicIds = res.topics.map((t) => t.id).toList();
+
     return state.copy(
-      categories: state.categories
+      categoryStates: state.categoryStates
         ..update(
           categoryId,
           (categoryState) => categoryState.copy(
-            topics: categoryState.topics..addAll(response.topics),
-            topicsCount: response.topicCount,
+            topicIds: categoryState.topicIds
+              ..removeWhere((id) => topicIds.contains(id))
+              ..addAll(topicIds),
+            topicsCount: res.topicCount,
             lastPage: lastPage + 1,
+            maxPage: res.maxPage,
           ),
         ),
+      topics: state.topics
+        ..addEntries(res.topics.map((topic) => MapEntry(topic.id, topic))),
+      categories: state.categories
+        ..addEntries(res.categories.map((cat) => MapEntry(cat.id, cat))),
     );
   }
-
-  void before() => dispatch(IsLoadingAction(true));
-
-  void after() => dispatch(IsLoadingAction(false));
 }

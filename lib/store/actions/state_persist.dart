@@ -8,29 +8,24 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:ngnga/store/state.dart';
 
-const enumToStringMap = const {
-  NgaDomain.nga178com: "nga.178.com",
-  NgaDomain.bbsngacn: "bbs.nga.cn",
-  NgaDomain.nagbbscom: "ngabbs.com",
-};
-
-const stringToEnumMap = const {
-  "nga.178.com": NgaDomain.nga178com,
-  "bbs.nga.cn": NgaDomain.bbsngacn,
-  "ngabbs.com": NgaDomain.nagbbscom,
-};
-
 class SaveState extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/state.json');
+    Directory directory = await getApplicationDocumentsDirectory();
+    File file = File('${directory.path}/state.json');
 
     String json = jsonEncode({
-      "ngaUid": state.settings.uid,
-      "ngaCid": state.settings.cid,
-      "ngaDomain": enumToStringMap[state.settings.domain],
-      "pinned": state.pinned.map((c) => c.toJson()).toList(),
+      "uid": state.settings.uid,
+      "cid": state.settings.cid,
+      "baseUrl": state.settings.baseUrl,
+      "pinned": state.pinned
+          .map((id) => state.categories[id])
+          .map((category) => {
+                "id": category.id,
+                "title": category.title,
+                "isSubcategory": category.isSubcategory,
+              })
+          .toList(),
     });
 
     await file.writeAsString(json);
@@ -44,8 +39,8 @@ class SaveState extends ReduxAction<AppState> {
 class LoadState extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/state.json');
+    Directory directory = await getApplicationDocumentsDirectory();
+    File file = File('${directory.path}/state.json');
 
     if (!(await file.exists())) return null;
 
@@ -55,14 +50,25 @@ class LoadState extends ReduxAction<AppState> {
 
       print("Loaded state from ${file.path}");
 
+      Iterable<Category> categories = List.of(json["pinned"]).map(
+        (json) => Category(
+          id: json["id"],
+          title: json["title"],
+          isSubcategory: json["isSubcategory"],
+        ),
+      );
+
       return state.copy(
         settings: state.settings.copy(
-          uid: json["ngaUid"],
-          cid: json["ngaCid"],
-          domain: stringToEnumMap[json["ngaDomain"]],
+          uid: json["uid"],
+          cid: json["cid"],
+          baseUrl: json["baseUrl"],
         ),
-        pinned:
-            List.from(json["pinned"]).map((x) => Category.fromJson(x)).toList(),
+        pinned: state.pinned..addAll(categories.map((category) => category.id)),
+        categories: state.categories
+          ..addEntries(
+            categories.map((category) => MapEntry(category.id, category)),
+          ),
       );
     } catch (e) {
       print(e);

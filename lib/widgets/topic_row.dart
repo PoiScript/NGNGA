@@ -1,7 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/store/actions.dart';
@@ -15,13 +14,13 @@ final dateFormatter = DateFormat("yyyy-MM-dd HH:mm");
 class TopicRow extends StatelessWidget {
   final Topic topic;
 
-  final void Function(Topic, int) navigateToTopic;
-  final void Function(Category) navigateToCategory;
+  final void Function(int, int) navigateToTopic;
+  final void Function(int) navigateToCategory;
 
   TopicRow({
-    this.topic,
-    this.navigateToTopic,
-    this.navigateToCategory,
+    @required this.topic,
+    @required this.navigateToTopic,
+    @required this.navigateToCategory,
   })  : assert(topic != null),
         assert(navigateToTopic != null),
         assert(navigateToCategory != null);
@@ -30,13 +29,14 @@ class TopicRow extends StatelessWidget {
   Widget build(BuildContext context) {
     if (topic.category != null)
       return InkWell(
-        onTap: () => navigateToCategory(topic.category),
+        onTap: () => navigateToCategory(topic.category.id),
         child: Padding(
           padding: EdgeInsets.all(8.0),
           child: Row(
             children: <Widget>[
-              TitleColorize(topic),
-              const Spacer(),
+              Expanded(
+                child: TitleColorize(topic),
+              ),
               const Icon(Icons.keyboard_arrow_right)
             ],
           ),
@@ -47,35 +47,64 @@ class TopicRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         InkWell(
-          onTap: () => navigateToTopic(topic, 0),
+          onTap: () => navigateToTopic(topic.id, 0),
           child: Padding(
             padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
             child: TitleColorize(topic),
           ),
         ),
-        StreamBuilder<DateTime>(
-          initialData: DateTime.now(),
-          stream: Stream.periodic(Duration(minutes: 1), (x) => DateTime.now()),
-          builder: (context, snapshot) => Row(
-            children: <Widget>[
-              Container(
-                width: 64,
-                padding: EdgeInsets.only(top: 4, bottom: 8, left: 8, right: 8),
-                child: Text(
-                  numberFormatter.format(topic.postsCount),
-                  style: Theme.of(context).textTheme.caption,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Container(
+              width: 64,
+              padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+              child: Text(
+                numberFormatter.format(topic.postsCount),
+                style: Theme.of(context).textTheme.caption,
+              ),
+            ),
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.only(top: 4, bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 4),
+                        child: Text(
+                          topic.author,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                      ),
+                    ),
+                    StreamBuilder(
+                      stream: Stream.periodic(const Duration(minutes: 1)),
+                      builder: (context, snapshot) => Text(
+                        duration(DateTime.now(), topic.createdAt),
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
+            ),
+            Expanded(
+              child: InkWell(
                 child: Container(
-                  padding: EdgeInsets.only(top: 4, bottom: 8),
+                  padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.only(right: 4),
+                          padding: EdgeInsets.only(right: 4.0),
                           child: Text(
-                            topic.author,
+                            topic.lastPoster,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
@@ -83,45 +112,20 @@ class TopicRow extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(
-                        duration(snapshot.data, topic.createdAt),
-                        style: Theme.of(context).textTheme.caption,
+                      StreamBuilder(
+                        stream: Stream.periodic(const Duration(minutes: 1)),
+                        builder: (context, snapshot) => Text(
+                          duration(DateTime.now(), topic.lastPostedAt),
+                          style: Theme.of(context).textTheme.caption,
+                        ),
                       ),
                     ],
                   ),
                 ),
+                onTap: () => navigateToTopic(topic.id, topic.postsCount ~/ 20),
               ),
-              Expanded(
-                child: InkWell(
-                  child: Container(
-                    padding:
-                        EdgeInsets.only(top: 4, bottom: 8, right: 8, left: 8),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 4),
-                            child: Text(
-                              topic.lastPoster,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                              style: Theme.of(context).textTheme.caption,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          duration(snapshot.data, topic.lastPostedAt),
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                      ],
-                    ),
-                  ),
-                  onTap: () => navigateToTopic(topic, topic.postsCount ~/ 20),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );
@@ -136,7 +140,7 @@ class TopicRowConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
+      model: ViewModel(topic.id),
       builder: (context, vm) => TopicRow(
         topic: topic,
         navigateToCategory: vm.navigateToCategory,
@@ -147,12 +151,15 @@ class TopicRowConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  void Function(Topic, int) navigateToTopic;
-  void Function(Category) navigateToCategory;
+  final int topicId;
 
-  ViewModel();
+  ViewModel(this.topicId);
+
+  Function(int, int) navigateToTopic;
+  Function(int) navigateToCategory;
 
   ViewModel.build({
+    @required this.topicId,
     @required this.navigateToCategory,
     @required this.navigateToTopic,
   });
@@ -160,10 +167,9 @@ class ViewModel extends BaseModel<AppState> {
   @override
   BaseModel fromStore() {
     return ViewModel.build(
-      navigateToCategory: (category) =>
-          dispatch(NavigateToCategoryAction(category)),
-      navigateToTopic: (topic, page) =>
-          dispatch(NavigateToTopicAction(topic, page)),
+      topicId: topicId,
+      navigateToCategory: (id) => dispatch(NavigateToCategoryAction(id)),
+      navigateToTopic: (id, page) => dispatch(NavigateToTopicAction(id, page)),
     );
   }
 }

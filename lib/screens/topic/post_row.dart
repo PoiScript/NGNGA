@@ -1,3 +1,4 @@
+import 'package:async_redux/async_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,8 @@ import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
+import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
@@ -20,7 +23,6 @@ final dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
 class PostRow extends StatefulWidget {
   final Post post;
   final User user;
-  final int topicId;
 
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
@@ -28,12 +30,10 @@ class PostRow extends StatefulWidget {
   PostRow({
     @required this.post,
     @required this.user,
-    @required this.topicId,
     @required this.upvote,
     @required this.downvote,
   })  : assert(post != null),
         assert(user != null),
-        assert(topicId != null),
         assert(upvote != null),
         assert(downvote != null);
 
@@ -346,21 +346,21 @@ class _PostRowState extends State<PostRow> {
       case Choice.ReplyToThisPost:
         Navigator.pushNamed(context, "/e", arguments: {
           "action": ACTION_REPLY,
-          "topicId": widget.topicId,
+          "topicId": widget.post.topicId,
           "postId": widget.post.id,
         });
         break;
       case Choice.QuoteFromThisPost:
         Navigator.pushNamed(context, "/e", arguments: {
           "action": ACTION_QUOTE,
-          "topicId": widget.topicId,
+          "topicId": widget.post.topicId,
           "postId": widget.post.id,
         });
         break;
       case Choice.CommentOnThisPost:
         Navigator.pushNamed(context, "/e", arguments: {
           "action": ACTION_COMMENT,
-          "topicId": widget.topicId,
+          "topicId": widget.post.topicId,
           "postId": widget.post.id,
         });
         break;
@@ -473,6 +473,80 @@ class _PostRowState extends State<PostRow> {
     showDialog(
       context: context,
       builder: (context) => LinkDialog(url),
+    );
+  }
+}
+
+class PostRowConnector extends StatelessWidget {
+  final Post post;
+
+  const PostRowConnector({
+    Key key,
+    @required this.post,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<AppState, ViewModel>(
+      model: ViewModel(
+        postId: post.id,
+        userId: post.userId,
+        topicId: post.topicId,
+      ),
+      builder: (context, vm) => PostRow(
+        post: post,
+        user: vm.user,
+        upvote: vm.upvote,
+        downvote: vm.downvote,
+      ),
+    );
+  }
+}
+
+class ViewModel extends BaseModel<AppState> {
+  final int postId;
+  final int userId;
+  final int topicId;
+
+  User user;
+
+  Future<void> Function() upvote;
+  Future<void> Function() downvote;
+
+  ViewModel({
+    @required this.postId,
+    @required this.userId,
+    @required this.topicId,
+  });
+
+  ViewModel.build({
+    @required this.postId,
+    @required this.topicId,
+    @required this.userId,
+    @required this.user,
+    @required this.upvote,
+    @required this.downvote,
+  }) : super(equals: [user]);
+
+  @override
+  ViewModel fromStore() {
+    return ViewModel.build(
+      postId: postId,
+      topicId: topicId,
+      userId: userId,
+      user: state.users[userId],
+      upvote: () => dispatchFuture(
+        UpvotePostAction(
+          topicId: topicId,
+          postId: postId,
+        ),
+      ),
+      downvote: () => dispatchFuture(
+        DownvotePostAction(
+          topicId: topicId,
+          postId: postId,
+        ),
+      ),
     );
   }
 }

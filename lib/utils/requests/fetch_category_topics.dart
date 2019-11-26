@@ -2,26 +2,46 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/models/topic.dart';
 
 class FetchCategoryTopicsResponse {
-  final Iterable<Topic> topics;
+  final List<Topic> topics;
+  final List<Category> categories;
   final int topicCount;
+  final int maxPage;
 
   FetchCategoryTopicsResponse._({
     this.topics,
+    this.categories,
     this.topicCount,
+    this.maxPage,
   }) : assert(topics != null && topicCount != null);
 
   factory FetchCategoryTopicsResponse.fromJson(Map<String, dynamic> json) {
+    List<Topic> topics = [];
+    List<Category> categories = [];
+
+    if (json["data"]["__T"] is List) {
+      for (var value in List.from(json["data"]["__T"])) {
+        Topic topic = Topic.fromJson(value);
+        if (topic.category != null) categories.add(topic.category);
+        topics.add(topic);
+      }
+    } else {
+      for (var value in Map.from(json["data"]["__T"]).values) {
+        Topic topic = Topic.fromJson(value);
+        if (topic.category != null) categories.add(topic.category);
+        topics.add(topic);
+      }
+    }
+
     return FetchCategoryTopicsResponse._(
-      topics: (json["data"]["__T"] is List)
-          ? List.from(json["data"]["__T"]).map((value) => Topic.fromJson(value))
-          : Map.from(json["data"]["__T"])
-              .values
-              .map((value) => Topic.fromJson(value)),
+      topics: topics,
+      categories: categories,
       topicCount: json["data"]["__ROWS"],
+      maxPage: json["data"]["__ROWS"] ~/ json["data"]["__T__ROWS_PAGE"],
     );
   }
 }

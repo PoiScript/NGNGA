@@ -16,7 +16,7 @@ import 'link_dialog.dart';
 class PostDialog extends StatefulWidget {
   final Map<int, User> users;
 
-  final Event<PostWrapper> fetchReplyEvt;
+  final Event<Option<Post>> fetchReplyEvt;
   final Function(int, int) fetchReply;
 
   PostDialog({
@@ -43,12 +43,12 @@ class _PostDialogState extends State<PostDialog> {
   }
 
   _consumeEvents() {
-    PostWrapper wrapper = widget.fetchReplyEvt.consume();
-    if (wrapper != null)
+    Option option = widget.fetchReplyEvt.consume();
+    if (option != null)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
-            posts.add(wrapper.post);
+            posts.add(option.item);
             isLoading = false;
           });
         }
@@ -88,11 +88,14 @@ class _PostDialogState extends State<PostDialog> {
           margin: EdgeInsets.only(bottom: 8.0),
           child: Row(
             children: <Widget>[
-              Text(
-                widget.users[post.userId].username,
-                style: Theme.of(context).textTheme.caption,
+              Expanded(
+                child: Text(
+                  widget.users[post.userId]?.username ?? "#ANONYMOUS#",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.caption,
+                ),
               ),
-              const Spacer(),
               StreamBuilder<DateTime>(
                 stream: Stream.periodic(const Duration(minutes: 1)),
                 builder: (context, snapshot) => Text(
@@ -163,7 +166,7 @@ class ViewModel extends BaseModel<AppState> {
   Map<int, User> users;
 
   Function(int, int) fetchReply;
-  Event<PostWrapper> fetchReplyEvt;
+  Event<Option<Post>> fetchReplyEvt;
 
   ViewModel();
 

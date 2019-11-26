@@ -1,18 +1,12 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:ngnga/models/favorite.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
-
-enum NgaDomain {
-  nga178com,
-  nagbbscom,
-  bbsngacn,
-}
+import 'package:ngnga/utils/categories.dart';
 
 enum BackgroundColor {
   white,
@@ -25,7 +19,7 @@ enum PrimaryColor {
 }
 
 class SettingsState {
-  final NgaDomain domain;
+  final String baseUrl;
   final BackgroundColor backgroundColor;
   final PrimaryColor primaryColor;
   final String uid;
@@ -34,10 +28,10 @@ class SettingsState {
   SettingsState({
     @required this.uid,
     @required this.cid,
-    @required this.domain,
+    @required this.baseUrl,
     @required this.backgroundColor,
     @required this.primaryColor,
-  })  : assert(domain != null),
+  })  : assert(baseUrl != null),
         assert(backgroundColor != null),
         assert(primaryColor != null);
 
@@ -45,13 +39,13 @@ class SettingsState {
       : this(
           uid: null,
           cid: null,
-          domain: NgaDomain.nga178com,
+          baseUrl: "nga.178.com",
           backgroundColor: BackgroundColor.white,
           primaryColor: PrimaryColor.red,
         );
 
   SettingsState copy({
-    domain,
+    baseUrl,
     backgroundColor,
     primaryColor,
     uid,
@@ -60,93 +54,75 @@ class SettingsState {
     return SettingsState(
       uid: uid ?? this.uid,
       cid: cid ?? this.cid,
-      domain: domain ?? this.domain,
+      baseUrl: baseUrl ?? this.baseUrl,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       primaryColor: primaryColor ?? this.primaryColor,
     );
   }
 }
 
-class FavoriteState {
-  final List<Favorite> favorites;
-  final int favoriteCount;
-  final int lastPage;
-
-  FavoriteState({
-    @required this.favorites,
-    @required this.favoriteCount,
-    @required this.lastPage,
-  })  : assert(favorites != null),
-        assert(favoriteCount != null),
-        assert(lastPage != null);
-
-  FavoriteState.empty()
-      : this(
-          favorites: const [],
-          favoriteCount: 0,
-          lastPage: 0,
-        );
-
-  FavoriteState copy({
-    List<Favorite> favorites,
-    int favoriteCount,
-    int lastPage,
-  }) {
-    return FavoriteState(
-      favorites: favorites ?? this.favorites,
-      favoriteCount: favoriteCount ?? this.favoriteCount,
-      lastPage: lastPage ?? this.lastPage,
-    );
-  }
-}
-
 class CategoryState {
-  final Category category;
-  final List<Topic> topics;
+  final List<int> topicIds;
+
   final int topicsCount;
+
   final int lastPage;
+  final int maxPage;
 
   CategoryState({
-    @required this.category,
-    @required this.topics,
+    @required this.topicIds,
     @required this.topicsCount,
     @required this.lastPage,
-  })  : assert(category != null),
-        assert(topics != null),
-        assert(topicsCount != null),
-        assert(lastPage != null);
+    @required this.maxPage,
+  })  : assert(topicIds != null),
+        assert(topicsCount >= 0),
+        assert(maxPage >= 0),
+        assert(lastPage >= 0);
 
   CategoryState copy({
-    Category category,
-    List<Topic> topics,
+    List<int> topicIds,
     int topicsCount,
     int lastPage,
+    int maxPage,
   }) {
     return CategoryState(
-      category: category ?? this.category,
-      topics: topics ?? this.topics,
+      topicIds: topicIds ?? this.topicIds,
       topicsCount: topicsCount ?? this.topicsCount,
       lastPage: lastPage ?? this.lastPage,
+      maxPage: maxPage ?? this.maxPage,
     );
   }
 }
 
 class TopicState {
-  final Topic topic;
-  final List<Post> posts;
+  final List<int> postIds;
+  final int postsCount;
+
+  final int firstPage;
+  final int lastPage;
+  final int maxPage;
 
   TopicState({
-    @required this.topic,
-    @required this.posts,
-  }) : assert(topic != null && posts != null);
+    @required this.firstPage,
+    @required this.lastPage,
+    @required this.maxPage,
+    @required this.postIds,
+    @required this.postsCount,
+  }) : assert(postIds != null && firstPage >= 0 && lastPage >= 0);
 
   TopicState copy({
-    Topic topic,
-    List<Post> posts,
+    int firstPage,
+    int lastPage,
+    int maxPage,
+    int postsCount,
+    List<int> postIds,
   }) {
     return TopicState(
-      topic: topic ?? this.topic,
-      posts: posts ?? this.posts,
+      firstPage: firstPage ?? this.firstPage,
+      lastPage: lastPage ?? this.lastPage,
+      maxPage: maxPage ?? this.maxPage,
+      postIds: postIds ?? this.postIds,
+      postsCount: postsCount ?? this.postsCount,
     );
   }
 }
@@ -163,26 +139,28 @@ class Editing {
   });
 }
 
-/// A simple wrapper for post, so PostWrapper(null) is used to
-/// indicates to a deleted or hidden reply which is now inaccessible.
-class PostWrapper {
-  final Post post;
-
-  PostWrapper(this.post);
+class Option<T> {
+  final T item;
+  Option(this.item);
 }
 
 class AppState {
-  final FavoriteState favorites;
   final SettingsState settings;
-  final List<Category> pinned;
+
+  final List<int> pinned;
+
   final Map<int, User> users;
-  final Map<int, CategoryState> categories;
-  final Map<int, TopicState> topics;
-  final bool isLoading;
+  final Map<int, Post> posts;
+  final Map<int, Topic> topics;
+  final Map<int, Category> categories;
+
+  final Map<int, CategoryState> categoryStates;
+  final Map<int, TopicState> topicStates;
+  final CategoryState favoriteState;
 
   final DateTime lastUpdated;
 
-  final Event<PostWrapper> fetchReplyEvt;
+  final Event<Option<Post>> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
   final Event<String> categorySnackBarEvt;
   final Event<String> topicSnackBarEvt;
@@ -190,26 +168,29 @@ class AppState {
   final Client client = Client();
 
   AppState._({
-    @required this.isLoading,
     @required this.settings,
-    @required this.favorites,
+    @required this.favoriteState,
     @required this.pinned,
     @required this.users,
+    @required this.posts,
     @required this.topics,
     @required this.categories,
+    @required this.topicStates,
+    @required this.categoryStates,
     @required this.lastUpdated,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
     @required this.categorySnackBarEvt,
     @required this.topicSnackBarEvt,
-  })  : assert(categories != null),
+  })  : assert(categoryStates != null),
         assert(settings != null),
-        assert(favorites != null),
+        assert(favoriteState != null),
         assert(pinned != null),
-        assert(isLoading != null),
         assert(users != null),
+        assert(posts != null),
         assert(topics != null),
-        assert(categories != null),
+        assert(topicStates != null),
+        assert(categoryStates != null),
         assert(fetchReplyEvt != null),
         assert(setEditingEvt != null),
         assert(categorySnackBarEvt != null),
@@ -217,14 +198,16 @@ class AppState {
 
   AppState copy({
     SettingsState settings,
-    FavoriteState favorites,
-    List<Category> pinned,
-    Map<int, CategoryState> categories,
-    Map<int, TopicState> topics,
+    CategoryState favoriteState,
+    List<int> pinned,
+    Map<int, Post> posts,
     Map<int, User> users,
-    bool isLoading,
+    Map<int, Topic> topics,
+    Map<int, Category> categories,
+    Map<int, CategoryState> categoryStates,
+    Map<int, TopicState> topicStates,
     DateTime lastUpdated,
-    Event<PostWrapper> fetchReplyEvt,
+    Event<Option<Post>> fetchReplyEvt,
     Event<Editing> setEditing,
     Event<String> categorySnackBarEvt,
     Event<String> topicSnackBarEvt,
@@ -232,11 +215,13 @@ class AppState {
     return AppState._(
       settings: settings ?? this.settings,
       pinned: pinned ?? this.pinned,
-      favorites: favorites ?? this.favorites,
+      favoriteState: favoriteState ?? this.favoriteState,
+      categoryStates: categoryStates ?? this.categoryStates,
+      topicStates: topicStates ?? this.topicStates,
       categories: categories ?? this.categories,
       topics: topics ?? this.topics,
       users: users ?? this.users,
-      isLoading: isLoading ?? this.isLoading,
+      posts: posts ?? this.posts,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
@@ -246,32 +231,35 @@ class AppState {
   }
 
   factory AppState.empty() {
+    // TODO: save category into categoryState when need
+
+    Map<int, Category> categories = Map()
+      ..addEntries(categoryGroups
+          .map((group) => group.categories)
+          .expand((x) => x)
+          .map((category) => MapEntry(category.id, category)));
+
     return AppState._(
+      users: Map(),
+      posts: Map(),
+      topics: Map(),
+      categories: categories,
       settings: SettingsState.empty(),
       pinned: List(),
-      isLoading: false,
-      categories: Map(),
-      topics: Map(),
-      users: Map(),
+      categoryStates: Map(),
+      topicStates: Map(),
       lastUpdated: DateTime.now(),
-      favorites: FavoriteState.empty(),
+      favoriteState: CategoryState(
+        lastPage: 0,
+        topicsCount: 0,
+        maxPage: 0,
+        topicIds: const [],
+      ),
       fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
       categorySnackBarEvt: Event.spent(),
       topicSnackBarEvt: Event.spent(),
     );
-  }
-
-  String get baseUrl {
-    switch (settings.domain) {
-      case NgaDomain.nga178com:
-        return "nga.178.com";
-      case NgaDomain.bbsngacn:
-        return "bbs.nga.cn";
-      case NgaDomain.nagbbscom:
-        return "ngabbs.com";
-    }
-    return null;
   }
 
   String get cookie =>

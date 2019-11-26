@@ -1,57 +1,60 @@
 import 'package:async_redux/async_redux.dart';
 
-import 'package:ngnga/models/category.dart';
-import 'package:ngnga/models/topic.dart';
-
 import '../state.dart';
 
 class NavigateToCategoryAction extends ReduxAction<AppState> {
-  final Category category;
+  final int categoryId;
 
-  NavigateToCategoryAction(this.category) : assert(category != null);
+  NavigateToCategoryAction(this.categoryId) : assert(categoryId != null);
 
   @override
   AppState reduce() {
+    // TODO: what if state.category[categoryId] doesn't exist
+
     return state.copy(
-      categories: state.categories
+      categoryStates: state.categoryStates
         ..putIfAbsent(
-          category.id,
+          categoryId,
           () => CategoryState(
-            category: category,
-            topics: List(),
+            topicIds: List(),
             lastPage: 0,
             topicsCount: 0,
+            maxPage: 0,
           ),
         ),
     );
   }
 
   void after() =>
-      dispatch(NavigateAction.pushNamed("/c", arguments: {"id": category.id}));
+      dispatch(NavigateAction.pushNamed("/c", arguments: {"id": categoryId}));
 }
 
 class NavigateToTopicAction extends ReduxAction<AppState> {
-  final Topic topic;
+  final int topicId;
   final int page;
 
-  NavigateToTopicAction(this.topic, this.page)
-      : assert(topic != null),
-        assert(page != null);
+  NavigateToTopicAction(this.topicId, this.page)
+      : assert(topicId != null && page != null);
 
   @override
   AppState reduce() {
+    // TODO: what if state.topic[topicId] doesn't exist
+
     return state.copy(
-      topics: state.topics
+      topicStates: state.topicStates
         ..putIfAbsent(
-          topic.id,
+          topicId,
           () => TopicState(
-            topic: topic,
-            posts: List(),
+            firstPage: page,
+            lastPage: page,
+            maxPage: page,
+            postsCount: 0,
+            postIds: List(),
           ),
         ),
     );
   }
 
-  void after() => dispatch(NavigateAction.pushNamed("/t",
-      arguments: {"id": topic.id, "page": page}));
+  void after() => dispatch(
+      NavigateAction.pushNamed("/t", arguments: {"id": topicId, "page": page}));
 }

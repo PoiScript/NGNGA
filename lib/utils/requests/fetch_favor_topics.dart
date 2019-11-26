@@ -2,33 +2,37 @@ import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
-import 'package:ngnga/models/favorite.dart';
+
+import 'package:ngnga/models/topic.dart';
 
 class FetchFavorTopicsResponse {
-  final List<Favorite> favorites;
-  final int favoriteCount;
+  final List<Topic> topics;
+  final int topicsCount;
+  final int maxPage;
 
   FetchFavorTopicsResponse._({
-    this.favorites,
-    this.favoriteCount,
-  }) : assert(favorites != null && favoriteCount != null);
+    this.topics,
+    this.topicsCount,
+    this.maxPage,
+  }) : assert(topics != null && topicsCount != null);
 
   factory FetchFavorTopicsResponse.fromJson(Map<String, dynamic> json) {
-    List<Favorite> favorites = [];
+    List<Topic> favorites = [];
 
     if (json["data"][0][0] is List) {
       for (final value in json["data"][0][0]) {
-        favorites.add(Favorite.fromJson(value));
+        if (value['__P'] == null) favorites.add(Topic.fromJson(value));
       }
     } else if (json["data"][0][0] is Map) {
       for (final value in json["data"][0][0].values) {
-        favorites.add(Favorite.fromJson(value));
+        if (value['__P'] == null) favorites.add(Topic.fromJson(value));
       }
     }
 
     return FetchFavorTopicsResponse._(
-      favorites: favorites,
-      favoriteCount: json["data"][0][1],
+      topics: favorites,
+      topicsCount: json["data"][0][1],
+      maxPage: json["data"][0][1] ~/ json["data"][0][3],
     );
   }
 }

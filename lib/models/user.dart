@@ -17,7 +17,7 @@ class User {
     this.createdAt,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromJson(Map<String, dynamic> json, int id) {
     List<String> avatars = [];
 
     if (json['avatar'] is String) {
@@ -44,8 +44,8 @@ class User {
     }
 
     return User(
-      id: json['uid'],
-      username: json['uid'] <= 0 ? "#ANONYMOUS#" : json['username'],
+      id: id,
+      username: id <= 0 ? "#ANONYMOUS#" : json['username'],
       avatars: avatars,
       signature: json['signature'] ?? json['sign'],
       postsCount: json['postnum'],
@@ -59,17 +59,11 @@ class User {
 String parseAvatar(String avatar) {
   String path = int.parse(
     avatar.substring(3, avatar.indexOf('_')),
-  ).toRadixString(16);
+  ).toRadixString(16).padLeft(9, '0');
 
-  String a = path.length >= 3
-      ? path.substring(path.length - 3, path.length)
-      : path.padLeft(3, '0');
-  String b = path.length >= 6
-      ? path.substring(path.length - 6, path.length - 3)
-      : path.substring(0, path.length - 3).padLeft(3, '0');
-  String c = path.length >= 9
-      ? path.substring(path.length - 9, path.length - 6)
-      : path.substring(0, path.length - 6).padLeft(3, '0');
+  String a = path.substring(path.length - 3, path.length);
+  String b = path.substring(path.length - 6, path.length - 3);
+  String c = path.substring(path.length - 9, path.length - 6);
 
   return "http://img.nga.cn/avatars/2002/$a/$b/$c/${avatar.substring(3)}";
 }

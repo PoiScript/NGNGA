@@ -21,41 +21,33 @@ class CategoryPage extends StatefulWidget {
   final Category category;
   final List<Topic> topics;
   final int topicsCount;
-  final bool isLoading;
-  final bool isSaved;
+
   final Event<String> snackBarEvt;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
-  final void Function(Topic, int) navigateToTopic;
-  final void Function(Category) navigateToCategory;
 
+  final bool isPinned;
   final VoidCallback addToPinned;
   final VoidCallback removeFromPinned;
 
   CategoryPage({
-    @required this.topics,
-    @required this.isSaved,
     @required this.category,
+    @required this.topics,
     @required this.topicsCount,
-    @required this.isLoading,
     @required this.snackBarEvt,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.navigateToTopic,
-    @required this.navigateToCategory,
+    @required this.isPinned,
     @required this.addToPinned,
     @required this.removeFromPinned,
   })  : assert(topics != null),
         assert(category != null),
         assert(topicsCount != null),
-        assert(isLoading != null),
-        assert(isSaved != null),
+        assert(isPinned != null),
         assert(snackBarEvt != null),
         assert(onRefresh != null),
         assert(onLoad != null),
-        assert(navigateToTopic != null),
-        assert(navigateToCategory != null),
         assert(addToPinned != null),
         assert(removeFromPinned != null);
 
@@ -114,7 +106,7 @@ class _CategoryPageState extends State<CategoryPage>
   }
 
   Widget build(BuildContext context) {
-    if (widget.isLoading && widget.topics.isEmpty) {
+    if (widget.topics.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -137,7 +129,7 @@ class _CategoryPageState extends State<CategoryPage>
                 leading: const BackButton(color: Colors.black),
                 backgroundColor: Theme.of(context).backgroundColor,
                 actions: <Widget>[
-                  widget.isSaved
+                  widget.isPinned
                       ? IconButton(
                           color: Colors.black,
                           icon: Icon(Icons.star),
@@ -233,16 +225,13 @@ class CategoryPageConnector extends StatelessWidget {
       model: ViewModel(categoryId),
       onInit: (store) => store.dispatch(FetchTopicsAction(categoryId)),
       builder: (context, vm) => CategoryPage(
-        isLoading: vm.isLoading,
-        isSaved: vm.isSaved,
-        topics: vm.topics,
         category: vm.category,
+        topics: vm.topics,
         topicsCount: vm.topicsCount,
         snackBarEvt: vm.snackBarEvt,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
-        navigateToTopic: vm.navigateToTopic,
-        navigateToCategory: vm.navigateToCategory,
+        isPinned: vm.isPinned,
         addToPinned: vm.addToPinned,
         removeFromPinned: vm.removeFromPinned,
       ),
@@ -256,16 +245,13 @@ class ViewModel extends BaseModel<AppState> {
   Category category;
   List<Topic> topics;
   int topicsCount;
-  bool isLoading;
-  bool isSaved;
+
   Event<String> snackBarEvt;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
 
-  void Function(Topic, int) navigateToTopic;
-  void Function(Category) navigateToCategory;
-
+  bool isPinned;
   VoidCallback addToPinned;
   VoidCallback removeFromPinned;
 
@@ -273,47 +259,31 @@ class ViewModel extends BaseModel<AppState> {
 
   ViewModel.build({
     @required this.topics,
-    @required this.isLoading,
-    @required this.isSaved,
+    @required this.isPinned,
     @required this.snackBarEvt,
     @required this.categoryId,
     @required this.category,
     @required this.topicsCount,
     @required this.onRefresh,
     @required this.onLoad,
-    @required this.navigateToTopic,
-    @required this.navigateToCategory,
     @required this.addToPinned,
     @required this.removeFromPinned,
-  }) : super(equals: [
-          isLoading,
-          snackBarEvt,
-          isSaved,
-          topics,
-          category,
-          topicsCount,
-        ]);
+  }) : super(equals: [category, topics, topicsCount, snackBarEvt, isPinned]);
 
   @override
   ViewModel fromStore() {
-    var categoryState = state.categories[categoryId];
+    var categoryState = state.categoryStates[categoryId];
     return ViewModel.build(
       categoryId: categoryId,
-      isLoading: state.isLoading,
-      isSaved: state.pinned.contains(categoryState.category),
-      category: categoryState.category,
-      topics: categoryState.topics,
+      category: state.categories[categoryId],
+      topics: categoryState.topicIds.map((id) => state.topics[id]).toList(),
       topicsCount: categoryState.topicsCount,
       snackBarEvt: state.categorySnackBarEvt,
       onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
       onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
-      navigateToTopic: (topic, page) =>
-          dispatch(NavigateToTopicAction(topic, page)),
-      navigateToCategory: (category) =>
-          dispatch(NavigateToCategoryAction(category)),
-      addToPinned: () => dispatch(AddToPinnedAction(categoryState.category)),
-      removeFromPinned: () =>
-          dispatch(RemoveFromPinnedAction(categoryState.category)),
+      isPinned: state.pinned.contains(categoryId),
+      addToPinned: () => dispatch(AddToPinnedAction(categoryId)),
+      removeFromPinned: () => dispatch(RemoveFromPinnedAction(categoryId)),
     );
   }
 }

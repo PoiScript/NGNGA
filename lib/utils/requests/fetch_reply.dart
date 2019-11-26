@@ -8,18 +8,16 @@ import 'package:ngnga/models/user.dart';
 
 class FetchReplyResponse {
   final Post post;
-  final List<MapEntry<int, User>> users;
+  final List<User> users;
 
   FetchReplyResponse._({this.post, this.users});
 
   factory FetchReplyResponse.fromJson(Map<String, dynamic> json) {
-    List<MapEntry<int, User>> users = [];
+    List<User> users = [];
 
     for (final entry in Map.from(json["data"]["__U"]).entries) {
       try {
-        final userId = int.parse(entry.key);
-        final user = User.fromJson(entry.value);
-        users.add(MapEntry(userId, user));
+        users.add(User.fromJson(entry.value, int.parse(entry.key)));
       } on FormatException {} catch (e) {
         rethrow;
       }

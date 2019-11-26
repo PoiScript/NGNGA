@@ -7,12 +7,10 @@ import 'package:ngnga/utils/requests.dart';
 class UpvotePostAction extends ReduxAction<AppState> {
   final int topicId;
   final int postId;
-  final int postIndex;
 
   UpvotePostAction({
     @required this.topicId,
     @required this.postId,
-    @required this.postIndex,
   });
 
   @override
@@ -23,22 +21,15 @@ class UpvotePostAction extends ReduxAction<AppState> {
       topicId: topicId,
       postId: postId,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
       topicSnackBarEvt: Event(res.message),
-      topics: state.topics
+      posts: state.posts
         ..update(
-          topicId,
-          (topicState) => topicState.copy(
-            posts: List.from(topicState.posts.getRange(0, postIndex))
-              ..add(topicState.posts[postIndex].vote(res.value))
-              ..addAll(
-                topicState.posts
-                    .getRange(postIndex + 1, topicState.posts.length),
-              ),
-          ),
+          postId,
+          (post) => post.vote(res.value),
         ),
     );
   }

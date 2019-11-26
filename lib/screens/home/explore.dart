@@ -1,7 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-import 'package:ngnga/models/category.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -9,7 +8,7 @@ import 'package:ngnga/utils/categories.dart';
 import 'package:ngnga/widgets/category_row.dart';
 
 class Explore extends StatelessWidget {
-  final List<Category> pinned;
+  final List<int> pinned;
 
   Explore({
     @required this.pinned,
@@ -36,7 +35,7 @@ class Explore extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) => CategoryRowConnector(
-                category: pinned[index],
+                categoryId: pinned[index],
               ),
               childCount: pinned.length,
             ),
@@ -59,7 +58,7 @@ class Explore extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => CategoryRowConnector(
-                    category: group.categories[index],
+                    categoryId: group.categories[index].id,
                   ),
                   childCount: group.categories.length,
                 ),
@@ -87,7 +86,7 @@ class ExploreConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  List<Category> pinned;
+  List<int> pinned;
 
   ViewModel();
 

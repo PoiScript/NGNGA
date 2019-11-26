@@ -5,31 +5,25 @@ import 'package:ngnga/store/state.dart';
 
 import 'cookies_editor.dart';
 
-const enumToStringMap = const {
-  NgaDomain.nga178com: "nga.178.com",
-  NgaDomain.bbsngacn: "bbs.nga.cn",
-  NgaDomain.nagbbscom: "ngabbs.com",
-};
-
 class SettingsPage extends StatelessWidget {
-  final NgaDomain ngaDomain;
-  final String ngaUid;
-  final String ngaCid;
+  final String baseUrl;
+  final String uid;
+  final String cid;
 
-  final Function(NgaDomain) changeDomain;
+  final Function(String) changeBaseUrl;
   final Function({String uid, String cid}) changeCookies;
 
   SettingsPage({
-    @required this.ngaDomain,
-    @required this.ngaUid,
-    @required this.ngaCid,
+    @required this.baseUrl,
+    @required this.uid,
+    @required this.cid,
     @required this.changeCookies,
-    @required this.changeDomain,
-  })  : assert(ngaDomain != null),
-        assert(ngaUid != null),
-        assert(ngaCid != null),
+    @required this.changeBaseUrl,
+  })  : assert(baseUrl != null),
+        assert(uid != null),
+        assert(cid != null),
         assert(changeCookies != null),
-        assert(changeDomain != null);
+        assert(changeBaseUrl != null);
 
   @override
   Widget build(BuildContext context) {
@@ -104,13 +98,13 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             title: Text('Change domain'),
-            subtitle: Text(enumToStringMap[ngaDomain]),
+            subtitle: Text(baseUrl),
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayDomainDialog(context),
           ),
           ListTile(
             title: Text('Edit Cookies'),
-            subtitle: Text('Logged as user $ngaUid'),
+            subtitle: Text('Logged as user $uid'),
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayCookiesDialog(context),
           ),
@@ -172,30 +166,30 @@ class SettingsPage extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              RadioListTile(
+              RadioListTile<String>(
                 title: Text("bbs.nga.cn"),
-                groupValue: ngaDomain,
-                value: NgaDomain.bbsngacn,
+                groupValue: baseUrl,
+                value: "bbs.nga.cn",
                 onChanged: (domain) {
-                  changeDomain(domain);
+                  changeBaseUrl(domain);
                   Navigator.of(context).pop();
                 },
               ),
-              RadioListTile(
+              RadioListTile<String>(
                 title: Text("nga.178.com"),
-                groupValue: ngaDomain,
-                value: NgaDomain.nga178com,
+                groupValue: baseUrl,
+                value: "nga.178.com",
                 onChanged: (domain) {
-                  changeDomain(domain);
+                  changeBaseUrl(domain);
                   Navigator.of(context).pop();
                 },
               ),
-              RadioListTile(
+              RadioListTile<String>(
                 title: Text("ngabbs.com"),
-                groupValue: ngaDomain,
-                value: NgaDomain.nagbbscom,
+                groupValue: baseUrl,
+                value: "ngabbs.com",
                 onChanged: (domain) {
-                  changeDomain(domain);
+                  changeBaseUrl(domain);
                   Navigator.of(context).pop();
                 },
               ),
@@ -210,8 +204,8 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => CookiesEditor(
-        uid: ngaUid,
-        cid: ngaCid,
+        uid: uid,
+        cid: cid,
         submitChanges: changeCookies,
       ),
     );
@@ -224,41 +218,41 @@ class SettingsPageConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
       builder: (context, vm) => SettingsPage(
-        ngaDomain: vm.ngaDomain,
-        ngaUid: vm.ngaUid,
-        ngaCid: vm.ngaCid,
+        baseUrl: vm.baseUrl,
+        uid: vm.uid,
+        cid: vm.cid,
         changeCookies: vm.changeCookies,
-        changeDomain: vm.changeDomain,
+        changeBaseUrl: vm.changeDomain,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  NgaDomain ngaDomain;
-  String ngaUid;
-  String ngaCid;
+  String baseUrl;
+  String uid;
+  String cid;
 
-  Function(NgaDomain) changeDomain;
+  Function(String) changeDomain;
   Function({String uid, String cid}) changeCookies;
 
   ViewModel();
 
   ViewModel.build({
-    @required this.ngaDomain,
-    @required this.ngaUid,
-    @required this.ngaCid,
+    @required this.baseUrl,
+    @required this.uid,
+    @required this.cid,
     @required this.changeCookies,
     @required this.changeDomain,
-  }) : super(equals: [ngaDomain, ngaUid, ngaCid]);
+  }) : super(equals: [baseUrl, uid, cid]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      ngaDomain: state.settings.domain,
-      ngaUid: state.settings.uid,
-      ngaCid: state.settings.cid,
-      changeDomain: (domain) => store.dispatch(ChangeDomainAction(domain)),
+      baseUrl: state.settings.baseUrl,
+      uid: state.settings.uid,
+      cid: state.settings.cid,
+      changeDomain: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
       changeCookies: ({String uid, String cid}) =>
           store.dispatch(ChangeCookiesAction(uid: uid, cid: cid)),
     );

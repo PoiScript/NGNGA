@@ -6,15 +6,15 @@ import 'package:ngnga/store/state.dart';
 import 'state_persist.dart';
 
 class RemoveFromPinnedAction extends ReduxAction<AppState> {
-  final Category category;
+  final int categoryId;
 
-  RemoveFromPinnedAction(this.category);
+  RemoveFromPinnedAction(this.categoryId);
 
   @override
   Future<AppState> reduce() async {
     return state.copy(
       categorySnackBarEvt: Event("Removed"),
-      pinned: state.pinned..remove(category),
+      pinned: state.pinned..remove(categoryId),
     );
   }
 
@@ -22,15 +22,15 @@ class RemoveFromPinnedAction extends ReduxAction<AppState> {
 }
 
 class AddToPinnedAction extends ReduxAction<AppState> {
-  final Category category;
+  final int categoryId;
 
-  AddToPinnedAction(this.category);
+  AddToPinnedAction(this.categoryId);
 
   @override
   Future<AppState> reduce() async {
     return state.copy(
       categorySnackBarEvt: Event("Added"),
-      pinned: state.pinned..add(category),
+      pinned: state.pinned..add(categoryId),
     );
   }
 

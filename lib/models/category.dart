@@ -1,31 +1,40 @@
+import 'package:flutter/material.dart';
+
+const int _MASK_SUBCATEGORY = 32768;
+
 class Category {
   final int id;
   final String title;
   final bool isSubcategory;
 
   const Category({
-    this.id,
-    this.title,
+    @required this.id,
+    @required this.title,
     this.isSubcategory = false,
   })  : assert(id != null),
         assert(title != null),
         assert(isSubcategory != null);
 
-  Category.fromJson(Map<String, dynamic> json)
-      : id = json["id"],
-        title = json["title"],
-        isSubcategory = json["isSubcategory"];
+  factory Category.fromJson(Map<String, dynamic> json) {
+    if (json['topic_misc_var'] is Map) {
+      if (json['topic_misc_var']["3"] is int) {
+        return Category(
+          id: json['topic_misc_var']["3"],
+          title: json['subject'],
+          isSubcategory: false,
+        );
+      }
+    }
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "isSubcategory": isSubcategory,
-      };
+    if (json['type'] is int &&
+        json['type'] & _MASK_SUBCATEGORY == _MASK_SUBCATEGORY) {
+      return Category(
+        id: json['tid'],
+        title: json['subject'],
+        isSubcategory: true,
+      );
+    }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is Category && other.id == id;
-
-  @override
-  int get hashCode => id.hashCode ^ title.hashCode ^ isSubcategory.hashCode;
+    return null;
+  }
 }

@@ -4,66 +4,7 @@ import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/utils/requests.dart';
 
-import 'is_loading.dart';
 import '../state.dart';
-
-StreamSubscription streamSub;
-int subscribedTopic;
-
-class StartListeningNewReplyAction extends ReduxAction<AppState> {
-  final int topicId;
-
-  StartListeningNewReplyAction(this.topicId);
-
-  @override
-  Future<AppState> reduce() async {
-    if (subscribedTopic != topicId) {
-      if (streamSub != null) {
-        await streamSub.cancel();
-      }
-
-      print("Start listening");
-
-      streamSub = Stream.periodic(const Duration(seconds: 20))
-          .listen((_) => dispatch(_NewReplyAction(topicId)));
-      subscribedTopic = topicId;
-    }
-    return null;
-  }
-}
-
-class _NewReplyAction extends ReduxAction<AppState> {
-  final int topicId;
-
-  _NewReplyAction(this.topicId);
-
-  @override
-  Future<AppState> reduce() async {
-    final lastPage = state.topics[topicId].posts.last.index ~/ 20;
-    final maxPage = state.topics[topicId].topic.postsCount ~/ 20;
-
-    if (lastPage == maxPage) {
-      await dispatchFuture(FetchNextPostsAction(topicId));
-    }
-
-    return null;
-  }
-}
-
-class CancelListeningNewReplyAction extends ReduxAction<AppState> {
-  @override
-  Future<AppState> reduce() async {
-    subscribedTopic = null;
-    if (streamSub != null) {
-      await streamSub.cancel();
-      streamSub = null;
-    }
-
-    print("Cancel listening");
-
-    return null;
-  }
-}
 
 class FetchPreviousPostsAction extends ReduxAction<AppState> {
   final int topicId;
@@ -72,58 +13,60 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final firstPage = state.topics[topicId].posts.first.index ~/ 20;
+    int firstPage = state.topicStates[topicId].firstPage;
 
     if (firstPage == 0) {
-      final response = await fetchTopicPosts(
+      final res = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
         page: 0,
         cookie: state.cookie,
-        baseUrl: state.baseUrl,
+        baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
-        users: state.users..addEntries(response.users),
-        topics: state.topics
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        topicStates: state.topicStates
           ..update(
             topicId,
             (topicState) => topicState.copy(
-              topic: response.topic,
-              posts: List.of(response.posts)
-                ..addAll(
-                  topicState.posts
-                    ..removeWhere((post) => post.index ~/ 20 == 0),
-                ),
+              firstPage: 0,
+              lastPage: 0,
+              maxPage: res.maxPage,
+              postIds: List.of(res.posts.map((post) => post.id)),
             ),
           ),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
       );
     } else {
-      final response = await fetchTopicPosts(
+      final res = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
         page: firstPage - 1,
         cookie: state.cookie,
-        baseUrl: state.baseUrl,
+        baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
-        users: state.users..addEntries(response.users),
-        topics: state.topics
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        topicStates: state.topicStates
           ..update(
             topicId,
             (topicState) => topicState.copy(
-              topic: response.topic,
-              posts: List.of(response.posts)..addAll(topicState.posts),
+              maxPage: res.maxPage,
+              firstPage: firstPage - 1,
+              postIds: res.posts.map((post) => post.id).toList()
+                ..addAll(topicState.postIds),
             ),
           ),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
       );
     }
   }
-
-  void before() => dispatch(IsLoadingAction(true));
-
-  void after() => dispatch(IsLoadingAction(false));
 }
 
 class FetchNextPostsAction extends ReduxAction<AppState> {
@@ -133,60 +76,64 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final lastPage = state.topics[topicId].posts.last.index ~/ 20;
+    int lastPage = state.topicStates[topicId].lastPage;
+    int maxPage = state.topicStates[topicId].maxPage;
 
-    if (lastPage < state.topics[topicId].topic.postsCount ~/ 20) {
-      final response = await fetchTopicPosts(
+    if (lastPage < maxPage) {
+      final res = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
         page: lastPage + 1,
         cookie: state.cookie,
-        baseUrl: state.baseUrl,
+        baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
         lastUpdated: DateTime.now(),
-        users: state.users..addEntries(response.users),
-        topics: state.topics
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        topicStates: state.topicStates
           ..update(
             topicId,
             (topicState) => topicState.copy(
-              topic: response.topic,
-              posts: topicState.posts..addAll(response.posts),
+              lastPage: lastPage + 1,
+              maxPage: res.maxPage,
+              postIds: topicState.postIds..addAll(res.posts.map((p) => p.id)),
             ),
           ),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
       );
     } else {
-      final response = await fetchTopicPosts(
+      final res = await fetchTopicPosts(
         client: state.client,
         topicId: topicId,
         page: lastPage,
         cookie: state.cookie,
-        baseUrl: state.baseUrl,
+        baseUrl: state.settings.baseUrl,
       );
 
-      final firstIndex = response.posts.first.index;
+      List<int> postIds = res.posts.map((p) => p.id).toList();
 
       return state.copy(
         lastUpdated: DateTime.now(),
-        users: state.users..addEntries(response.users),
-        topics: state.topics
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        topicStates: state.topicStates
           ..update(
             topicId,
             (topicState) => topicState.copy(
-              topic: response.topic,
-              posts: topicState.posts
-                ..removeWhere((post) => post.index >= firstIndex)
-                ..addAll(response.posts),
+              maxPage: res.maxPage,
+              postIds: topicState.postIds
+                ..removeWhere((id) => postIds.contains(id))
+                ..addAll(postIds),
             ),
           ),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
       );
     }
   }
-
-  void before() => dispatch(IsLoadingAction(true));
-
-  void after() => dispatch(IsLoadingAction(false));
 }
 
 class FetchPostsAction extends ReduxAction<AppState> {
@@ -198,33 +145,30 @@ class FetchPostsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final response = await fetchTopicPosts(
+    final res = await fetchTopicPosts(
       client: state.client,
       topicId: topicId,
       page: pageIndex,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
       lastUpdated: DateTime.now(),
-      users: state.users..addEntries(response.users),
-      topics: state.topics
+      users: state.users
+        ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+      topicStates: state.topicStates
         ..update(
           topicId,
           (topicState) => topicState.copy(
-            topic: response.topic,
-            posts: List.from(response.posts),
-          ),
-          ifAbsent: () => TopicState(
-            topic: response.topic,
-            posts: List.from(response.posts),
+            firstPage: pageIndex,
+            lastPage: pageIndex,
+            maxPage: res.maxPage,
+            postIds: res.posts.map((posts) => posts.id).toList(),
           ),
         ),
+      posts: state.posts
+        ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
     );
   }
-
-  void before() => dispatch(IsLoadingAction(true));
-
-  void after() => dispatch(IsLoadingAction(false));
 }

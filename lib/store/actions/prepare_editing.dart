@@ -26,7 +26,7 @@ class PrepareEditingAction extends ReduxAction<AppState> {
       topicId: topicId,
       postId: postId,
       cookie: state.cookie,
-      baseUrl: state.baseUrl,
+      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(

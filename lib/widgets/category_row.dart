@@ -6,53 +6,62 @@ import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 class CategoryRow extends StatelessWidget {
-  final void Function(Category) navigateToCategory;
   final Category category;
+  final VoidCallback navigateToCategory;
 
   CategoryRow({
-    @required this.navigateToCategory,
     @required this.category,
-  });
+    @required this.navigateToCategory,
+  })  : assert(category != null),
+        assert(navigateToCategory != null);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(category.title),
       trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => navigateToCategory(category),
+      onTap: navigateToCategory,
     );
   }
 }
 
 class CategoryRowConnector extends StatelessWidget {
-  final Category category;
+  final int categoryId;
 
-  CategoryRowConnector({@required this.category});
+  CategoryRowConnector({@required this.categoryId});
 
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
+      model: ViewModel(categoryId),
       builder: (context, vm) => CategoryRow(
+        category: vm.category,
         navigateToCategory: vm.navigateToCategory,
-        category: category,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  void Function(Category) navigateToCategory;
+  final int categoryId;
 
-  ViewModel();
+  Category category;
+  VoidCallback navigateToCategory;
 
-  ViewModel.build({@required this.navigateToCategory});
+  ViewModel(this.categoryId);
+
+  ViewModel.build({
+    @required this.categoryId,
+    @required this.category,
+    @required this.navigateToCategory,
+  }) : super(equals: [categoryId, category]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      navigateToCategory: (category) =>
-          dispatch(NavigateToCategoryAction(category)),
+      categoryId: categoryId,
+      category: state.categories[categoryId],
+      navigateToCategory: () => dispatch(NavigateToCategoryAction(categoryId)),
     );
   }
 }
