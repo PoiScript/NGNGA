@@ -89,7 +89,6 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
       );
 
       return state.copy(
-        lastUpdated: DateTime.now(),
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -116,7 +115,6 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
       List<int> postIds = res.posts.map((p) => p.id).toList();
 
       return state.copy(
-        lastUpdated: DateTime.now(),
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -154,7 +152,6 @@ class FetchPostsAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      lastUpdated: DateTime.now(),
       users: state.users
         ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
       topicStates: state.topicStates

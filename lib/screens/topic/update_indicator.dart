@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,34 +10,59 @@ import 'package:ngnga/store/state.dart';
 final dateFormatter = DateFormat("HH:mm:ss");
 
 class UpdateIndicator extends StatefulWidget {
-  final DateTime lastUpdated;
-  final Future<void> Function() startListening;
-  final Future<void> Function() cancelListening;
+  final Future<void> Function() fetch;
 
   UpdateIndicator({
     Key key,
-    @required this.lastUpdated,
-    @required this.startListening,
-    @required this.cancelListening,
-  }) : super(key: key);
+    @required this.fetch,
+  })  : assert(fetch != null),
+        super(key: key);
 
   @override
   _UpdateIndicatorState createState() => _UpdateIndicatorState();
 }
 
 class _UpdateIndicatorState extends State<UpdateIndicator> {
-  bool isListening = true;
+  StreamSubscription _streamSub;
+  DateTime _lastUpdated = DateTime.now();
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    widget.startListening();
+    _startListening();
   }
 
   @override
   void dispose() {
     super.dispose();
-    if (isListening) widget.cancelListening();
+    _cancelListening();
+  }
+
+  _startListening() {
+    _streamSub = Stream.periodic(const Duration(seconds: 20)).listen((_) {
+      _fetch();
+    });
+
+    print("Start listening");
+  }
+
+  _fetch() async {
+    setState(() {
+      _isLoading = true;
+    });
+    await widget.fetch();
+    setState(() {
+      _lastUpdated = DateTime.now();
+      _isLoading = false;
+    });
+  }
+
+  _cancelListening() {
+    if (_streamSub != null) {
+      _streamSub.cancel();
+      print("Cancel listening");
+    }
   }
 
   @override
@@ -52,15 +79,16 @@ class _UpdateIndicatorState extends State<UpdateIndicator> {
               color: Theme.of(context).textTheme.caption.color,
             ),
             onPressed: () {
-              if (isListening) {
-                widget.cancelListening();
+              if (_streamSub != null) {
+                _cancelListening();
+                setState(() => _streamSub = null);
               } else {
-                widget.startListening();
+                _fetch();
+                _startListening();
               }
-              setState(() => isListening = !isListening);
             },
           ),
-          isListening
+          _streamSub != null
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,14 +97,20 @@ class _UpdateIndicatorState extends State<UpdateIndicator> {
                       "Auto-update enabled.",
                       style: Theme.of(context).textTheme.caption,
                     ),
-                    StreamBuilder(
-                      initialData: DateTime.now(),
-                      stream: Stream.periodic(const Duration(seconds: 1)),
-                      builder: (context, snapshot) => Text(
-                        "Last Updated: ${dateFormatter.format(widget.lastUpdated)} (${DateTime.now().difference(widget.lastUpdated).inSeconds}s ago)",
+                    if (_isLoading)
+                      Text(
+                        "Loading...",
                         style: Theme.of(context).textTheme.caption,
                       ),
-                    ),
+                    if (!_isLoading)
+                      StreamBuilder(
+                        initialData: DateTime.now(),
+                        stream: Stream.periodic(const Duration(seconds: 1)),
+                        builder: (context, snapshot) => Text(
+                          "Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)",
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                      ),
                     Text(
                       "Update Interval: 20s",
                       style: Theme.of(context).textTheme.caption,
@@ -105,9 +139,7 @@ class UpdateIndicatorConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(topicId),
       builder: (context, vm) => UpdateIndicator(
-        lastUpdated: vm.lastUpdated,
-        startListening: vm.startListening,
-        cancelListening: vm.cancelListening,
+        fetch: vm.fetch,
       ),
     );
   }
@@ -116,30 +148,20 @@ class UpdateIndicatorConnector extends StatelessWidget {
 class ViewModel extends BaseModel<AppState> {
   final topicId;
 
-  DateTime lastUpdated;
-  Future<void> Function() startListening;
-  Future<void> Function() cancelListening;
+  Future<void> Function() fetch;
 
   ViewModel(this.topicId);
 
   ViewModel.build({
     @required this.topicId,
-    @required this.lastUpdated,
-    @required this.startListening,
-    @required this.cancelListening,
-  }) : super(equals: [lastUpdated]);
+    @required this.fetch,
+  });
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
       topicId: topicId,
-      lastUpdated: state.lastUpdated,
-      startListening: () => dispatchFuture(
-        StartListeningNewReplyAction(topicId),
-      ),
-      cancelListening: () => dispatchFuture(
-        CancelListeningNewReplyAction(),
-      ),
+      fetch: () => dispatchFuture(FetchNextPostsAction(topicId)),
     );
   }
 }

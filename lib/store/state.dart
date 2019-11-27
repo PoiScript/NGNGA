@@ -158,8 +158,6 @@ class AppState {
   final Map<int, TopicState> topicStates;
   final CategoryState favoriteState;
 
-  final DateTime lastUpdated;
-
   final Event<Option<Post>> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
   final Event<String> topicSnackBarEvt;
@@ -176,7 +174,6 @@ class AppState {
     @required this.categories,
     @required this.topicStates,
     @required this.categoryStates,
-    @required this.lastUpdated,
     @required this.fetchReplyEvt,
     @required this.setEditingEvt,
     @required this.topicSnackBarEvt,
@@ -203,7 +200,6 @@ class AppState {
     Map<int, Category> categories,
     Map<int, CategoryState> categoryStates,
     Map<int, TopicState> topicStates,
-    DateTime lastUpdated,
     Event<Option<Post>> fetchReplyEvt,
     Event<Editing> setEditing,
     Event<String> topicSnackBarEvt,
@@ -218,7 +214,6 @@ class AppState {
       topics: topics ?? this.topics,
       users: users ?? this.users,
       posts: posts ?? this.posts,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
       fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
       setEditingEvt: setEditing ?? this.setEditingEvt,
       topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
@@ -243,7 +238,6 @@ class AppState {
       pinned: List(),
       categoryStates: Map(),
       topicStates: Map(),
-      lastUpdated: DateTime.now(),
       favoriteState: CategoryState(
         lastPage: 0,
         topicsCount: 0,
