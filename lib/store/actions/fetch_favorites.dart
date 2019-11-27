@@ -11,7 +11,7 @@ class FetchFavoritesAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     final res = await fetchFavorTopics(
       client: state.client,
-      cookie: state.cookie,
+      cookie: state.settings.cookie,
       baseUrl: state.settings.baseUrl,
       page: 0,
     );

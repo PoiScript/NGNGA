@@ -59,6 +59,8 @@ class SettingsState {
       primaryColor: primaryColor ?? this.primaryColor,
     );
   }
+
+  String get cookie => "ngaPassportUid=$uid;ngaPassportCid=$cid;";
 }
 
 class CategoryState {
@@ -249,7 +251,4 @@ class AppState {
       topicSnackBarEvt: Event.spent(),
     );
   }
-
-  String get cookie =>
-      "ngaPassportUid=${settings.uid};ngaPassportCid=${settings.cid};";
 }

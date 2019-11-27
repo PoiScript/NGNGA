@@ -20,11 +20,12 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: 0,
-        cookie: state.cookie,
+        cookie: state.settings.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
+        topics: state.topics..[topicId] = res.topic,
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -45,11 +46,12 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: firstPage - 1,
-        cookie: state.cookie,
+        cookie: state.settings.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
+        topics: state.topics..[topicId] = res.topic,
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -84,11 +86,12 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage + 1,
-        cookie: state.cookie,
+        cookie: state.settings.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
       return state.copy(
+        topics: state.topics..[topicId] = res.topic,
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -108,13 +111,14 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage,
-        cookie: state.cookie,
+        cookie: state.settings.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
       List<int> postIds = res.posts.map((p) => p.id).toList();
 
       return state.copy(
+        topics: state.topics..[topicId] = res.topic,
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         topicStates: state.topicStates
@@ -147,11 +151,12 @@ class FetchPostsAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       page: pageIndex,
-      cookie: state.cookie,
+      cookie: state.settings.cookie,
       baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
+      topics: state.topics..[topicId] = res.topic,
       users: state.users
         ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
       topicStates: state.topicStates

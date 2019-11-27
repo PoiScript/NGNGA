@@ -28,14 +28,26 @@ class FetchReplyAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       postId: postId,
-      cookie: state.cookie,
+      cookie: state.settings.cookie,
       baseUrl: state.settings.baseUrl,
     );
 
-    return state.copy(
-      fetchReplyEvt: Event(Option(res.post)),
-      users: state.users
-        ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
-    );
+    if (res.posts.isEmpty) {
+      return state.copy(
+        topics: state.topics..[topicId] = res.topic,
+        fetchReplyEvt: Event(Option(null)),
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+      );
+    } else {
+      return state.copy(
+        topics: state.topics..[topicId] = res.topic,
+        fetchReplyEvt: Event(Option(res.posts.first)),
+        users: state.users
+          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+      );
+    }
   }
 }
