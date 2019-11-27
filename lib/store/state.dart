@@ -1,5 +1,5 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Notification;
 import 'package:http/http.dart';
 
 import 'package:ngnga/models/category.dart';
@@ -7,6 +7,7 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/categories.dart';
+import 'package:ngnga/utils/requests.dart';
 
 enum BackgroundColor {
   white,
@@ -151,6 +152,8 @@ class AppState {
 
   final List<int> pinned;
 
+  final List<Notification> notifications;
+
   final Map<int, User> users;
   final Map<int, Post> posts;
   final Map<int, Topic> topics;
@@ -169,6 +172,7 @@ class AppState {
   AppState._({
     @required this.settings,
     @required this.favoriteState,
+    @required this.notifications,
     @required this.pinned,
     @required this.users,
     @required this.posts,
@@ -181,6 +185,7 @@ class AppState {
     @required this.topicSnackBarEvt,
   })  : assert(categoryStates != null),
         assert(settings != null),
+        assert(notifications != null),
         assert(favoriteState != null),
         assert(pinned != null),
         assert(users != null),
@@ -196,6 +201,7 @@ class AppState {
     SettingsState settings,
     CategoryState favoriteState,
     List<int> pinned,
+    List<Notification> notifications,
     Map<int, Post> posts,
     Map<int, User> users,
     Map<int, Topic> topics,
@@ -209,6 +215,7 @@ class AppState {
     return AppState._(
       settings: settings ?? this.settings,
       pinned: pinned ?? this.pinned,
+      notifications: notifications ?? this.notifications,
       favoriteState: favoriteState ?? this.favoriteState,
       categoryStates: categoryStates ?? this.categoryStates,
       topicStates: topicStates ?? this.topicStates,
@@ -237,6 +244,7 @@ class AppState {
       topics: Map(),
       categories: categories,
       settings: SettingsState.empty(),
+      notifications: List(),
       pinned: List(),
       categoryStates: Map(),
       topicStates: Map(),

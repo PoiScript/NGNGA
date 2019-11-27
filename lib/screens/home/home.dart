@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           FavoritesConnector(),
           ExploreConnector(),
-          Inbox(),
+          InboxConnector(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
