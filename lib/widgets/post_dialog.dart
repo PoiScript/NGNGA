@@ -57,21 +57,24 @@ class _PostDialogState extends State<PostDialog> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> children = [];
+
+    if (isLoading) {
+      children.add(Center(child: CircularProgressIndicator()));
+      children.add(Divider());
+    }
+
+    for (var post in posts.reversed) {
+      children.add(_buildContent(post));
+      children.add(Divider());
+    }
+
+    if (children.isNotEmpty) children.removeLast();
+
     return SimpleDialog(
-      contentPadding: EdgeInsets.all(8.0),
+      contentPadding: EdgeInsets.all(16.0),
       children: <Widget>[
-        ListView.separated(
-          reverse: true,
-          shrinkWrap: true,
-          itemCount: isLoading ? posts.length + 1 : posts.length,
-          separatorBuilder: (context, index) => Divider(height: 0.0),
-          itemBuilder: (context, index) => Container(
-            padding: EdgeInsets.all(8.0),
-            child: index == posts.length
-                ? Center(child: CircularProgressIndicator())
-                : _buildContent(posts[index]),
-          ),
-        ),
+        Column(children: children),
       ],
     );
   }
@@ -120,19 +123,15 @@ class _PostDialogState extends State<PostDialog> {
               builder: (context) => UserDialog(userId),
             );
           },
-          openPost: _openPost,
+          openPost: (int topicId, int page, int postId) {
+            if (!isLoading && posts.where((p) => p.id == postId).isEmpty) {
+              widget.fetchReply(topicId, postId);
+              setState(() => isLoading = true);
+            }
+          },
         ),
       ],
     );
-  }
-
-  _openPost(int topicId, int page, int postId) {
-    if (!isLoading && posts.where((p) => p.id == postId).isEmpty) {
-      widget.fetchReply(topicId, postId);
-      setState(() {
-        isLoading = true;
-      });
-    }
   }
 }
 
