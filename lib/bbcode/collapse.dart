@@ -55,16 +55,15 @@ class _CollapseState extends State<Collapse>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           GestureDetector(
-            child: Container(
-              height: 24.0,
-              child: Row(
-                children: <Widget>[
-                  _expanded
-                      ? Icon(Icons.arrow_drop_down)
-                      : Icon(Icons.arrow_right),
-                  Expanded(child: Text("${widget.description}..")),
-                ],
-              ),
+            child: Row(
+              children: <Widget>[
+                _expanded
+                    ? Icon(Icons.arrow_drop_down)
+                    : Icon(Icons.arrow_right),
+                Expanded(
+                  child: Text("${widget.description}..."),
+                ),
+              ],
             ),
             onTap: () {
               switch (_controller.status) {
