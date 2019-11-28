@@ -11,7 +11,7 @@ class FetchNotificationsAction extends ReduxAction<AppState> {
     final res = await fetchNotifications(
       client: state.client,
       baseUrl: state.settings.baseUrl,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
     );
 
     return state.copy(

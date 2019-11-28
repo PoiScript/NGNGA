@@ -20,7 +20,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: 0,
-        cookie: state.settings.cookie,
+        cookie: state.userState.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
@@ -48,7 +48,7 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: firstPage - 1,
-        cookie: state.settings.cookie,
+        cookie: state.userState.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
@@ -90,7 +90,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage + 1,
-        cookie: state.settings.cookie,
+        cookie: state.userState.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
@@ -118,7 +118,7 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         client: state.client,
         topicId: topicId,
         page: lastPage,
-        cookie: state.settings.cookie,
+        cookie: state.userState.cookie,
         baseUrl: state.settings.baseUrl,
       );
 
@@ -161,7 +161,7 @@ class FetchPostsAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       page: pageIndex,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

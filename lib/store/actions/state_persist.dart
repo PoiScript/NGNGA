@@ -15,8 +15,7 @@ class SaveState extends ReduxAction<AppState> {
     File file = File('${directory.path}/state.json');
 
     String json = jsonEncode({
-      "uid": state.settings.uid,
-      "cid": state.settings.cid,
+      "user": state.userState.toJson(),
       "baseUrl": state.settings.baseUrl,
       "pinned": state.pinned
           .map((id) => state.categories[id])
@@ -58,10 +57,19 @@ class LoadState extends ReduxAction<AppState> {
         ),
       );
 
+      UserState userState;
+
+      if (json['user'] is Map && json['user']['isLogged'] is bool) {
+        if (json['user']['isLogged']) {
+          userState = Logged.fromJson(json['user']);
+        } else {
+          userState = Guest.fromJson(json['user']);
+        }
+      }
+
       return state.copy(
+        userState: userState,
         settings: state.settings.copy(
-          uid: json["uid"],
-          cid: json["cid"],
           baseUrl: json["baseUrl"],
         ),
         pinned: state.pinned..addAll(categories.map((category) => category.id)),

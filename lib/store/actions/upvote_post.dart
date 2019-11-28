@@ -20,7 +20,7 @@ class UpvotePostAction extends ReduxAction<AppState> {
       value: 1,
       topicId: topicId,
       postId: postId,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

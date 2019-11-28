@@ -41,8 +41,7 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: _routes,
         navigatorKey: _navigatorKey,
         theme: _theme,
-        // use "welcome" instead of "/welcome" to make sure it's a top-level route
-        initialRoute: store.state.settings.uid == null ? "welcome" : "/",
+        initialRoute: store.state.userState == null ? "welcome" : "/",
       ),
     );
   }
@@ -77,8 +76,9 @@ class MyApp extends StatelessWidget {
           postId: arguments["postId"],
         );
         break;
+      // use "welcome" instead of "/welcome" to make sure it's a top-level route
       case "welcome":
-        screen = WelcomePage();
+        screen = WelcomePageConnector();
         break;
       default:
         return null;

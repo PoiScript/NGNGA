@@ -555,7 +555,7 @@ class ViewModel extends BaseModel<AppState> {
       postId: postId,
       topicId: topicId,
       userId: userId,
-      sentByMe: userId.toString() == state.settings.uid,
+      sentByMe: state.userState.isMe(userId),
       upvote: () => dispatchFuture(
         UpvotePostAction(
           topicId: topicId,

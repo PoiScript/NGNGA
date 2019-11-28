@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-class CookiesEditor extends StatefulWidget {
-  final String uid;
-  final String cid;
+import 'package:ngnga/store/state.dart';
 
-  final Function({String uid, String cid}) submitChanges;
+class CookiesEditor extends StatefulWidget {
+  final Logged user;
+
+  final Function({int uid, String cid}) submitChanges;
 
   CookiesEditor({
-    @required this.uid,
-    @required this.cid,
+    @required this.user,
     @required this.submitChanges,
-  });
+  })  : assert(user != null),
+        assert(submitChanges != null);
 
   @override
   _CookiesEditorState createState() => _CookiesEditorState();
@@ -23,8 +24,8 @@ class _CookiesEditorState extends State<CookiesEditor> {
   @override
   void initState() {
     super.initState();
-    _uidController = TextEditingController(text: widget.uid);
-    _cidController = TextEditingController(text: widget.cid);
+    _uidController = TextEditingController(text: widget.user.uid.toString());
+    _cidController = TextEditingController(text: widget.user.cid);
   }
 
   @override
@@ -38,6 +39,7 @@ class _CookiesEditorState extends State<CookiesEditor> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           TextField(
+            keyboardType: TextInputType.number,
             controller: _uidController,
             decoration: InputDecoration(
               labelText: 'ngaPassportUid',
@@ -62,7 +64,7 @@ class _CookiesEditorState extends State<CookiesEditor> {
           child: Text('SUBMIT'),
           onPressed: () {
             widget.submitChanges(
-              uid: _uidController.text,
+              uid: int.tryParse(_uidController.text),
               cid: _cidController.text,
             );
             Navigator.of(context).pop();

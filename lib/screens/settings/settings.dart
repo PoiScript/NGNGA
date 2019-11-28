@@ -7,21 +7,18 @@ import 'cookies_editor.dart';
 
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
-  final String uid;
-  final String cid;
+  final UserState user;
 
   final Function(String) changeBaseUrl;
-  final Function({String uid, String cid}) changeCookies;
+  final Function({int uid, String cid}) changeCookies;
 
   SettingsPage({
     @required this.baseUrl,
-    @required this.uid,
-    @required this.cid,
+    @required this.user,
     @required this.changeCookies,
     @required this.changeBaseUrl,
   })  : assert(baseUrl != null),
-        assert(uid != null),
-        assert(cid != null),
+        assert(user != null),
         assert(changeCookies != null),
         assert(changeBaseUrl != null);
 
@@ -102,12 +99,13 @@ class SettingsPage extends StatelessWidget {
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayDomainDialog(context),
           ),
-          ListTile(
-            title: Text('Edit Cookies'),
-            subtitle: Text('Logged as user $uid'),
-            trailing: Icon(Icons.keyboard_arrow_right),
-            onTap: () => _displayCookiesDialog(context),
-          ),
+          if (user is Logged)
+            ListTile(
+              title: Text('Edit Cookies'),
+              subtitle: Text('Logged as user ${(user as Logged).uid}'),
+              trailing: Icon(Icons.keyboard_arrow_right),
+              onTap: () => _displayCookiesDialog(context),
+            ),
           // ListTile(
           //   title: Text('Device Info'),
           //   trailing: Icon(Icons.keyboard_arrow_right),
@@ -204,8 +202,7 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => CookiesEditor(
-        uid: uid,
-        cid: cid,
+        user: user,
         submitChanges: changeCookies,
       ),
     );
@@ -219,8 +216,7 @@ class SettingsPageConnector extends StatelessWidget {
       model: ViewModel(),
       builder: (context, vm) => SettingsPage(
         baseUrl: vm.baseUrl,
-        uid: vm.uid,
-        cid: vm.cid,
+        user: vm.user,
         changeCookies: vm.changeCookies,
         changeBaseUrl: vm.changeDomain,
       ),
@@ -230,30 +226,27 @@ class SettingsPageConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   String baseUrl;
-  String uid;
-  String cid;
+  UserState user;
 
   Function(String) changeDomain;
-  Function({String uid, String cid}) changeCookies;
+  Function({int uid, String cid}) changeCookies;
 
   ViewModel();
 
   ViewModel.build({
     @required this.baseUrl,
-    @required this.uid,
-    @required this.cid,
+    @required this.user,
     @required this.changeCookies,
     @required this.changeDomain,
-  }) : super(equals: [baseUrl, uid, cid]);
+  }) : super(equals: [baseUrl, user]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
       baseUrl: state.settings.baseUrl,
-      uid: state.settings.uid,
-      cid: state.settings.cid,
+      user: state.userState,
       changeDomain: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
-      changeCookies: ({String uid, String cid}) =>
+      changeCookies: ({int uid, String cid}) =>
           store.dispatch(ChangeCookiesAction(uid: uid, cid: cid)),
     );
   }

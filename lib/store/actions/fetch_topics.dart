@@ -18,7 +18,7 @@ class FetchTopicsAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       page: 0,
       isSubcategory: state.categories[categoryId].isSubcategory,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 
@@ -55,7 +55,7 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       page: lastPage + 1,
       isSubcategory: state.categories[categoryId].isSubcategory,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

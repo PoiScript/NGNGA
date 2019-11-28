@@ -21,7 +21,7 @@ class ChangeBaseUrlAction extends ReduxAction<AppState> {
 }
 
 class ChangeCookiesAction extends ReduxAction<AppState> {
-  final String uid;
+  final int uid;
   final String cid;
 
   ChangeCookiesAction({
@@ -32,10 +32,7 @@ class ChangeCookiesAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      settings: state.settings.copy(
-        uid: uid,
-        cid: cid,
-      ),
+      userState: Logged(uid, cid),
     );
   }
 

@@ -9,6 +9,51 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/categories.dart';
 import 'package:ngnga/utils/requests.dart';
 
+abstract class UserState {
+  bool isLogged;
+  String get cookie;
+
+  bool isMe(int userId);
+
+  Map<String, dynamic> toJson();
+}
+
+class Logged extends UserState {
+  final int uid;
+  final String cid;
+
+  bool isLogged = true;
+
+  Logged(this.uid, this.cid);
+
+  String get cookie => "ngaPassportUid=$uid;ngaPassportCid=$cid;";
+
+  bool isMe(int userId) => userId == this.uid;
+
+  Map<String, dynamic> toJson() => {'isLogged': true, 'uid': uid, 'cid': cid};
+
+  Logged.fromJson(Map<String, dynamic> json)
+      : cid = json['cid'],
+        uid = json['uid'];
+}
+
+class Guest extends UserState {
+  final String uid;
+
+  bool isLogged = false;
+
+  Guest(this.uid);
+
+  String get cookie =>
+      "ngaPassportUid=$uid;guestJs=${DateTime.now().millisecondsSinceEpoch ~/ 1000};";
+
+  bool isMe(int userId) => false;
+
+  Map<String, dynamic> toJson() => {'isLogged': false, 'uid': uid};
+
+  Guest.fromJson(Map<String, dynamic> json) : uid = json['uid'];
+}
+
 enum BackgroundColor {
   white,
   black,
@@ -23,12 +68,8 @@ class SettingsState {
   final String baseUrl;
   final BackgroundColor backgroundColor;
   final PrimaryColor primaryColor;
-  final String uid;
-  final String cid;
 
   SettingsState({
-    @required this.uid,
-    @required this.cid,
     @required this.baseUrl,
     @required this.backgroundColor,
     @required this.primaryColor,
@@ -38,8 +79,6 @@ class SettingsState {
 
   SettingsState.empty()
       : this(
-          uid: null,
-          cid: null,
           baseUrl: "nga.178.com",
           backgroundColor: BackgroundColor.white,
           primaryColor: PrimaryColor.red,
@@ -49,19 +88,13 @@ class SettingsState {
     baseUrl,
     backgroundColor,
     primaryColor,
-    uid,
-    cid,
   }) {
     return SettingsState(
-      uid: uid ?? this.uid,
-      cid: cid ?? this.cid,
       baseUrl: baseUrl ?? this.baseUrl,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       primaryColor: primaryColor ?? this.primaryColor,
     );
   }
-
-  String get cookie => "ngaPassportUid=$uid;ngaPassportCid=$cid;";
 }
 
 class CategoryState {
@@ -149,6 +182,7 @@ class Option<T> {
 
 class AppState {
   final SettingsState settings;
+  final UserState userState;
 
   final List<int> pinned;
 
@@ -170,6 +204,7 @@ class AppState {
   final Client client = Client();
 
   AppState._({
+    @required this.userState,
     @required this.settings,
     @required this.favoriteState,
     @required this.notifications,
@@ -198,6 +233,7 @@ class AppState {
         assert(topicSnackBarEvt != null);
 
   AppState copy({
+    UserState userState,
     SettingsState settings,
     CategoryState favoriteState,
     List<int> pinned,
@@ -213,6 +249,7 @@ class AppState {
     Event<String> topicSnackBarEvt,
   }) {
     return AppState._(
+      userState: userState ?? this.userState,
       settings: settings ?? this.settings,
       pinned: pinned ?? this.pinned,
       notifications: notifications ?? this.notifications,
@@ -239,6 +276,7 @@ class AppState {
           .map((category) => MapEntry(category.id, category)));
 
     return AppState._(
+      userState: null,
       users: Map(),
       posts: Map(),
       topics: Map(),

@@ -17,7 +17,7 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
     await removeFromFavorites(
       client: state.client,
       topicId: topicId,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

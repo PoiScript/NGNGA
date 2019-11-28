@@ -16,7 +16,7 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     await addToFavorites(
       client: state.client,
-      cookie: state.settings.cookie,
+      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
       topicId: topicId,
     );
