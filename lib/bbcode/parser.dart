@@ -168,6 +168,7 @@ List<Tag> parseBBCode(String raw) {
 
     spans.add(_TagSpan(
       Reply(
+        postId: 0,
         topicId: int.parse(match[1]),
         userId: int.parse(match[2]),
         username: match[3],

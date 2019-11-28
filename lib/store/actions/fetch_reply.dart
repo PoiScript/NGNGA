@@ -18,6 +18,12 @@ class FetchReplyAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
+    if (postId == 0 && state.posts.containsKey(2 ^ 32 - topicId)) {
+      return state.copy(
+        fetchReplyEvt: Event(Option(state.posts[2 ^ 32 - topicId])),
+      );
+    }
+
     if (state.posts.containsKey(postId)) {
       return state.copy(
         fetchReplyEvt: Event(Option(state.posts[postId])),
@@ -46,7 +52,8 @@ class FetchReplyAction extends ReduxAction<AppState> {
         users: state.users
           ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+          ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - topicId : post.id, post))),
       );
     }
   }

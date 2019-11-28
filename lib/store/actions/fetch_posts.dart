@@ -35,11 +35,13 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
               firstPage: 0,
               lastPage: 0,
               maxPage: res.maxPage,
-              postIds: List.of(res.posts.map((post) => post.id)),
+              postIds: List.of(res.posts.map(
+                  (post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id)),
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+          ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     } else {
       final res = await fetchTopicPosts(
@@ -60,12 +62,14 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
             (topicState) => topicState.copy(
               maxPage: res.maxPage,
               firstPage: firstPage - 1,
-              postIds: res.posts.map((post) => post.id).toList()
+              postIds: List.of(res.posts.map(
+                  (post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id))
                 ..addAll(topicState.postIds),
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+          ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     }
   }
@@ -100,11 +104,14 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
             (topicState) => topicState.copy(
               lastPage: lastPage + 1,
               maxPage: res.maxPage,
-              postIds: topicState.postIds..addAll(res.posts.map((p) => p.id)),
+              postIds: topicState.postIds
+                ..addAll(res.posts.map(
+                    (post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id)),
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+          ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     } else {
       final res = await fetchTopicPosts(
@@ -115,7 +122,9 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
         baseUrl: state.settings.baseUrl,
       );
 
-      List<int> postIds = res.posts.map((p) => p.id).toList();
+      List<int> postIds = res.posts
+          .map((post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id)
+          .toList();
 
       return state.copy(
         topics: state.topics..[topicId] = res.topic,
@@ -132,7 +141,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+          ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     }
   }
@@ -166,11 +176,13 @@ class FetchPostsAction extends ReduxAction<AppState> {
             firstPage: pageIndex,
             lastPage: pageIndex,
             maxPage: res.maxPage,
-            postIds: res.posts.map((posts) => posts.id).toList(),
+            postIds: List.of(res.posts
+                .map((post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id)),
           ),
         ),
       posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post))),
+        ..addEntries(res.posts.map((post) =>
+            MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
     );
   }
 }
