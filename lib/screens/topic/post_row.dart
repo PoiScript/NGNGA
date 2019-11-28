@@ -49,38 +49,17 @@ class _PostRowState extends State<PostRow> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> children;
-
-    if (widget.post.isComment) {
-      children = [
-        Container(
-          margin: EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            children: [
-              _buildAvatar(),
-              Container(width: 8.0),
-              _buildUsername(),
-            ],
-          ),
-        ),
-        if (widget.post.subject.isNotEmpty && widget.post.index != 0)
-          _buildSubject(),
-      ];
-    } else {
-      children = [
-        _buildHeader(),
-        if (widget.post.subject.isNotEmpty && widget.post.index != 0)
-          _buildSubject(),
-        _buildContent(),
-        _buildFooter(),
-      ];
-    }
-
     return Padding(
       padding: EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
+        children: [
+          _buildHeader(),
+          if (widget.post.subject.isNotEmpty && widget.post.index != 0)
+            _buildSubject(),
+          _buildContent(),
+          _buildFooter(),
+        ],
       ),
     );
   }
@@ -153,36 +132,43 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildUsername() {
-    return widget.user.id > 0
-        ? Text(
-            widget.user.username,
-            style: Theme.of(context).textTheme.subhead,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          )
-        : Text(
+    return Row(
+      children: <Widget>[
+        if (widget.user.id > 0)
+          Expanded(
+            child: Text(
+              widget.user.username,
+              style: Theme.of(context).textTheme.subhead,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        if (widget.user.id == 0)
+          Text(
             "#ANONYMOUS#",
             style: Theme.of(context)
                 .textTheme
                 .subhead
                 .copyWith(color: Colors.grey),
-          );
+          ),
+        if (widget.post.commentTo != null)
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: InkResponse(
+              child: Icon(
+                Icons.comment,
+                size: 16.0,
+                color: Color.fromARGB(255, 144, 144, 144),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildMetaRow() {
     return Row(
       children: [
-        // attachments icon
-        if (widget.post.attachments.isNotEmpty)
-          Icon(Icons.attach_file, color: Colors.grey, size: 16),
-        if (widget.post.attachments.length > 1)
-          Text(
-            "${widget.post.attachments.length}",
-            style: Theme.of(context).textTheme.caption,
-          ),
-        if (widget.post.attachments.isNotEmpty)
-          Container(width: 4),
-
         // edit icon
         if (widget.post.editedAt != null)
           Icon(Icons.edit, color: Colors.grey, size: 16),
@@ -242,21 +228,6 @@ class _PostRowState extends State<PostRow> {
           subtitle: Text(dateFormatter.format(widget.post.editedAt)),
         ),
       if (widget.post.vendor != null) _buildVendorListTile(),
-      if (widget.post.attachments.isNotEmpty)
-        ListTile(
-          dense: true,
-          leading: Icon(Icons.attach_file),
-          title: Text("共 ${widget.post.attachments.length} 张附件"),
-          trailing: Icon(Icons.keyboard_arrow_right),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AttachViewer(widget.post.attachments),
-              ),
-            );
-          },
-        ),
     ];
 
     return ListView.separated(
@@ -433,6 +404,55 @@ class _PostRowState extends State<PostRow> {
   Widget _buildFooter() {
     return Row(
       children: <Widget>[
+        // attachments icon
+        if (widget.post.attachments.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: InkResponse(
+              child: Icon(
+                Icons.attach_file,
+                size: 16.0,
+                color: Color.fromARGB(255, 144, 144, 144),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AttachViewer(widget.post.attachments),
+                  ),
+                );
+              },
+            ),
+          ),
+        if (widget.post.attachments.length > 1)
+          Text(
+            "${widget.post.attachments.length}",
+            style: Theme.of(context).textTheme.caption,
+          ),
+        if (widget.post.commentIds.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: InkResponse(
+              child: Icon(
+                Icons.comment,
+                size: 16,
+                color: Color.fromARGB(255, 144, 144, 144),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AttachViewer(widget.post.attachments),
+                  ),
+                );
+              },
+            ),
+          ),
+        if (widget.post.commentIds.length > 1)
+          Text(
+            "${widget.post.commentIds.length}",
+            style: Theme.of(context).textTheme.caption,
+          ),
         const Spacer(),
         Padding(
           padding: EdgeInsets.all(8.0),
@@ -445,9 +465,9 @@ class _PostRowState extends State<PostRow> {
             onTap: () => widget.upvote(),
           ),
         ),
-        if (widget.post.upVote > 0)
+        if (widget.post.vote > 0)
           Text(
-            widget.post.upVote.toString(),
+            widget.post.vote.toString(),
             style: Theme.of(context).textTheme.caption,
           ),
         Padding(

@@ -215,7 +215,10 @@ class TopicPageConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(topicId),
-      onInit: (store) => store.dispatch(FetchPostsAction(topicId, pageIndex)),
+      onInit: (store) => store.dispatch(FetchPostsAction(
+        topicId: topicId,
+        pageIndex: pageIndex,
+      )),
       builder: (context, vm) => TopicPage(
         topic: vm.topic,
         posts: vm.posts,
@@ -274,7 +277,9 @@ class ViewModel extends BaseModel<AppState> {
       reachMaxPage: topicState.lastPage == topicState.maxPage,
       topic: state.topics[topicId],
       snackBarEvt: state.topicSnackBarEvt,
-      onRefresh: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
+      onRefresh: () => topicState.firstPage == 0
+          ? dispatchFuture(FetchPostsAction(topicId: topicId, pageIndex: 0))
+          : dispatchFuture(FetchPreviousPostsAction(topicId)),
       onLoad: () => dispatchFuture(FetchNextPostsAction(topicId)),
     );
   }

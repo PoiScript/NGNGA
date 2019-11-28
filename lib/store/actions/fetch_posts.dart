@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/material.dart';
 
 import 'package:ngnga/utils/requests.dart';
 
@@ -15,63 +16,37 @@ class FetchPreviousPostsAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     int firstPage = state.topicStates[topicId].firstPage;
 
-    if (firstPage == 0) {
-      final res = await fetchTopicPosts(
-        client: state.client,
-        topicId: topicId,
-        page: 0,
-        cookie: state.userState.cookie,
-        baseUrl: state.settings.baseUrl,
-      );
+    assert(firstPage != 0);
 
-      return state.copy(
-        topics: state.topics..[topicId] = res.topic,
-        users: state.users
-          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
-        topicStates: state.topicStates
-          ..update(
-            topicId,
-            (topicState) => topicState.copy(
-              firstPage: 0,
-              lastPage: 0,
-              maxPage: res.maxPage,
-              postIds: List.of(res.posts.map(
-                  (post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id)),
-            ),
-          ),
-        posts: state.posts
-          ..addEntries(res.posts.map((post) =>
-              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
-      );
-    } else {
-      final res = await fetchTopicPosts(
-        client: state.client,
-        topicId: topicId,
-        page: firstPage - 1,
-        cookie: state.userState.cookie,
-        baseUrl: state.settings.baseUrl,
-      );
+    final res = await fetchTopicPosts(
+      client: state.client,
+      topicId: topicId,
+      page: firstPage - 1,
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
+    );
 
-      return state.copy(
-        topics: state.topics..[topicId] = res.topic,
-        users: state.users
-          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
-        topicStates: state.topicStates
-          ..update(
-            topicId,
-            (topicState) => topicState.copy(
-              maxPage: res.maxPage,
-              firstPage: firstPage - 1,
-              postIds: List.of(res.posts.map(
-                  (post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id))
-                ..addAll(topicState.postIds),
-            ),
+    return state.copy(
+      topics: state.topics..[topicId] = res.topic,
+      users: state.users
+        ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+      topicStates: state.topicStates
+        ..update(
+          topicId,
+          (topicState) => topicState.copy(
+            maxPage: res.maxPage,
+            firstPage: firstPage - 1,
+            postIds: List.of(res.posts
+                .map((post) => post.id == 0 ? 2 ^ 32 - post.topicId : post.id))
+              ..addAll(topicState.postIds),
           ),
-        posts: state.posts
-          ..addEntries(res.posts.map((post) =>
-              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
-      );
-    }
+        ),
+      posts: state.posts
+        ..addEntries(res.posts.map((post) =>
+            MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post)))
+        ..addEntries(res.comments.map((post) =>
+            MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
+    );
   }
 }
 
@@ -111,6 +86,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
           ),
         posts: state.posts
           ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post)))
+          ..addEntries(res.comments.map((post) =>
               MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     } else {
@@ -142,6 +119,8 @@ class FetchNextPostsAction extends ReduxAction<AppState> {
           ),
         posts: state.posts
           ..addEntries(res.posts.map((post) =>
+              MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post)))
+          ..addEntries(res.comments.map((post) =>
               MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
       );
     }
@@ -152,8 +131,11 @@ class FetchPostsAction extends ReduxAction<AppState> {
   final int topicId;
   final int pageIndex;
 
-  FetchPostsAction(this.topicId, this.pageIndex)
-      : assert(topicId != null && pageIndex != null && pageIndex >= 0);
+  FetchPostsAction({
+    @required this.topicId,
+    @required this.pageIndex,
+  })  : assert(topicId != null),
+        assert(pageIndex >= 0);
 
   @override
   Future<AppState> reduce() async {
@@ -182,6 +164,8 @@ class FetchPostsAction extends ReduxAction<AppState> {
         ),
       posts: state.posts
         ..addEntries(res.posts.map((post) =>
+            MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post)))
+        ..addEntries(res.comments.map((post) =>
             MapEntry(post.id == 0 ? 2 ^ 32 - post.topicId : post.id, post))),
     );
   }
