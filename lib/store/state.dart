@@ -85,16 +85,15 @@ class SettingsState {
         );
 
   SettingsState copy({
-    baseUrl,
-    backgroundColor,
-    primaryColor,
-  }) {
-    return SettingsState(
-      baseUrl: baseUrl ?? this.baseUrl,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
-      primaryColor: primaryColor ?? this.primaryColor,
-    );
-  }
+    String baseUrl,
+    BackgroundColor backgroundColor,
+    PrimaryColor primaryColor,
+  }) =>
+      SettingsState(
+        baseUrl: baseUrl ?? this.baseUrl,
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+        primaryColor: primaryColor ?? this.primaryColor,
+      );
 }
 
 class CategoryState {
@@ -119,14 +118,13 @@ class CategoryState {
     int topicsCount,
     int lastPage,
     int maxPage,
-  }) {
-    return CategoryState(
-      topicIds: topicIds ?? this.topicIds,
-      topicsCount: topicsCount ?? this.topicsCount,
-      lastPage: lastPage ?? this.lastPage,
-      maxPage: maxPage ?? this.maxPage,
-    );
-  }
+  }) =>
+      CategoryState(
+        topicIds: topicIds ?? this.topicIds,
+        topicsCount: topicsCount ?? this.topicsCount,
+        lastPage: lastPage ?? this.lastPage,
+        maxPage: maxPage ?? this.maxPage,
+      );
 }
 
 class TopicState {
@@ -152,15 +150,14 @@ class TopicState {
     int maxPage,
     int postsCount,
     List<int> postIds,
-  }) {
-    return TopicState(
-      firstPage: firstPage ?? this.firstPage,
-      lastPage: lastPage ?? this.lastPage,
-      maxPage: maxPage ?? this.maxPage,
-      postIds: postIds ?? this.postIds,
-      postsCount: postsCount ?? this.postsCount,
-    );
-  }
+  }) =>
+      TopicState(
+        firstPage: firstPage ?? this.firstPage,
+        lastPage: lastPage ?? this.lastPage,
+        maxPage: maxPage ?? this.maxPage,
+        postIds: postIds ?? this.postIds,
+        postsCount: postsCount ?? this.postsCount,
+      );
 }
 
 class Editing {
@@ -247,24 +244,23 @@ class AppState {
     Event<Option<Post>> fetchReplyEvt,
     Event<Editing> setEditing,
     Event<String> topicSnackBarEvt,
-  }) {
-    return AppState._(
-      userState: userState ?? this.userState,
-      settings: settings ?? this.settings,
-      pinned: pinned ?? this.pinned,
-      notifications: notifications ?? this.notifications,
-      favoriteState: favoriteState ?? this.favoriteState,
-      categoryStates: categoryStates ?? this.categoryStates,
-      topicStates: topicStates ?? this.topicStates,
-      categories: categories ?? this.categories,
-      topics: topics ?? this.topics,
-      users: users ?? this.users,
-      posts: posts ?? this.posts,
-      fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
-      setEditingEvt: setEditing ?? this.setEditingEvt,
-      topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
-    );
-  }
+  }) =>
+      AppState._(
+        userState: userState ?? this.userState,
+        settings: settings ?? this.settings,
+        pinned: pinned ?? this.pinned,
+        notifications: notifications ?? this.notifications,
+        favoriteState: favoriteState ?? this.favoriteState,
+        categoryStates: categoryStates ?? this.categoryStates,
+        topicStates: topicStates ?? this.topicStates,
+        categories: categories ?? this.categories,
+        topics: topics ?? this.topics,
+        users: users ?? this.users,
+        posts: posts ?? this.posts,
+        fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
+        setEditingEvt: setEditing ?? this.setEditingEvt,
+        topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
+      );
 
   factory AppState.empty() {
     // TODO: save category into categoryState when need

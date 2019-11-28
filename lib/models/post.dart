@@ -21,12 +21,12 @@ class Post {
 
   final int index;
 
-  final int upVote;
-  final int downVote;
+  final int vote;
 
   final List<Attachment> attachments;
 
-  final bool isComment;
+  final List<int> commentIds;
+  final int commentTo;
 
   Post({
     this.id,
@@ -38,21 +38,21 @@ class Post {
     this.content,
     this.vendor,
     this.vendorDetail,
-    this.upVote,
-    this.downVote,
+    this.vote,
     this.index,
     this.editedAt,
     this.editedBy,
     this.attachments,
-    this.isComment,
+    this.commentTo,
+    this.commentIds,
   })  : assert(id != null),
-        assert(isComment || topicId != null),
+        assert(topicId != null),
         assert(userId != null),
         assert(index != null),
-        assert(isComment || upVote != null),
-        assert(isComment || createdAt != null),
-        assert(isComment || content != null),
-        assert(isComment || attachments != null),
+        assert(vote != null),
+        assert(createdAt != null),
+        assert(content != null),
+        assert(attachments != null),
         assert(editedBy == null || editedAt != null,
             "editedAt should be set if editedBy is set"),
         assert(
@@ -60,48 +60,54 @@ class Post {
                 (vendorDetail != null && vendor != null),
             "vendor and vendorDetail should be set at the same time");
 
-  Post vote(int value) {
-    return Post(
-      id: this.id,
-      topicId: this.topicId,
-      userId: this.userId,
-      replyTo: this.replyTo,
-      createdAt: this.createdAt,
-      subject: this.subject,
-      content: this.content,
-      vendor: this.vendor,
-      vendorDetail: this.vendorDetail,
-      upVote: this.upVote + value,
-      downVote: this.downVote,
-      index: this.index,
-      editedAt: this.editedAt,
-      editedBy: this.editedBy,
-      attachments: this.attachments,
-      isComment: this.isComment,
-    );
-  }
+  Post copy({
+    int id,
+    int topicId,
+    int userId,
+    int replyTo,
+    DateTime createdAt,
+    String subject,
+    String content,
+    Vendor vendor,
+    String vendorDetail,
+    int vote,
+    int index,
+    DateTime editedAt,
+    String editedBy,
+    List<Attachment> attachments,
+    int commentTo,
+    List<int> commentIds,
+  }) =>
+      Post(
+        id: id ?? this.id,
+        topicId: topicId ?? this.topicId,
+        userId: userId ?? this.userId,
+        replyTo: replyTo ?? this.replyTo,
+        createdAt: createdAt ?? this.createdAt,
+        subject: subject ?? this.subject,
+        content: content ?? this.content,
+        vendor: vendor ?? this.vendor,
+        vendorDetail: vendorDetail ?? this.vendorDetail,
+        vote: vote ?? this.vote,
+        index: index ?? this.index,
+        editedAt: editedAt ?? this.editedAt,
+        editedBy: editedBy ?? this.editedBy,
+        attachments: attachments ?? this.attachments,
+        commentTo: commentTo ?? this.commentTo,
+        commentIds: commentIds ?? this.commentIds,
+      );
 
   factory Post.fromJson(Map<String, dynamic> json) {
-    // this post is actually a comment
-    if (json['comment_to_id'] != null) {
-      return Post(
-        id: json['pid'],
-        userId: json['authorid'],
-        index: json['lou'],
-        subject: json['subject']?.trim() ?? "",
-        isComment: true,
-      );
-    }
-
     DateTime editedAt;
     String editedBy;
 
-    if (json['alterinfo'] is String && json['alterinfo'].isNotEmpty) {
-      for (var action in (json['alterinfo'] as String).split("\\t")) {
-        action = action.trim();
-        if (action.length <= 2) continue;
-        action = action.substring(1, action.length - 1);
-        var words = action.split(' ');
+    if (json['alterinfo'] is String) {
+      for (var info in (json['alterinfo'] as String)
+          .split("\\t")
+          .map((s) => s.trim())
+          .where((s) => s.length >= 2)
+          .map((s) => s.substring(1, s.length - 1))) {
+        var words = info.split(' ');
         if (words.first.startsWith("E")) {
           var timestamp = int.tryParse(words.first.substring(1));
           if (timestamp != null) {
@@ -154,6 +160,14 @@ class Post {
       }
     }
 
+    List<int> commentIds = [];
+
+    if (json['comment_id'] is List) {
+      for (String id in json['comment_id']) {
+        commentIds.add(int.parse(id));
+      }
+    }
+
     return Post(
       id: json['pid'],
       topicId: json['tid'],
@@ -164,15 +178,15 @@ class Post {
       ),
       subject: json['subject']?.trim() ?? "",
       content: json['content'],
-      upVote: json["score"],
-      downVote: json["score_2"],
+      vote: json["score"],
       index: json['lou'],
       editedAt: editedAt,
       editedBy: editedBy,
       vendor: vendor,
       vendorDetail: vendorDetail,
       attachments: attachments,
-      isComment: false,
+      commentIds: commentIds,
+      commentTo: json["comment_to_id"],
     );
   }
 }

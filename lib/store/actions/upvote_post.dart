@@ -29,7 +29,9 @@ class UpvotePostAction extends ReduxAction<AppState> {
       posts: state.posts
         ..update(
           postId,
-          (post) => post.vote(res.value),
+          (post) => post.copy(
+            vote: post.vote + res.value,
+          ),
         ),
     );
   }
