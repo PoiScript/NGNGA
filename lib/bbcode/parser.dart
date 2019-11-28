@@ -24,7 +24,8 @@ final RegExp ruleRegExp = RegExp(r"^\s*={5,}\s*$", multiLine: true);
 RegExp replyRegExp1 = RegExp(
   r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
-// // [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid=xxx]xxxx[/uid] (xx-xx-xx xx:xx)[/b]
+
+// [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid=xxx]xxxx[/uid] (xx-xx-xx xx:xx)[/b]
 RegExp replyRegExp2 = RegExp(
   r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
 );
@@ -34,19 +35,24 @@ RegExp replyRegExp3 = RegExp(
   r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
 
-// [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid]xxxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx)[/b]
+// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-xxx]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp4 = RegExp(
-  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
 );
 
-// [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-xxx]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
+// [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid]xxxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx)[/b]
 RegExp replyRegExp5 = RegExp(
-  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
 );
 
 // [tid=xxx]Topic[/tid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp6 = RegExp(
   r"\[tid=(\d*)\]Topic\[/tid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+);
+
+// [b]Reply to [tid=xxx]Topic[/tid] Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx)[/b]
+RegExp replyRegExp7 = RegExp(
+  r"\[b\]Reply to \[tid=(\d*)\]Topic\[/tid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
 );
 
 final unescape = new HtmlUnescape();
@@ -130,7 +136,8 @@ List<Tag> parseBBCode(String raw) {
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
-        dateTime: DateTime.parse(match[5]),
+        userId: int.parse(match[4]),
+        dateTime: DateTime.parse(match[6]),
       ),
       match.start,
       match.start + 1,
@@ -150,8 +157,7 @@ List<Tag> parseBBCode(String raw) {
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
-        userId: int.parse(match[4]),
-        dateTime: DateTime.parse(match[6]),
+        dateTime: DateTime.parse(match[5]),
       ),
       match.start,
       match.start + 1,
@@ -163,6 +169,27 @@ List<Tag> parseBBCode(String raw) {
 
   while (true) {
     var match = replyRegExp6.firstMatch(content);
+
+    if (match == null) break;
+
+    spans.add(_TagSpan(
+      Reply(
+        postId: 0,
+        topicId: int.parse(match[1]),
+        userId: int.parse(match[2]),
+        username: match[3],
+        dateTime: DateTime.parse(match[4]),
+      ),
+      match.start,
+      match.start + 1,
+      false,
+    ));
+    content =
+        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+  }
+
+  while (true) {
+    var match = replyRegExp7.firstMatch(content);
 
     if (match == null) break;
 
