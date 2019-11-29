@@ -22,29 +22,54 @@ class UpdateIndicator extends StatefulWidget {
   _UpdateIndicatorState createState() => _UpdateIndicatorState();
 }
 
-class _UpdateIndicatorState extends State<UpdateIndicator> {
+class _UpdateIndicatorState extends State<UpdateIndicator>
+    with WidgetsBindingObserver {
   StreamSubscription _streamSub;
   DateTime _lastUpdated = DateTime.now();
+
   bool _isLoading = false;
+
+  bool _manuallyPaused = false;
 
   @override
   void initState() {
     super.initState();
-    _startListening();
+    WidgetsBinding.instance.addObserver(this);
+    _streamSub =
+        Stream.periodic(const Duration(seconds: 20)).listen((_) => _fetch());
+    print("Start listening");
   }
 
   @override
   void dispose() {
     super.dispose();
-    _cancelListening();
+    WidgetsBinding.instance.removeObserver(this);
+    _streamSub.cancel();
+    print("Cancel listening");
   }
 
-  _startListening() {
-    _streamSub = Stream.periodic(const Duration(seconds: 20)).listen((_) {
-      _fetch();
-    });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _resumeListening();
+    } else if (state == AppLifecycleState.inactive) {
+      _pauseListening();
+    }
+  }
 
-    print("Start listening");
+  _resumeListening() {
+    if (!_manuallyPaused && _streamSub.isPaused) {
+      _streamSub.resume();
+      print("Resume listening");
+    }
+  }
+
+  _pauseListening() {
+    if (!_streamSub.isPaused) {
+      _streamSub.pause();
+      print("Pause listening");
+    }
   }
 
   _fetch() async {
@@ -58,15 +83,14 @@ class _UpdateIndicatorState extends State<UpdateIndicator> {
     });
   }
 
-  _cancelListening() {
-    if (_streamSub != null) {
-      _streamSub.cancel();
-      print("Cancel listening");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (ModalRoute.of(context).isCurrent) {
+      _resumeListening();
+    } else {
+      _pauseListening();
+    }
+
     return Container(
       height: 64 + kFloatingActionButtonMargin * 2 - 8,
       padding: EdgeInsets.all(8.0),
@@ -79,48 +103,49 @@ class _UpdateIndicatorState extends State<UpdateIndicator> {
               color: Theme.of(context).textTheme.caption.color,
             ),
             onPressed: () {
-              if (_streamSub != null) {
-                _cancelListening();
-                setState(() => _streamSub = null);
+              if (_manuallyPaused) {
+                _resumeListening();
+                setState(() => _manuallyPaused = false);
               } else {
-                _fetch();
-                _startListening();
+                _pauseListening();
+                setState(() => _manuallyPaused = true);
               }
             },
           ),
-          _streamSub != null
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      "Auto-update enabled.",
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                    if (_isLoading)
-                      Text(
-                        "Loading...",
-                        style: Theme.of(context).textTheme.caption,
-                      ),
-                    if (!_isLoading)
-                      StreamBuilder(
-                        initialData: DateTime.now(),
-                        stream: Stream.periodic(const Duration(seconds: 1)),
-                        builder: (context, snapshot) => Text(
-                          "Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)",
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                      ),
-                    Text(
-                      "Update Interval: 20s",
-                      style: Theme.of(context).textTheme.caption,
-                    )
-                  ],
-                )
-              : Text(
-                  "Auto-update disabled.",
+          if (!_manuallyPaused)
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Auto-update enabled.",
                   style: Theme.of(context).textTheme.caption,
                 ),
+                if (_isLoading)
+                  Text(
+                    "Loading...",
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                if (!_isLoading)
+                  StreamBuilder(
+                    initialData: DateTime.now(),
+                    stream: Stream.periodic(const Duration(seconds: 1)),
+                    builder: (context, snapshot) => Text(
+                      "Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)",
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ),
+                Text(
+                  "Update Interval: 20s",
+                  style: Theme.of(context).textTheme.caption,
+                )
+              ],
+            ),
+          if (_manuallyPaused)
+            Text(
+              "Auto-update disabled.",
+              style: Theme.of(context).textTheme.caption,
+            ),
         ],
       ),
     );
