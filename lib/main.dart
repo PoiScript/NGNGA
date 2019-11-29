@@ -37,11 +37,14 @@ class MyApp extends StatelessWidget {
 
     return StoreProvider<AppState>(
       store: store,
-      child: MaterialApp(
-        onGenerateRoute: _routes,
-        navigatorKey: _navigatorKey,
-        theme: _theme,
-        initialRoute: store.state.userState == null ? "welcome" : "/",
+      child: StoreConnector<AppState, ViewModel>(
+        model: ViewModel(),
+        builder: (context, vm) => MaterialApp(
+          onGenerateRoute: _routes,
+          navigatorKey: _navigatorKey,
+          theme: _mapToThemeData(vm.theme),
+          initialRoute: store.state.userState == null ? "welcome" : "/",
+        ),
       ),
     );
   }
@@ -86,15 +89,33 @@ class MyApp extends StatelessWidget {
     return MaterialPageRoute(builder: (context) => screen);
   }
 
-  final ThemeData _theme = ThemeData(
-    fontFamily: "Roboto",
-    textTheme: TextTheme(
-      title: TitleTextStyle,
-      subtitle: SubTitleTextStyle,
-      caption: CaptionTextStyle,
-      subhead: SubheadTextStyle,
-      body1: Body1TextStyle,
-      body2: Body2TextStyle,
-    ),
-  );
+  ThemeData _mapToThemeData(AppTheme theme) {
+    ThemeData themeData;
+    switch (theme) {
+      case AppTheme.white:
+        themeData = whiteTheme;
+        break;
+      case AppTheme.black:
+        themeData = blackTheme;
+        break;
+      case AppTheme.grey:
+        themeData = greyTheme;
+        break;
+      case AppTheme.yellow:
+        themeData = yellowTheme;
+        break;
+    }
+    return themeData;
+  }
+}
+
+class ViewModel extends BaseModel<AppState> {
+  ViewModel();
+
+  AppTheme theme;
+
+  ViewModel.build({@required this.theme}) : super(equals: [theme]);
+
+  @override
+  ViewModel fromStore() => ViewModel.build(theme: state.settings.theme);
 }

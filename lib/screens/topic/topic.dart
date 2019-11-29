@@ -149,7 +149,7 @@ class _TopicPageState extends State<TopicPage>
   ) {
     List<Widget> slivers = [
       SliverAppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         title: TitleColorize(
           widget.topic,
           maxLines: 2,
@@ -158,7 +158,11 @@ class _TopicPageState extends State<TopicPage>
         ),
         floating: true,
         titleSpacing: 0.0,
-        leading: const BackButton(color: Colors.black),
+        leading: BackButton(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
         actions: <Widget>[
           PopupMenuConnector(topicId: widget.topic.id),
         ],

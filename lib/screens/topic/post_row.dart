@@ -108,7 +108,10 @@ class _PostRowState extends State<PostRow> {
         widget.user.username[0].toUpperCase(),
         style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
       ),
-      backgroundColor: numberToHslColor(widget.user.id),
+      backgroundColor: numberToHslColor(
+        widget.user.id,
+        Theme.of(context).brightness,
+      ),
     );
 
     if (widget.user.avatars.isEmpty) return letterAvatar;

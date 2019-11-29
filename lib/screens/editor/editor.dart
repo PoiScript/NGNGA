@@ -106,10 +106,17 @@ class _EditorPageState extends State<EditorPage> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          leading: const BackButton(color: Colors.black),
+          leading: BackButton(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
           elevation: 0.0,
-          title: Text("Editor"),
-          backgroundColor: Colors.white,
+          title: Text(
+            "Editor",
+            style: Theme.of(context).textTheme.body2,
+          ),
+          backgroundColor: Theme.of(context).cardColor,
           // actions: <Widget>[
           //   IconButton(
           //     icon: Icon(Icons.undo, color: Colors.black),
@@ -140,8 +147,9 @@ class _EditorPageState extends State<EditorPage> {
                     .copyWith(fontFamily: "Noto Sans CJK SC"),
               ),
               isPreviewing
-                  ? Padding(
+                  ? Container(
                       padding: EdgeInsets.all(8.0),
+                      alignment: Alignment.centerLeft,
                       child: BBCodeRender(
                         data: _contentController.text,
                         // TODO

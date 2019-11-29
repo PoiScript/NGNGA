@@ -54,45 +54,28 @@ class Guest extends UserState {
   Guest.fromJson(Map<String, dynamic> json) : uid = json['uid'];
 }
 
-enum BackgroundColor {
+enum AppTheme {
   white,
   black,
   grey,
-}
-
-enum PrimaryColor {
-  red,
+  yellow,
 }
 
 class SettingsState {
   final String baseUrl;
-  final BackgroundColor backgroundColor;
-  final PrimaryColor primaryColor;
+  final AppTheme theme;
 
   SettingsState({
     @required this.baseUrl,
-    @required this.backgroundColor,
-    @required this.primaryColor,
+    @required this.theme,
   })  : assert(baseUrl != null),
-        assert(backgroundColor != null),
-        assert(primaryColor != null);
+        assert(theme != null);
 
-  SettingsState.empty()
-      : this(
-          baseUrl: "nga.178.com",
-          backgroundColor: BackgroundColor.white,
-          primaryColor: PrimaryColor.red,
-        );
+  SettingsState.empty() : this(baseUrl: "nga.178.com", theme: AppTheme.white);
 
-  SettingsState copy({
-    String baseUrl,
-    BackgroundColor backgroundColor,
-    PrimaryColor primaryColor,
-  }) =>
-      SettingsState(
+  SettingsState copy({String baseUrl, AppTheme theme}) => SettingsState(
         baseUrl: baseUrl ?? this.baseUrl,
-        backgroundColor: backgroundColor ?? this.backgroundColor,
-        primaryColor: primaryColor ?? this.primaryColor,
+        theme: theme ?? this.theme,
       );
 }
 

@@ -113,7 +113,7 @@ class TitleColorize extends StatelessWidget {
           margin: EdgeInsets.only(left: 2.0),
           padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
           decoration: BoxDecoration(
-            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+            color: Theme.of(context).cardColor,
           ),
           child: Text(
             topic.label,

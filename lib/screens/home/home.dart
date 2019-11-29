@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
         actions: <Widget>[
           PopupMenu(),
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
       ),
       body: PageView(
         controller: _pageController,

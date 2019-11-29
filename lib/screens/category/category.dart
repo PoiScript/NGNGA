@@ -46,7 +46,6 @@ class CategoryPage extends StatefulWidget {
 
 class _CategoryPageState extends State<CategoryPage>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
 
   AnimationController _animationController;
@@ -82,7 +81,6 @@ class _CategoryPageState extends State<CategoryPage>
     }
 
     return Scaffold(
-      key: _scaffoldKey,
       body: Scrollbar(
         child: EasyRefresh.builder(
           header: ClassicalHeader(),
@@ -97,8 +95,12 @@ class _CategoryPageState extends State<CategoryPage>
                 expandedHeight: kExpandedHeight,
                 floating: false,
                 pinned: true,
-                leading: const BackButton(color: Colors.black),
-                backgroundColor: Theme.of(context).backgroundColor,
+                leading: BackButton(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
+                backgroundColor: Theme.of(context).cardColor,
                 actions: <Widget>[
                   PopupMenuConnector(categoryId: widget.category.id),
                 ],

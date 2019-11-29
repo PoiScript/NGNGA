@@ -25,7 +25,7 @@ class Explore extends StatelessWidget {
               horizontal: 16.0,
               vertical: 8.0,
             ),
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             child: Text(
               "Pinned",
               style: Theme.of(context).textTheme.caption,
@@ -48,7 +48,7 @@ class Explore extends StatelessWidget {
                   horizontal: 16.0,
                   vertical: 8.0,
                 ),
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 child: Text(
                   group.name,
                   style: Theme.of(context).textTheme.caption,
