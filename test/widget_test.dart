@@ -5,7 +5,7 @@ import 'package:ngnga/main.dart';
 import 'package:ngnga/store/state.dart';
 
 void main() {
-  testWidgets('Route to WelcomePage if given state id empty', (tester) async {
+  testWidgets('Route to WelcomePage if given state is empty', (tester) async {
     final store = Store<AppState>(
       initialState: AppState.empty(),
       // actionObservers: [Log<AppState>.printer()],
@@ -14,6 +14,6 @@ void main() {
 
     await tester.pumpWidget(MyApp(store: store));
 
-    expect(find.text('Welcome to NGNGA'), findsOneWidget);
+    expect(find.text('Welcome to'), findsOneWidget);
   });
 }
