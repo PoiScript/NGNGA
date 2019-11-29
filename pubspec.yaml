@@ -28,7 +28,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/stickers/
+    - assets/stickers/dark/
+    - assets/stickers/light/
   fonts:
     - family:  VendorIcon
       fonts:
