@@ -20,14 +20,14 @@ class PopupMenu extends StatelessWidget {
         PopupMenuItem<Choice>(
           value: Choice.jumpToSettingsPage,
           child: Text(
-            "Settings",
+            'Settings',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
         PopupMenuItem<Choice>(
           value: Choice.jumpToEditorPage,
           child: Text(
-            "Editor",
+            'Editor',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
@@ -35,11 +35,11 @@ class PopupMenu extends StatelessWidget {
       onSelected: (choice) {
         switch (choice) {
           case Choice.jumpToSettingsPage:
-            Navigator.pushNamed(context, "/s");
+            Navigator.pushNamed(context, '/s');
             break;
           case Choice.jumpToEditorPage:
-            Navigator.pushNamed(context, "/e", arguments: {
-              "action": ACTION_NOOP,
+            Navigator.pushNamed(context, '/e', arguments: {
+              'action': actionNoop,
             });
             break;
         }

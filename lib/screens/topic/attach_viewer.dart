@@ -33,7 +33,7 @@ class AttachViewer extends StatelessWidget {
             // Container(
             //   padding: const EdgeInsets.all(20.0),
             //   child: Text(
-            //     "Image ${currentIndex + 1}",
+            //     'Image ${currentIndex + 1}',
             //     style: const TextStyle(
             //       color: Colors.white,
             //       fontSize: 17.0,
@@ -52,7 +52,7 @@ class AttachViewer extends StatelessWidget {
 
     return PhotoViewGalleryPageOptions(
       imageProvider: CachedNetworkImageProvider(
-        "https://img.nga.178.com/attachments/${item.url}",
+        'https://img.nga.178.com/attachments/${item.url}',
       ),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),

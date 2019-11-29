@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 import 'package:html_unescape/html_unescape.dart';
 
-final unescape = HtmlUnescape();
+final HtmlUnescape unescape = HtmlUnescape();
 
 enum NotificationType {
   postOnYourTopic,
@@ -59,7 +59,7 @@ class Notification {
         type = NotificationType.metionOnReply;
         break;
       default:
-        throw "Unknown notification type";
+        throw 'Unknown notification type';
     }
 
     return Notification._(
@@ -89,8 +89,8 @@ class NotificationResponse {
   });
 
   factory NotificationResponse.fromJson(Map<String, dynamic> raw) {
-    String content = raw["data"][0].substring(8).replaceAllMapped(
-          RegExp(r"([,\{])\s*(\d+):"),
+    String content = raw['data'][0].substring(8).replaceAllMapped(
+          RegExp(r'([,\{])\s*(\d+):'),
           (match) => '${match[1]}"${match[2]}":',
         );
     Map<String, dynamic> json = jsonDecode(content);
@@ -116,15 +116,15 @@ Future<NotificationResponse> fetchNotifications({
   @required String baseUrl,
   @required String cookie,
 }) async {
-  final uri = Uri.https(baseUrl, "nuke.php", {
-    "__lib": "noti",
-    "__act": "get_all",
-    "__output": "11",
+  final uri = Uri.https(baseUrl, 'nuke.php', {
+    '__lib': 'noti',
+    '__act': 'get_all',
+    '__output': '11',
   });
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookie});
+  final res = await client.post(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 

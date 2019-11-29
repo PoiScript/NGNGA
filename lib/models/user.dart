@@ -21,22 +21,22 @@ class User {
     List<String> avatars = [];
 
     if (json['avatar'] is String) {
-      if (json['avatar'].startsWith(r"/*$js$*/")) {
+      if (json['avatar'].startsWith(r'/*$js$*/')) {
         final map = jsonDecode(json['avatar'].substring(8));
         for (final value in map.values) {
           if (value is! String) continue;
 
-          if (value.startsWith("https://") || value.startsWith("http://")) {
+          if (value.startsWith('https://') || value.startsWith('http://')) {
             avatars.add(value);
-          } else if (value.startsWith(".a/")) {
+          } else if (value.startsWith('.a/')) {
             avatars.add(parseAvatar(value));
           }
         }
       } else {
-        for (final value in json['avatar'].replaceAll("%7C", "|").split("|")) {
-          if (value.startsWith("https://") || value.startsWith("http://")) {
+        for (final value in json['avatar'].replaceAll('%7C', '|').split('|')) {
+          if (value.startsWith('https://') || value.startsWith('http://')) {
             avatars.add(value);
-          } else if (value.startsWith(".a/")) {
+          } else if (value.startsWith('.a/')) {
             avatars.add(parseAvatar(value));
           }
         }
@@ -45,7 +45,7 @@ class User {
 
     return User(
       id: id,
-      username: id <= 0 ? "#ANONYMOUS#" : json['username'],
+      username: id <= 0 ? '#ANONYMOUS#' : json['username'],
       avatars: avatars,
       signature: json['signature'] ?? json['sign'],
       postsCount: json['postnum'],
@@ -65,5 +65,5 @@ String parseAvatar(String avatar) {
   String b = path.substring(path.length - 6, path.length - 3);
   String c = path.substring(path.length - 9, path.length - 6);
 
-  return "http://img.nga.cn/avatars/2002/$a/$b/$c/${avatar.substring(3)}";
+  return 'http://img.nga.cn/avatars/2002/$a/$b/$c/${avatar.substring(3)}';
 }

@@ -21,17 +21,17 @@ Future<FavoritesResponse> addToFavorites({
   @required String cookie,
   @required int topicId,
 }) async {
-  final uri = Uri.https(baseUrl, "nuke.php", {
-    "__lib": "topic_favor",
-    "__act": "topic_favor",
-    "action": "add",
-    "tid": topicId.toString(),
-    "__output": "11",
+  final uri = Uri.https(baseUrl, 'nuke.php', {
+    '__lib': 'topic_favor',
+    '__act': 'topic_favor',
+    'action': 'add',
+    'tid': topicId.toString(),
+    '__output': '11',
   });
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookie});
+  final res = await client.post(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 
@@ -44,19 +44,19 @@ Future<FavoritesResponse> removeFromFavorites({
   @required String cookie,
   @required int topicId,
 }) async {
-  final uri = Uri.https(baseUrl, "nuke.php", {
-    "__lib": "topic_favor",
-    "__act": "topic_favor",
-    "action": "del",
-    "tidarray": topicId.toString(),
+  final uri = Uri.https(baseUrl, 'nuke.php', {
+    '__lib': 'topic_favor',
+    '__act': 'topic_favor',
+    'action': 'del',
+    'tidarray': topicId.toString(),
     // TODO: handle different page index
-    "page": "1",
-    "__output": "11",
+    'page': '1',
+    '__output': '11',
   });
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookie});
+  final res = await client.post(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 

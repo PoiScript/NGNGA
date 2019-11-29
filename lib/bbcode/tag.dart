@@ -1,4 +1,4 @@
-import "dart:collection";
+import 'dart:collection';
 
 abstract class Tag extends LinkedListEntry<Tag> {
   final List<Object> props;
@@ -25,16 +25,18 @@ abstract class Tag extends LinkedListEntry<Tag> {
 
   int get _propsHashCode {
     int hashCode = 0;
-    props.forEach((Object prop) => hashCode = hashCode ^ prop.hashCode);
+    for (Object prop in props) {
+      hashCode = hashCode ^ prop.hashCode;
+    }
     return hashCode;
   }
 
   @override
   String toString() {
     if (props.isEmpty) {
-      return "$runtimeType";
+      return '$runtimeType';
     } else {
-      return "$runtimeType(${props.map((prop) => prop.toString()).join(',')})";
+      return '$runtimeType(${props.map((prop) => prop.toString()).join(',')})';
     }
   }
 }
@@ -52,9 +54,9 @@ class CollapseEndTag extends Tag {}
 class CollapseStartTag extends Tag {
   final String description;
 
-  CollapseStartTag(String description)
-      : this.description = description ?? "点击显示隐藏的内容",
-        super(props: [description]);
+  CollapseStartTag(String desc)
+      : description = desc ?? '点击显示隐藏的内容',
+        super(props: [desc]);
 }
 
 class ColorEndTag extends Tag {}

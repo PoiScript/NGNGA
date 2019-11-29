@@ -11,12 +11,12 @@ import 'sticker.dart';
 import 'styling.dart';
 
 // use int instead of enum to indicate edit action, so it can be passed from routing argument
-const int ACTION_NEW_TOPIC = 0;
-const int ACTION_QUOTE = 1;
-const int ACTION_REPLY = 2;
-const int ACTION_MODIFY = 3;
-const int ACTION_COMMENT = 4;
-const int ACTION_NOOP = 5;
+const int actionNewTopic = 0;
+const int actionQuote = 1;
+const int actionReply = 2;
+const int actionModify = 3;
+const int actionComment = 4;
+const int actionNoop = 5;
 
 class EditorPage extends StatefulWidget {
   final Event<Editing> setEditingEvt;
@@ -79,7 +79,7 @@ class _EditorPageState extends State<EditorPage> {
 
   _consumeEvents() {
     Editing editing = widget.setEditingEvt.consume();
-    if (editing != null)
+    if (editing != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() => isLoading = false);
@@ -87,6 +87,7 @@ class _EditorPageState extends State<EditorPage> {
           _contentController.text = editing.content;
         }
       });
+    }
   }
 
   @override
@@ -113,7 +114,7 @@ class _EditorPageState extends State<EditorPage> {
           ),
           elevation: 0.0,
           title: Text(
-            "Editor",
+            'Editor',
             style: Theme.of(context).textTheme.body2,
           ),
           backgroundColor: Theme.of(context).cardColor,
@@ -144,14 +145,14 @@ class _EditorPageState extends State<EditorPage> {
                 style: Theme.of(context)
                     .textTheme
                     .subhead
-                    .copyWith(fontFamily: "Noto Sans CJK SC"),
+                    .copyWith(fontFamily: 'Noto Sans CJK SC'),
               ),
               isPreviewing
                   ? Container(
                       padding: EdgeInsets.all(8.0),
                       alignment: Alignment.centerLeft,
                       child: BBCodeRender(
-                        data: _contentController.text,
+                        raw: _contentController.text,
                         // TODO
                         openLink: (x) => {},
                         openPost: (x, y, z) => {},
@@ -172,7 +173,7 @@ class _EditorPageState extends State<EditorPage> {
                       style: Theme.of(context)
                           .textTheme
                           .body1
-                          .copyWith(fontFamily: "Noto Sans CJK SC"),
+                          .copyWith(fontFamily: 'Noto Sans CJK SC'),
                     ),
             ],
           ),
@@ -220,15 +221,15 @@ class _EditorPageState extends State<EditorPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: displayToolbar == DisplayToolbar.sticker
                     ? EditorSticker(
-                        insertSticker: (name) => _insertContent("[s:$name]"),
+                        insertSticker: (name) => _insertContent('[s:$name]'),
                       )
                     : EditorStyling(
-                        insertBold: () => _insertPair("[b]", "[/b]"),
-                        insertItalic: () => _insertPair("[i]", "[/i]"),
-                        insertUnderline: () => _insertPair("[u]", "[/u]"),
-                        insertDelete: () => _insertPair("[del]", "[/del]"),
-                        insertQuote: () => _insertPair("[quote]", "[/quote]"),
-                        insertHeading: () => _insertPair("[h]", "[/h]"),
+                        insertBold: () => _insertPair('[b]', '[/b]'),
+                        insertItalic: () => _insertPair('[i]', '[/i]'),
+                        insertUnderline: () => _insertPair('[u]', '[/u]'),
+                        insertDelete: () => _insertPair('[del]', '[/del]'),
+                        insertQuote: () => _insertPair('[quote]', '[/quote]'),
+                        insertHeading: () => _insertPair('[h]', '[/h]'),
                       ),
               ),
             ],
@@ -260,7 +261,7 @@ class _EditorPageState extends State<EditorPage> {
 
     _contentController.value = _contentController.value.copyWith(
       text:
-          "${text.substring(0, baseOffset)}$content${text.substring(extentOffset)}",
+          '${text.substring(0, baseOffset)}$content${text.substring(extentOffset)}',
       selection: TextSelection.collapsed(offset: baseOffset + content.length),
     );
   }
@@ -273,7 +274,7 @@ class _EditorPageState extends State<EditorPage> {
     if (baseOffset != extentOffset) {
       _contentController.value = _contentController.value.copyWith(
         text:
-            "${text.substring(0, baseOffset)}$start${text.substring(baseOffset, extentOffset)}$end${text.substring(extentOffset)}",
+            '${text.substring(0, baseOffset)}$start${text.substring(baseOffset, extentOffset)}$end${text.substring(extentOffset)}',
         selection: TextSelection(
           baseOffset: baseOffset + start.length,
           extentOffset: extentOffset + start.length,
@@ -282,7 +283,7 @@ class _EditorPageState extends State<EditorPage> {
     } else {
       _contentController.value = _contentController.value.copyWith(
         text:
-            "${text.substring(0, baseOffset)}$start$end${text.substring(extentOffset)}",
+            '${text.substring(0, baseOffset)}$start$end${text.substring(extentOffset)}',
         selection: TextSelection.collapsed(offset: baseOffset + start.length),
       );
     }
@@ -312,22 +313,22 @@ class EditorPageConnector extends StatelessWidget {
     @required this.categoryId,
     @required this.topicId,
     @required this.postId,
-  })  : assert(action == ACTION_NEW_TOPIC ||
-            action == ACTION_QUOTE ||
-            action == ACTION_REPLY ||
-            action == ACTION_MODIFY ||
-            action == ACTION_COMMENT ||
-            action == ACTION_NOOP),
-        assert(action != ACTION_NEW_TOPIC ||
+  })  : assert(action == actionNewTopic ||
+            action == actionQuote ||
+            action == actionReply ||
+            action == actionModify ||
+            action == actionComment ||
+            action == actionNoop),
+        assert(action != actionNewTopic ||
             (categoryId != null && topicId == null && postId == null)),
         assert(
-            action != ACTION_QUOTE || (categoryId == null && topicId != null)),
+            action != actionQuote || (categoryId == null && topicId != null)),
         assert(
-            action != ACTION_REPLY || (categoryId == null && topicId != null)),
+            action != actionReply || (categoryId == null && topicId != null)),
         assert(
-            action != ACTION_MODIFY || (categoryId == null && topicId != null)),
-        assert(action != ACTION_COMMENT ||
-            (categoryId == null && topicId != null));
+            action != actionModify || (categoryId == null && topicId != null)),
+        assert(
+            action != actionComment || (categoryId == null && topicId != null));
 
   @override
   Widget build(BuildContext context) {

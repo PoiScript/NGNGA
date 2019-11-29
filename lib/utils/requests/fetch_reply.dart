@@ -12,15 +12,15 @@ Future<FetchTopicPostsResponse> fetchReply({
   @required int topicId,
   @required int postId,
 }) async {
-  final uri = Uri.https(baseUrl, "read.php", {
-    "pid": postId.toString(),
-    "tid": topicId.toString(),
-    "__output": "11",
+  final uri = Uri.https(baseUrl, 'read.php', {
+    'pid': postId.toString(),
+    'tid': topicId.toString(),
+    '__output': '11',
   });
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookie});
+  final res = await client.get(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 

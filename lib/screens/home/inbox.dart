@@ -78,17 +78,17 @@ class Inbox extends StatelessWidget {
   String _description(NotificationType type) {
     switch (type) {
       case NotificationType.postOnYourTopic:
-        return "回复了你的主题";
+        return '回复了你的主题';
       case NotificationType.replyOnYourPost:
-        return "回复了你在该主题中的回复";
+        return '回复了你在该主题中的回复';
       case NotificationType.commentOnYourTopic:
-        return "评论了你的主题";
+        return '评论了你的主题';
       case NotificationType.commentOnYourPost:
-        return "评论了你在该主题中的回复";
+        return '评论了你在该主题中的回复';
       case NotificationType.metionOnTopic:
-        return "在主题中 @ 了你";
+        return '在主题中 @ 了你';
       case NotificationType.metionOnReply:
-        return "在回复中 @ 了你";
+        return '在回复中 @ 了你';
     }
     return null;
   }

@@ -5,108 +5,108 @@ import 'package:ngnga/bbcode/parser.dart';
 import 'package:ngnga/bbcode/tag.dart';
 
 void main() {
-  test("BBCode parser", () {
+  test('BBCode parser', () {
     assert(listEquals(
-      parseBBCode("foo,bar,baz"),
+      parseBBCode('foo,bar,baz'),
       [
         ParagraphStartTag(),
-        TextTag("foo,bar,baz"),
+        TextTag('foo,bar,baz'),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[b]bold[/b]"),
+      parseBBCode('[b]bold[/b]'),
       [
         ParagraphStartTag(),
         BoldStartTag(),
-        TextTag("bold"),
+        TextTag('bold'),
         BoldEndTag(),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[b]bold[b]"),
+      parseBBCode('[b]bold[b]'),
       [
         ParagraphStartTag(),
-        TextTag("[b]bold[b]"),
+        TextTag('[b]bold[b]'),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("A[b][quote]content[/quote]B[/b]"),
+      parseBBCode('A[b][quote]content[/quote]B[/b]'),
       [
         ParagraphStartTag(),
-        TextTag("A"),
+        TextTag('A'),
         BoldStartTag(),
         ParagraphEndTag(),
         QuoteStartTag(),
         ParagraphStartTag(),
-        TextTag("content"),
+        TextTag('content'),
         ParagraphEndTag(),
         QuoteEndTag(),
         ParagraphStartTag(),
-        TextTag("B"),
+        TextTag('B'),
         BoldEndTag(),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("A[b][quote]content[/quote]B[/b]"),
+      parseBBCode('A[b][quote]content[/quote]B[/b]'),
       [
         ParagraphStartTag(),
-        TextTag("A"),
+        TextTag('A'),
         BoldStartTag(),
         ParagraphEndTag(),
         QuoteStartTag(),
         ParagraphStartTag(),
-        TextTag("content"),
+        TextTag('content'),
         ParagraphEndTag(),
         QuoteEndTag(),
         ParagraphStartTag(),
-        TextTag("B"),
+        TextTag('B'),
         BoldEndTag(),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]"),
+      parseBBCode('[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]'),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
-        TextTag("A"),
+        TextTag('A'),
         ParagraphEndTag(),
         QuoteStartTag(),
         ParagraphStartTag(),
-        TextTag("B"),
+        TextTag('B'),
         ParagraphEndTag(),
         QuoteStartTag(),
         ParagraphStartTag(),
-        TextTag("C"),
+        TextTag('C'),
         ParagraphEndTag(),
         QuoteEndTag(),
         ParagraphStartTag(),
-        TextTag("D"),
+        TextTag('D'),
         ParagraphEndTag(),
         QuoteEndTag(),
         ParagraphStartTag(),
-        TextTag("E"),
+        TextTag('E'),
         ParagraphEndTag(),
         CollapseEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[collapse][quote]AB[/quote][/collapse]"),
+      parseBBCode('[collapse][quote]AB[/quote][/collapse]'),
       [
         CollapseStartTag(null),
         QuoteStartTag(),
         ParagraphStartTag(),
-        TextTag("AB"),
+        TextTag('AB'),
         ParagraphEndTag(),
         QuoteEndTag(),
         CollapseEndTag(),
@@ -114,41 +114,41 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode("[collapse][quote][/collapse][/quote]"),
+      parseBBCode('[collapse][quote][/collapse][/quote]'),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
-        TextTag("[quote]"),
+        TextTag('[quote]'),
         ParagraphEndTag(),
         CollapseEndTag(),
         ParagraphStartTag(),
-        TextTag("[/quote]"),
+        TextTag('[/quote]'),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]"),
+      parseBBCode('[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]'),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
-        TextTag("A[quote]B[quote]C"),
+        TextTag('A[quote]B[quote]C'),
         ParagraphEndTag(),
         CollapseEndTag(),
         ParagraphStartTag(),
-        TextTag("D[/quote]E[/quote]"),
+        TextTag('D[/quote]E[/quote]'),
         ParagraphEndTag(),
       ],
     ));
 
     assert(listEquals(
-      parseBBCode("[quote][collapse][url]example.com[/url][/collapse][/quote]"),
+      parseBBCode('[quote][collapse][url]example.com[/url][/collapse][/quote]'),
       [
         QuoteStartTag(),
         CollapseStartTag(null),
         ParagraphStartTag(),
-        LinkStartTag("example.com"),
-        TextTag("example.com"),
+        LinkStartTag('example.com'),
+        TextTag('example.com'),
         LinkEndTag(),
         ParagraphEndTag(),
         CollapseEndTag(),

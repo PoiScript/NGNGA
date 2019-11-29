@@ -36,10 +36,10 @@ class ApplyEditingAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      setEditing: Event(Editing(
-        content: "",
-        subject: "",
-        attachUrl: "",
+      setEditingEvt: Event(Editing(
+        content: '',
+        subject: '',
+        attachUrl: '',
       )),
     );
   }

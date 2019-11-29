@@ -18,7 +18,7 @@ import 'package:ngnga/widgets/user_dialog.dart';
 
 import 'attach_viewer.dart';
 
-final dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
+final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
 class PostRow extends StatefulWidget {
   final Post post;
@@ -45,7 +45,7 @@ class PostRow extends StatefulWidget {
 }
 
 class _PostRowState extends State<PostRow> {
-  DisplayMode _displayMode = DisplayMode.RichText;
+  DisplayMode _displayMode = DisplayMode.richText;
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +148,7 @@ class _PostRowState extends State<PostRow> {
           ),
         if (widget.user.id == 0)
           Text(
-            "#ANONYMOUS#",
+            '#ANONYMOUS#',
             style: Theme.of(context)
                 .textTheme
                 .subhead
@@ -191,7 +191,7 @@ class _PostRowState extends State<PostRow> {
         // post index
         if (widget.post.index != 0)
           Text(
-            "#${widget.post.index}",
+            '#${widget.post.index}',
             style: Theme.of(context).textTheme.caption,
           ),
         if (widget.post.index != 0)
@@ -244,14 +244,14 @@ class _PostRowState extends State<PostRow> {
   ListTile _buildVendorListTile() {
     String title;
     switch (widget.post.vendor) {
-      case Vendor.Android:
-        title = "发送自 Android 客户端";
+      case Vendor.android:
+        title = '发送自 Android 客户端';
         break;
-      case Vendor.Apple:
-        title = "发送自 iOS 客户端";
+      case Vendor.apple:
+        title = '发送自 iOS 客户端';
         break;
-      case Vendor.Windows:
-        title = "发送自 Windows Phone 客户端";
+      case Vendor.windows:
+        title = '发送自 Windows Phone 客户端';
         break;
     }
     if (widget.post.vendorDetail.isEmpty) {
@@ -272,48 +272,48 @@ class _PostRowState extends State<PostRow> {
 
   List<PopupMenuEntry<Choice>> _buildMenuItem(BuildContext context) {
     return [
-      if (_displayMode != DisplayMode.BBCode)
+      if (_displayMode != DisplayMode.bbCode)
         PopupMenuItem<Choice>(
-          value: Choice.DisplayInBBCode,
+          value: Choice.displayInBBCode,
           child: Text(
-            "Display in BBCode",
+            'Display in BBCode',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
-      if (_displayMode != DisplayMode.RichText)
+      if (_displayMode != DisplayMode.richText)
         PopupMenuItem<Choice>(
-          value: Choice.DispalyInRichText,
+          value: Choice.dispalyInRichText,
           child: Text(
-            "Display in RichText",
+            'Display in RichText',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
       if (widget.sentByMe)
         PopupMenuItem<Choice>(
-          value: Choice.EditThisPost,
+          value: Choice.editThisPost,
           child: Text(
-            "Edit This Post",
+            'Edit This Post',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
       PopupMenuItem<Choice>(
-        value: Choice.ReplyToThisPost,
+        value: Choice.replyToThisPost,
         child: Text(
-          "Reply To This Post",
+          'Reply To This Post',
           style: Theme.of(context).textTheme.body1,
         ),
       ),
       PopupMenuItem<Choice>(
-        value: Choice.QuoteFromThisPost,
+        value: Choice.quoteFromThisPost,
         child: Text(
-          "Quote From This Post",
+          'Quote From This Post',
           style: Theme.of(context).textTheme.body1,
         ),
       ),
       PopupMenuItem<Choice>(
-        value: Choice.CommentOnThisPost,
+        value: Choice.commentOnThisPost,
         child: Text(
-          "Comment On This Post",
+          'Comment On This Post',
           style: Theme.of(context).textTheme.body1,
         ),
       ),
@@ -322,38 +322,38 @@ class _PostRowState extends State<PostRow> {
 
   _onMenuSelected(Choice choice) {
     switch (choice) {
-      case Choice.DisplayInBBCode:
-        setState(() => _displayMode = DisplayMode.BBCode);
+      case Choice.displayInBBCode:
+        setState(() => _displayMode = DisplayMode.bbCode);
         break;
-      case Choice.DispalyInRichText:
-        setState(() => _displayMode = DisplayMode.RichText);
+      case Choice.dispalyInRichText:
+        setState(() => _displayMode = DisplayMode.richText);
         break;
-      case Choice.EditThisPost:
-        Navigator.pushNamed(context, "/e", arguments: {
-          "action": ACTION_MODIFY,
-          "topicId": widget.post.topicId,
-          "postId": widget.post.id,
+      case Choice.editThisPost:
+        Navigator.pushNamed(context, '/e', arguments: {
+          'action': actionModify,
+          'topicId': widget.post.topicId,
+          'postId': widget.post.id,
         });
         break;
-      case Choice.ReplyToThisPost:
-        Navigator.pushNamed(context, "/e", arguments: {
-          "action": ACTION_REPLY,
-          "topicId": widget.post.topicId,
-          "postId": widget.post.id,
+      case Choice.replyToThisPost:
+        Navigator.pushNamed(context, '/e', arguments: {
+          'action': actionReply,
+          'topicId': widget.post.topicId,
+          'postId': widget.post.id,
         });
         break;
-      case Choice.QuoteFromThisPost:
-        Navigator.pushNamed(context, "/e", arguments: {
-          "action": ACTION_QUOTE,
-          "topicId": widget.post.topicId,
-          "postId": widget.post.id,
+      case Choice.quoteFromThisPost:
+        Navigator.pushNamed(context, '/e', arguments: {
+          'action': actionQuote,
+          'topicId': widget.post.topicId,
+          'postId': widget.post.id,
         });
         break;
-      case Choice.CommentOnThisPost:
-        Navigator.pushNamed(context, "/e", arguments: {
-          "action": ACTION_COMMENT,
-          "topicId": widget.post.topicId,
-          "postId": widget.post.id,
+      case Choice.commentOnThisPost:
+        Navigator.pushNamed(context, '/e', arguments: {
+          'action': actionComment,
+          'topicId': widget.post.topicId,
+          'postId': widget.post.id,
         });
         break;
     }
@@ -368,16 +368,16 @@ class _PostRowState extends State<PostRow> {
 
   Widget _buildContent() {
     switch (_displayMode) {
-      case DisplayMode.BBCode:
+      case DisplayMode.bbCode:
         return Container(
           padding: EdgeInsets.only(bottom: 6.0),
           child: SelectableText(
-            widget.post.content.replaceAll("<br/>", "\n"),
+            widget.post.content.replaceAll('<br/>', '\n'),
           ),
         );
-      case DisplayMode.RichText:
+      case DisplayMode.richText:
         return BBCodeRender(
-          data: widget.post.content,
+          raw: widget.post.content,
           openUser: (userId) {
             showDialog(
               context: context,
@@ -429,7 +429,7 @@ class _PostRowState extends State<PostRow> {
           ),
         if (widget.post.attachments.length > 1)
           Text(
-            "${widget.post.attachments.length}",
+            '${widget.post.attachments.length}',
             style: Theme.of(context).textTheme.caption,
           ),
         if (widget.post.commentIds.isNotEmpty)
@@ -453,7 +453,7 @@ class _PostRowState extends State<PostRow> {
           ),
         if (widget.post.commentIds.length > 1)
           Text(
-            "${widget.post.commentIds.length}",
+            '${widget.post.commentIds.length}',
             style: Theme.of(context).textTheme.caption,
           ),
         const Spacer(),
@@ -488,34 +488,58 @@ class _PostRowState extends State<PostRow> {
     );
   }
 
-  void openLink(String url) {
-    if (url.startsWith("/read.php?") ||
-        url.startsWith("http://nga.178.com/read.php?") ||
-        url.startsWith("https://nga.178.com/read.php?") ||
-        url.startsWith("http://bbs.ngacn.cc/read.php?") ||
-        url.startsWith("https://bbs.ngacn.cc/read.php?") ||
-        url.startsWith("http://bbs.nga.cn/read.php?") ||
-        url.startsWith("https://bbs.nga.cn/read.php?") ||
-        url.startsWith("http://nga.donews.com/read.php?") ||
-        url.startsWith("https://nga.donews.com/read.php?")) {
-      // TODO: internal jumping
-    } else if (url.startsWith("/thread.php?") ||
-        url.startsWith("http://nga.178.com/thread.php?") ||
-        url.startsWith("https://nga.178.com/thread.php?") ||
-        url.startsWith("http://bbs.ngacn.cc/thread.php?") ||
-        url.startsWith("https://bbs.ngacn.cc/thread.php?") ||
-        url.startsWith("http://nga.donews.com/thread.php?") ||
-        url.startsWith("https://bbs.nga.cn/thread.php?") ||
-        url.startsWith("http://bbs.nga.cn/thread.php?") ||
-        url.startsWith("https://nga.donews.com/thread.php?")) {
-      // TODO: internal jumping
-    }
+  // void openLink(String url) {
+  //   if (url.startsWith('/read.php?') ||
+  //       url.startsWith('http://nga.178.com/read.php?') ||
+  //       url.startsWith('https://nga.178.com/read.php?') ||
+  //       url.startsWith('http://bbs.ngacn.cc/read.php?') ||
+  //       url.startsWith('https://bbs.ngacn.cc/read.php?') ||
+  //       url.startsWith('http://bbs.nga.cn/read.php?') ||
+  //       url.startsWith('https://bbs.nga.cn/read.php?') ||
+  //       url.startsWith('http://nga.donews.com/read.php?') ||
+  //       url.startsWith('https://nga.donews.com/read.php?')) {
+  // try {
+  //   final int topicId = int.parse(Uri.parse(url).queryParameters['tid']);
+  //   Navigator.pushNamed(context, '/t', arguments: {'topicId': topicId});
+  // } catch (_) {
+  //   Scaffold.of(context).showSnackBar(SnackBar(
+  //     content: Text('Can't open this link.'),
+  //   ));
+  // }
+  // } else if (url.startsWith('/thread.php?') ||
+  //     url.startsWith('http://nga.178.com/thread.php?') ||
+  //     url.startsWith('https://nga.178.com/thread.php?') ||
+  //     url.startsWith('http://bbs.ngacn.cc/thread.php?') ||
+  //     url.startsWith('https://bbs.ngacn.cc/thread.php?') ||
+  //     url.startsWith('http://nga.donews.com/thread.php?') ||
+  //     url.startsWith('https://bbs.nga.cn/thread.php?') ||
+  //     url.startsWith('http://bbs.nga.cn/thread.php?') ||
+  //     url.startsWith('https://nga.donews.com/thread.php?')) {
+  // try {
+  //   final int categoryId = int.parse(Uri.parse(url).queryParameters['fid']);
+  //   if (categoryIds.contains(categoryId)) {
+  //     Navigator.pushNamed(
+  //       context,
+  //       '/c',
+  //       arguments: {'categoryId': categoryId},
+  //     );
+  //   } else {
+  //     Scaffold.of(context).showSnackBar(SnackBar(
+  //       content: Text('Can't open this link.'),
+  //     ));
+  //   }
+  // } catch (_) {
+  //   Scaffold.of(context).showSnackBar(SnackBar(
+  //     content: Text('Can't open this link.'),
+  //   ));
+  // }
+  // }
 
-    showDialog(
-      context: context,
-      builder: (context) => LinkDialog(url),
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => LinkDialog(url),
+  //   );
+  // }
 }
 
 class PostRowConnector extends StatelessWidget {
@@ -596,15 +620,15 @@ class ViewModel extends BaseModel<AppState> {
 }
 
 enum Choice {
-  DisplayInBBCode,
-  DispalyInRichText,
-  EditThisPost,
-  ReplyToThisPost,
-  QuoteFromThisPost,
-  CommentOnThisPost,
+  displayInBBCode,
+  dispalyInRichText,
+  editThisPost,
+  replyToThisPost,
+  quoteFromThisPost,
+  commentOnThisPost,
 }
 
 enum DisplayMode {
-  BBCode,
-  RichText,
+  bbCode,
+  richText,
 }

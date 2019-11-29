@@ -35,19 +35,19 @@ Future<VoteResponse> votePost({
   @required int postId,
   @required int value,
 }) async {
-  final uri = Uri.https(baseUrl, "nuke.php", {
-    "__lib": "topic_recommend",
-    "__act": "add",
-    "tid": topicId.toString(),
-    "pid": postId.toString(),
-    "value": value.toString(),
-    "raw": "3",
-    "__output": "11",
+  final uri = Uri.https(baseUrl, 'nuke.php', {
+    '__lib': 'topic_recommend',
+    '__act': 'add',
+    'tid': topicId.toString(),
+    'pid': postId.toString(),
+    'value': value.toString(),
+    'raw': '3',
+    '__output': '11',
   });
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookie});
+  final res = await client.post(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 

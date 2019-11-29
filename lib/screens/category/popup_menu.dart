@@ -43,7 +43,7 @@ class PopupMenu extends StatelessWidget {
         PopupMenuItem<Choice>(
           value: Choice.copyLinkToClipboard,
           child: Text(
-            "Copy Link to clipboard",
+            'Copy Link to clipboard',
             style: Theme.of(context).textTheme.body1,
           ),
         ),
@@ -51,15 +51,15 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.removeFromPinned,
             child: Text(
-              "Remove from pinned",
+              'Remove from pinned',
               style: Theme.of(context).textTheme.body1,
             ),
-          ),
-        if (!isPinned)
+          )
+        else
           PopupMenuItem<Choice>(
             value: Choice.addToPinned,
             child: Text(
-              "Add to pinned",
+              'Add to pinned',
               style: Theme.of(context).textTheme.body1,
             ),
           ),
@@ -68,24 +68,24 @@ class PopupMenu extends StatelessWidget {
         switch (choice) {
           case Choice.copyLinkToClipboard:
             await Clipboard.setData(ClipboardData(
-              text: Uri.https(baseUrl, "read.php", {
-                isSubcategory ? "stid" : "tid": categoryId.toString()
+              text: Uri.https(baseUrl, 'read.php', {
+                isSubcategory ? 'stid' : 'tid': categoryId.toString()
               }).toString(),
             ));
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text("Copied to clipboard"),
+              content: Text('Copied to clipboard'),
             ));
             break;
           case Choice.addToPinned:
             addToPinned();
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text("Added to pinned"),
+              content: Text('Added to pinned'),
             ));
             break;
           case Choice.removeFromPinned:
             removeFromPinned();
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text("Removed from pinned"),
+              content: Text('Removed from pinned'),
             ));
             break;
         }
@@ -118,7 +118,7 @@ class PopupMenuConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  final categoryId;
+  final int categoryId;
 
   String baseUrl;
   bool isSubcategory;

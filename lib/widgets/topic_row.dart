@@ -8,8 +8,8 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
-final numberFormatter = NumberFormat("#,###");
-final dateFormatter = DateFormat("yyyy-MM-dd HH:mm");
+final NumberFormat numberFormatter = NumberFormat('#,###');
+final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
@@ -27,7 +27,7 @@ class TopicRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (topic.category != null)
+    if (topic.category != null) {
       return InkWell(
         onTap: () => navigateToCategory(topic.category.id),
         child: Padding(
@@ -42,6 +42,7 @@ class TopicRow extends StatelessWidget {
           ),
         ),
       );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

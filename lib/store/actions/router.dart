@@ -16,7 +16,7 @@ class NavigateToCategoryAction extends ReduxAction<AppState> {
         ..putIfAbsent(
           categoryId,
           () => CategoryState(
-            topicIds: List(),
+            topicIds: [],
             lastPage: 0,
             topicsCount: 0,
             maxPage: 0,
@@ -26,7 +26,7 @@ class NavigateToCategoryAction extends ReduxAction<AppState> {
   }
 
   void after() =>
-      dispatch(NavigateAction.pushNamed("/c", arguments: {"id": categoryId}));
+      dispatch(NavigateAction.pushNamed('/c', arguments: {'id': categoryId}));
 }
 
 class NavigateToTopicAction extends ReduxAction<AppState> {
@@ -45,7 +45,7 @@ class NavigateToTopicAction extends ReduxAction<AppState> {
         ..update(
           topicId,
           (topicState) => topicState.copy(
-            postIds: topicState.firstPage != page ? List() : null,
+            postIds: topicState.firstPage != page ? [] : null,
             postsCount: topicState.firstPage != page ? 0 : null,
           ),
           ifAbsent: () => TopicState(
@@ -53,12 +53,12 @@ class NavigateToTopicAction extends ReduxAction<AppState> {
             lastPage: page,
             maxPage: page,
             postsCount: 0,
-            postIds: List(),
+            postIds: [],
           ),
         ),
     );
   }
 
   void after() => dispatch(
-      NavigateAction.pushNamed("/t", arguments: {"id": topicId, "page": page}));
+      NavigateAction.pushNamed('/t', arguments: {'id': topicId, 'page': page}));
 }

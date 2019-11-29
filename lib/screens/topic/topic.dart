@@ -18,7 +18,7 @@ import 'popup_menu.dart';
 import 'post_row.dart';
 import 'update_indicator.dart';
 
-final dateFormatter = DateFormat("HH:mm:ss");
+final DateFormat dateFormatter = DateFormat('HH:mm:ss');
 
 class TopicPage extends StatefulWidget {
   final Topic topic;
@@ -97,7 +97,7 @@ class _TopicPageState extends State<TopicPage>
 
   _consumeEvents() {
     String message = widget.snackBarEvt.consume();
-    if (message != null)
+    if (message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -106,6 +106,7 @@ class _TopicPageState extends State<TopicPage>
           ));
         }
       });
+    }
   }
 
   @override
@@ -129,9 +130,9 @@ class _TopicPageState extends State<TopicPage>
         position: _offset,
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, "/e", arguments: {
-              "action": ACTION_REPLY,
-              "topicId": widget.topic.id,
+            Navigator.pushNamed(context, '/e', arguments: {
+              'action': actionReply,
+              'topicId': widget.topic.id,
             });
           },
           child: Icon(Icons.add),
@@ -184,17 +185,18 @@ class _TopicPageState extends State<TopicPage>
             if (index.isOdd) {
               return index ~/ 2;
             }
+            // ignore: avoid_returning_null
             return null;
           },
-          childCount:
-              widget.posts.length > 0 ? (widget.posts.length * 2 + 1) : 0,
+          childCount: widget.posts.isEmpty ? 0 : (widget.posts.length * 2 + 1),
         ),
       ),
-      widget.reachMaxPage
-          ? SliverToBoxAdapter(
-              child: UpdateIndicatorConnector(topicId: widget.topic.id),
-            )
-          : footer,
+      if (widget.reachMaxPage)
+        SliverToBoxAdapter(
+          child: UpdateIndicatorConnector(topicId: widget.topic.id),
+        )
+      else
+        footer
     ];
 
     return CustomScrollView(
@@ -237,7 +239,7 @@ class TopicPageConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  final topicId;
+  final int topicId;
 
   Topic topic;
   List<Post> posts;

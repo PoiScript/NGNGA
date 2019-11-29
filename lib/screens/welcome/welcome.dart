@@ -26,9 +26,9 @@ class _WelcomePageState extends State<WelcomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text("Welcome to"),
+            Text('Welcome to'),
             Text(
-              "NGNGA",
+              'NGNGA',
               style: Theme.of(context)
                   .textTheme
                   .title
@@ -93,7 +93,7 @@ class _WelcomePageState extends State<WelcomePage> {
               child: Text('Anonymous Login'),
               onPressed: () async {
                 await widget.loginAsGuest();
-                Navigator.pushReplacementNamed(context, "/");
+                Navigator.pushReplacementNamed(context, '/');
               },
             ),
           ],

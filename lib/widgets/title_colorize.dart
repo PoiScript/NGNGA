@@ -3,7 +3,7 @@ import 'package:html_unescape/html_unescape.dart';
 
 import 'package:ngnga/models/topic.dart';
 
-final unescape = HtmlUnescape();
+final HtmlUnescape unescape = HtmlUnescape();
 
 class TitleColorize extends StatelessWidget {
   final Topic topic;
@@ -28,6 +28,7 @@ class TitleColorize extends StatelessWidget {
     final base = Theme.of(context).textTheme.body1.copyWith(
           fontWeight: topic.isBold ? FontWeight.w500 : FontWeight.w400,
           fontStyle: topic.isItalic ? FontStyle.italic : FontStyle.normal,
+          fontFamily: 'Noto Sans CJK SC',
           decoration: topic.isUnderline
               ? TextDecoration.underline
               : TextDecoration.none,
@@ -36,33 +37,33 @@ class TitleColorize extends StatelessWidget {
     var color = base.color;
 
     switch (topic.titleColor) {
-      case TitleColor.Red:
+      case TitleColor.red:
         color = Colors.red;
         break;
-      case TitleColor.Blue:
+      case TitleColor.blue:
         color = Colors.blue;
         break;
-      case TitleColor.Green:
+      case TitleColor.green:
         color = Colors.green;
         break;
-      case TitleColor.Orange:
+      case TitleColor.orange:
         color = Colors.orange;
         break;
-      case TitleColor.Silver:
+      case TitleColor.silver:
         color = Colors.grey;
         break;
-      case TitleColor.Default:
+      case TitleColor.none:
         break;
     }
 
     while (true) {
-      var start = content.indexOf("[", lastEnd);
+      var start = content.indexOf('[', lastEnd);
 
       if (start == -1) {
         break;
       }
 
-      var end = content.indexOf("]", start);
+      var end = content.indexOf(']', start);
 
       if (end == -1) {
         break;
@@ -77,7 +78,7 @@ class TitleColorize extends StatelessWidget {
         );
       }
 
-      if (content.substring(start + 1, end) == "专楼") {
+      if (content.substring(start + 1, end) == '专楼') {
         spans.add(TextSpan(
           text: content.substring(start, end + 1),
           style: base.copyWith(color: Colors.purple),
@@ -101,7 +102,7 @@ class TitleColorize extends StatelessWidget {
 
     if (displayLabel && topic.isLocked) {
       spans.add(TextSpan(
-        text: " [锁定]",
+        text: ' [锁定]',
         style:
             Theme.of(context).textTheme.body2.copyWith(color: Colors.red[700]),
       ));

@@ -27,7 +27,7 @@ class Explore extends StatelessWidget {
             ),
             color: Theme.of(context).cardColor,
             child: Text(
-              "Pinned",
+              'Pinned',
               style: Theme.of(context).textTheme.caption,
             ),
           ),

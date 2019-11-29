@@ -23,14 +23,14 @@ class FetchCategoryTopicsResponse {
     List<Topic> topics = [];
     List<Category> categories = [];
 
-    if (json["data"]["__T"] is List) {
-      for (var value in List.from(json["data"]["__T"])) {
+    if (json['data']['__T'] is List) {
+      for (var value in List.from(json['data']['__T'])) {
         Topic topic = Topic.fromJson(value);
         if (topic.category != null) categories.add(topic.category);
         topics.add(topic);
       }
     } else {
-      for (var value in Map.from(json["data"]["__T"]).values) {
+      for (var value in Map.from(json['data']['__T']).values) {
         Topic topic = Topic.fromJson(value);
         if (topic.category != null) categories.add(topic.category);
         topics.add(topic);
@@ -40,8 +40,8 @@ class FetchCategoryTopicsResponse {
     return FetchCategoryTopicsResponse._(
       topics: topics,
       categories: categories,
-      topicCount: json["data"]["__ROWS"],
-      maxPage: json["data"]["__ROWS"] ~/ json["data"]["__T__ROWS_PAGE"],
+      topicCount: json['data']['__ROWS'],
+      maxPage: json['data']['__ROWS'] ~/ json['data']['__T__ROWS_PAGE'],
     );
   }
 }
@@ -55,20 +55,20 @@ Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
   @required bool isSubcategory,
 }) async {
   final uri = isSubcategory
-      ? Uri.https(baseUrl, "thread.php", {
-          "stid": categoryId.toString(),
-          "page": (page + 1).toString(),
-          "__output": "11",
+      ? Uri.https(baseUrl, 'thread.php', {
+          'stid': categoryId.toString(),
+          'page': (page + 1).toString(),
+          '__output': '11',
         })
-      : Uri.https(baseUrl, "thread.php", {
-          "fid": categoryId.toString(),
-          "page": (page + 1).toString(),
-          "__output": "11",
+      : Uri.https(baseUrl, 'thread.php', {
+          'fid': categoryId.toString(),
+          'page': (page + 1).toString(),
+          '__output': '11',
         });
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookie});
+  final res = await client.get(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 

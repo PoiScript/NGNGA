@@ -1,64 +1,64 @@
 import 'package:html_unescape/html_unescape.dart';
 
-import 'tag.dart';
 import 'sticker.dart';
+import 'tag.dart';
 
-final RegExp headingRegExp = RegExp(r"===(.*?)===");
+final RegExp headingRegExp = RegExp(r'===(.*?)===');
 
-final RegExp alignStartRegExp = RegExp(r"\[align=([^\s\]]*)\]");
-final RegExp sizeStartRegExp = RegExp(r"\[size=([^\s\]]*)\]");
-final RegExp fontStartRegExp = RegExp(r"\[font=([^\s\]]*)\]");
-final RegExp colorStartRegExp = RegExp(r"\[color=([^\s\]]*)\]");
-final RegExp collapseStartRegExp = RegExp(r"\[collapse(=[^\]]*)?\]");
-final RegExp linkRegExp = RegExp(r"\[url(=[^\s\]]*)?\]([^\[\]]*?)\[/url\]");
+final RegExp alignStartRegExp = RegExp(r'\[align=([^\s\]]*)\]');
+final RegExp sizeStartRegExp = RegExp(r'\[size=([^\s\]]*)\]');
+final RegExp fontStartRegExp = RegExp(r'\[font=([^\s\]]*)\]');
+final RegExp colorStartRegExp = RegExp(r'\[color=([^\s\]]*)\]');
+final RegExp collapseStartRegExp = RegExp(r'\[collapse(=[^\]]*)?\]');
+final RegExp linkRegExp = RegExp(r'\[url(=[^\s\]]*)?\]([^\[\]]*?)\[/url\]');
 
-final RegExp uidRegExp = RegExp(r"\[uid=(\d*)\](.*?)\[/uid\]");
-final RegExp pidRegExp = RegExp(r"\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]");
-final RegExp metionsRegExp = RegExp(r"\[@([^\s\]]*?)\]");
-final RegExp imageRegExp = RegExp(r"\[img\]([^\[\]]*?)\[/img\]");
-final RegExp stickerRegExp = RegExp(r"\[s:([^\s\]]*?)\]");
+final RegExp uidRegExp = RegExp(r'\[uid=(\d*)\](.*?)\[/uid\]');
+final RegExp pidRegExp = RegExp(r'\[pid=(\d*),(\d*),(\d*)\](.*?)\[/pid\]');
+final RegExp metionsRegExp = RegExp(r'\[@([^\s\]]*?)\]');
+final RegExp imageRegExp = RegExp(r'\[img\]([^\[\]]*?)\[/img\]');
+final RegExp stickerRegExp = RegExp(r'\[s:([^\s\]]*?)\]');
 
-final RegExp ruleRegExp = RegExp(r"^\s*={5,}\s*$", multiLine: true);
+final RegExp ruleRegExp = RegExp(r'^\s*={5,}\s*$', multiLine: true);
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp1 = RegExp(
-  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+  r'\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]',
 );
 
 // [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid=xxx]xxxx[/uid] (xx-xx-xx xx:xx)[/b]
 RegExp replyRegExp2 = RegExp(
-  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+  r'\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]',
 );
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp3 = RegExp(
-  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+  r'\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]',
 );
 
 // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=-xxx]xxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp4 = RegExp(
-  r"\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+  r'\[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] \[b\]Post by \[uid=(-\d*)\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]',
 );
 
 // [b]Reply to [pid=xxxx,xxxx,xxx]Reply[/pid] Post by [uid]xxxx[/uid][color=gray](xxx楼)[/color] (xx-xx-xx xx:xx)[/b]
 RegExp replyRegExp5 = RegExp(
-  r"\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+  r'\[b\]Reply to \[pid=(\d*),(\d*),(\d*)\]Reply\[/pid\] Post by \[uid\](.*?)\[/uid\]\[color=gray\]\(\d*楼\)\[/color\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]',
 );
 
 // [tid=xxx]Topic[/tid] [b]Post by [uid=xxx]xxx[/uid] (xx-xx-xx xx:xx):[/b]
 RegExp replyRegExp6 = RegExp(
-  r"\[tid=(\d*)\]Topic\[/tid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]",
+  r'\[tid=(\d*)\]Topic\[/tid\] \[b\]Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\):\[/b\]',
 );
 
 // [b]Reply to [tid=xxx]Topic[/tid] Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx)[/b]
 RegExp replyRegExp7 = RegExp(
-  r"\[b\]Reply to \[tid=(\d*)\]Topic\[/tid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]",
+  r'\[b\]Reply to \[tid=(\d*)\]Topic\[/tid\] Post by \[uid=(\d*)\](.*?)\[/uid\] \((\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)\[/b\]',
 );
 
-final unescape = new HtmlUnescape();
+final HtmlUnescape unescape = HtmlUnescape();
 
 List<Tag> parseBBCode(String raw) {
-  List<_TagSpan> spans = List();
+  List<_TagSpan> spans = [];
 
   String content = unescape.convert(unescape.convert(raw));
 
@@ -78,10 +78,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -100,10 +100,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -120,10 +120,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -141,10 +141,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -161,10 +161,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -182,10 +182,10 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   while (true) {
@@ -203,105 +203,114 @@ List<Tag> parseBBCode(String raw) {
       ),
       match.start,
       match.start + 1,
-      false,
+      removed: false,
     ));
     content =
-        "${content.substring(0, match.start)}_${content.substring(match.end)}";
+        '${content.substring(0, match.start)}_${content.substring(match.end)}';
   }
 
   spans
     // styling
-    ..addAll("[b]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(BoldStartTag(), match, false),
+    ..addAll('[b]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(BoldStartTag(), match, removed: false),
         ))
-    ..addAll("[/b]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(BoldEndTag(), match, true),
+    ..addAll('[/b]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(BoldEndTag(), match, removed: true),
         ))
-    ..addAll("[i]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ItalicStartTag(), match, false),
+    ..addAll('[i]'.allMatches(content).map(
+          (match) =>
+              _TagSpan.fromMatch(ItalicStartTag(), match, removed: false),
         ))
-    ..addAll("[/i]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ItalicEndTag(), match, true),
+    ..addAll('[/i]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ItalicEndTag(), match, removed: true),
         ))
-    ..addAll("[u]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(UnderlineStartTag(), match, false),
+    ..addAll('[u]'.allMatches(content).map(
+          (match) =>
+              _TagSpan.fromMatch(UnderlineStartTag(), match, removed: false),
         ))
-    ..addAll("[/u]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(UnderlineEndTag(), match, true),
+    ..addAll('[/u]'.allMatches(content).map(
+          (match) =>
+              _TagSpan.fromMatch(UnderlineEndTag(), match, removed: true),
         ))
-    ..addAll("[del]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(DeleteStartTag(), match, false),
+    ..addAll('[del]'.allMatches(content).map(
+          (match) =>
+              _TagSpan.fromMatch(DeleteStartTag(), match, removed: false),
         ))
-    ..addAll("[/del]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(DeleteEndTag(), match, true),
+    ..addAll('[/del]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(DeleteEndTag(), match, removed: true),
         ))
     ..addAll(sizeStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(SizeStartTag(), match, false),
+          (match) => _TagSpan.fromMatch(SizeStartTag(), match, removed: false),
         ))
-    ..addAll("[/size]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(SizeEndTag(), match, true),
+    ..addAll('[/size]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(SizeEndTag(), match, removed: true),
         ))
     ..addAll(fontStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(FontStartTag(), match, false),
+          (match) => _TagSpan.fromMatch(FontStartTag(), match, removed: false),
         ))
-    ..addAll("[/font]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(FontEndTag(), match, true),
+    ..addAll('[/font]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(FontEndTag(), match, removed: true),
         ))
     ..addAll(colorStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ColorStartTag(match[1]), match, false),
+          (match) => _TagSpan.fromMatch(ColorStartTag(match[1]), match,
+              removed: false),
         ))
-    ..addAll("[/color]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ColorEndTag(), match, true),
+    ..addAll('[/color]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(ColorEndTag(), match, removed: true),
         ))
-    ..addAll("[h]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(HeadingStartTag(), match, false),
+    ..addAll('[h]'.allMatches(content).map(
+          (match) =>
+              _TagSpan.fromMatch(HeadingStartTag(), match, removed: false),
         ))
-    ..addAll("[/h]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(HeadingEndTag(), match, true),
+    ..addAll('[/h]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(HeadingEndTag(), match, removed: true),
         ))
     // containers
     // ..addAll(alignStartRegExp.allMatches(content).map(
     //       (match) => _TagSpan.fromMatch(AlignStart(), match, false),
     //     ))
-    // ..addAll("[/align]".allMatches(content).map(
+    // ..addAll('[/align]'.allMatches(content).map(
     //       (match) => _TagSpan.fromMatch(AlignEnd(), match, true),
     //     ))
     // ..addAll(headingRegExp.allMatches(content).expand((match) => [
     //       _TagSpan(HeadingStart(), match.start, match.start + 3, false),
     //       _TagSpan(HeadingEnd(), match.end - 3, match.end, true),
     //     ]))
-    ..addAll("[quote]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(QuoteStartTag(), match, false),
+    ..addAll('[quote]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(QuoteStartTag(), match, removed: false),
         ))
-    ..addAll("[/quote]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(QuoteEndTag(), match, true),
+    ..addAll('[/quote]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(QuoteEndTag(), match, removed: true),
         ))
     ..addAll(collapseStartRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-              CollapseStartTag(match[1]?.substring(1)), match, false),
+              CollapseStartTag(match[1]?.substring(1)), match,
+              removed: false),
         ))
-    ..addAll("[/collapse]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(CollapseEndTag(), match, true),
+    ..addAll('[/collapse]'.allMatches(content).map(
+          (match) => _TagSpan.fromMatch(CollapseEndTag(), match, removed: true),
         ))
     ..addAll(linkRegExp.allMatches(content).expand((match) => [
           _TagSpan(
             LinkStartTag(match[1]?.substring(1) ?? match[2]),
             match.start,
             match.start + 5 + (match[1]?.length ?? 0),
-            false,
+            removed: false,
           ),
-          _TagSpan(LinkEndTag(), match.end - 6, match.end, false),
+          _TagSpan(LinkEndTag(), match.end - 6, match.end, removed: false),
         ]))
     // inline objects
     ..addAll(ruleRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(RuleTag(), match, false),
+          (match) => _TagSpan.fromMatch(RuleTag(), match, removed: false),
         ))
     ..addAll(uidRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-              UidTag(int.parse(match[1]), match[2]), match, false),
+              UidTag(int.parse(match[1]), match[2]), match,
+              removed: false),
         ))
     ..addAll(metionsRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(MetionsTag(match[1]), match, false),
+          (match) =>
+              _TagSpan.fromMatch(MetionsTag(match[1]), match, removed: false),
         ))
     ..addAll(imageRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
@@ -309,30 +318,32 @@ List<Tag> parseBBCode(String raw) {
                 ? StickerTag(imageUrlToName[match[1]])
                 : ImageTag(match[1]),
             match,
-            false,
+            removed: false,
           ),
         ))
     ..addAll(stickerRegExp
         .allMatches(content)
         .where((match) => stickerNames.contains(match[1]))
         .map(
-          (match) => _TagSpan.fromMatch(StickerTag(match[1]), match, false),
+          (match) =>
+              _TagSpan.fromMatch(StickerTag(match[1]), match, removed: false),
         ))
     ..addAll(pidRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
             PidTag(int.parse(match[2]), int.parse(match[3]),
                 int.parse(match[4]), match[5]),
             match,
-            false,
+            removed: false,
           ),
         ));
 
-  if (spans.isEmpty)
+  if (spans.isEmpty) {
     return [
       ParagraphStartTag(),
       TextTag(content),
       ParagraphEndTag(),
     ];
+  }
 
   spans.sort((a, b) => a.start.compareTo(b.start));
 
@@ -341,6 +352,8 @@ List<Tag> parseBBCode(String raw) {
 
     if (spans[i].tag is QuoteStartTag) {
       _findQuoteEndTag(spans, i);
+    } else if (spans[i].tag is LinkStartTag) {
+      _findLinkEndTag(spans, i);
     } else if (spans[i].tag is CollapseStartTag) {
       _findCollapseEndTag(spans, i);
     } else if (spans[i].tag is BoldStartTag) {
@@ -611,14 +624,14 @@ class _TagSpan {
 
   bool removed = false;
 
-  _TagSpan(this.tag, this.start, this.end, this.removed);
+  _TagSpan(this.tag, this.start, this.end, {this.removed});
 
-  _TagSpan.fromMatch(this.tag, Match match, this.removed)
+  _TagSpan.fromMatch(this.tag, Match match, {this.removed})
       : start = match.start,
         end = match.end;
 
   @override
   String toString() {
-    return "$tag($start, $end)";
+    return '$tag($start, $end)';
   }
 }

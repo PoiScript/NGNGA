@@ -30,7 +30,7 @@ class PrepareEditingAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      setEditing: Event(Editing(
+      setEditingEvt: Event(Editing(
         content: response.content,
         subject: response.subject,
         attachUrl: response.attachUrl,

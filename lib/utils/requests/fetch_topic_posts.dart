@@ -29,7 +29,7 @@ class FetchTopicPostsResponse {
     List<Post> posts = [];
     List<Post> comments = [];
 
-    for (var entry in Map.from(json["data"]["__U"]).entries) {
+    for (var entry in Map.from(json['data']['__U']).entries) {
       int userId = int.tryParse(entry.key);
 
       if (userId == null) continue;
@@ -37,7 +37,7 @@ class FetchTopicPostsResponse {
       users.add(User.fromJson(entry.value, userId));
     }
 
-    for (var value in List.from(json["data"]["__R"])) {
+    for (var value in List.from(json['data']['__R'])) {
       posts.add(Post.fromJson(value));
 
       if (value['comment'] is List) {
@@ -48,11 +48,11 @@ class FetchTopicPostsResponse {
     }
 
     return FetchTopicPostsResponse._(
-      topic: Topic.fromJson(json["data"]["__T"]),
+      topic: Topic.fromJson(json['data']['__T']),
       posts: posts,
       comments: comments,
       users: users,
-      maxPage: (json["data"]["__ROWS"] - 1) ~/ json["data"]["__R__ROWS_PAGE"],
+      maxPage: (json['data']['__ROWS'] - 1) ~/ json['data']['__R__ROWS_PAGE'],
     );
   }
 }
@@ -64,15 +64,15 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
   @required int topicId,
   @required int page,
 }) async {
-  final uri = Uri.https(baseUrl, "read.php", {
-    "tid": topicId.toString(),
-    "page": (page + 1).toString(),
-    "__output": "11",
+  final uri = Uri.https(baseUrl, 'read.php', {
+    'tid': topicId.toString(),
+    'page': (page + 1).toString(),
+    '__output': '11',
   });
 
   print(uri);
 
-  var response = await client.get(uri, headers: {"cookie": cookie});
+  var response = await client.get(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(response.body);
 
@@ -80,7 +80,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
   List<Post> posts = [];
   List<Post> comments = [];
 
-  for (var entry in Map.from(json["data"]["__U"]).entries) {
+  for (var entry in Map.from(json['data']['__U']).entries) {
     int userId = int.tryParse(entry.key);
 
     if (userId == null) continue;
@@ -88,7 +88,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
     users.add(User.fromJson(entry.value, userId));
   }
 
-  for (var value in List.from(json["data"]["__R"])) {
+  for (var value in List.from(json['data']['__R'])) {
     if (value['comment_to_id'] is int) {
       int index = comments.indexWhere((c) => c.id == value['pid']);
 
@@ -107,7 +107,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
       }
 
       posts.add(comments[index].copy(
-        index: value["lou"],
+        index: value['lou'],
         commentTo: value['comment_to_id'],
       ));
     } else {
@@ -122,10 +122,10 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
   }
 
   return FetchTopicPostsResponse._(
-    topic: Topic.fromJson(json["data"]["__T"]),
+    topic: Topic.fromJson(json['data']['__T']),
     posts: posts,
     comments: comments,
     users: users,
-    maxPage: (json["data"]["__ROWS"] - 1) ~/ json["data"]["__R__ROWS_PAGE"],
+    maxPage: (json['data']['__ROWS'] - 1) ~/ json['data']['__R__ROWS_PAGE'],
   );
 }

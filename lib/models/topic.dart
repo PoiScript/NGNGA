@@ -2,35 +2,23 @@ import 'dart:convert';
 
 import 'package:ngnga/models/category.dart';
 
-const int _MASK_LOCKED = 1024;
-const int _MASK_ATTACHMENT = 8192;
-const int _MASK_SUBCATEGORY = 32768;
+const int _locakedMask = 1024;
+const int _attachmentMask = 8192;
+const int _subcategoryMask = 32768;
 
-const int _MASK_COLOR_RED = 1;
-const int _MASK_COLOR_BLUE = 2;
-const int _MASK_COLOR_GREEN = 4;
-const int _MASK_COLOR_ORANGE = 8;
-const int _MASK_COLOR_SILVER = 16;
+const int _colorRedMask = 1;
+const int _colorBlueMask = 2;
+const int _colorGreenMask = 4;
+const int _colorOrangeMas = 8;
+const int _colorSliverMask = 16;
 
-const int _MASK_STYLE_BOLD = 32;
-const int _MASK_STYLE_ITALIC = 64;
-const int _MASK_STYLE_UNDERLINE = 128;
+const int _styleBoldMask = 32;
+const int _styleItalicMask = 64;
+const int _styleUnderlineMask = 128;
 
-enum TitleColor {
-  Default,
-  Red,
-  Blue,
-  Green,
-  Orange,
-  Silver,
-}
+enum TitleColor { none, red, blue, green, orange, silver }
 
-enum TitleStyle {
-  None,
-  Bold,
-  Italic,
-  Underline,
-}
+enum TitleStyle { none, bold, italic, underline }
 
 class Topic {
   final int id;
@@ -89,9 +77,9 @@ class Topic {
     if (json['topic_misc'] is String) {
       final bytes = base64.decode(
         json['topic_misc'].length % 4 == 3
-            ? "${json['topic_misc']}="
+            ? '${json['topic_misc']}='
             : json['topic_misc'].length % 4 == 2
-                ? "${json['topic_misc']}=="
+                ? '${json['topic_misc']}=='
                 : json['topic_misc'],
       );
 
@@ -105,24 +93,24 @@ class Topic {
               bytes[index + 4];
 
           if (bits != null) {
-            if (bits & _MASK_COLOR_RED == _MASK_COLOR_RED) {
-              titleColor = TitleColor.Red;
-            } else if (bits & _MASK_COLOR_BLUE == _MASK_COLOR_BLUE) {
-              titleColor = TitleColor.Blue;
-            } else if (bits & _MASK_COLOR_GREEN == _MASK_COLOR_GREEN) {
-              titleColor = TitleColor.Green;
-            } else if (bits & _MASK_COLOR_ORANGE == _MASK_COLOR_ORANGE) {
-              titleColor = TitleColor.Orange;
-            } else if (bits & _MASK_COLOR_SILVER == _MASK_COLOR_SILVER) {
-              titleColor = TitleColor.Silver;
+            if (bits & _colorRedMask == _colorRedMask) {
+              titleColor = TitleColor.red;
+            } else if (bits & _colorBlueMask == _colorBlueMask) {
+              titleColor = TitleColor.blue;
+            } else if (bits & _colorGreenMask == _colorGreenMask) {
+              titleColor = TitleColor.green;
+            } else if (bits & _colorOrangeMas == _colorOrangeMas) {
+              titleColor = TitleColor.orange;
+            } else if (bits & _colorSliverMask == _colorSliverMask) {
+              titleColor = TitleColor.silver;
             }
 
-            if (bits & _MASK_STYLE_BOLD == _MASK_STYLE_BOLD) {
-              titleStyle = TitleStyle.Bold;
-            } else if (bits & _MASK_STYLE_ITALIC == _MASK_STYLE_ITALIC) {
-              titleStyle = TitleStyle.Italic;
-            } else if (bits & _MASK_STYLE_UNDERLINE == _MASK_STYLE_UNDERLINE) {
-              titleStyle = TitleStyle.Underline;
+            if (bits & _styleBoldMask == _styleBoldMask) {
+              titleStyle = TitleStyle.bold;
+            } else if (bits & _styleItalicMask == _styleItalicMask) {
+              titleStyle = TitleStyle.italic;
+            } else if (bits & _styleUnderlineMask == _styleUnderlineMask) {
+              titleStyle = TitleStyle.underline;
             }
           }
 
@@ -149,31 +137,31 @@ class Topic {
     if (json['topic_misc_var'] is Map) {
       Map<String, int> misc = Map<String, int>.from(json['topic_misc_var']);
 
-      if (misc["1"] != null) {
-        if (misc["1"] & _MASK_COLOR_RED == _MASK_COLOR_RED) {
-          titleColor = TitleColor.Red;
-        } else if (misc["1"] & _MASK_COLOR_BLUE == _MASK_COLOR_BLUE) {
-          titleColor = TitleColor.Blue;
-        } else if (misc["1"] & _MASK_COLOR_GREEN == _MASK_COLOR_GREEN) {
-          titleColor = TitleColor.Green;
-        } else if (misc["1"] & _MASK_COLOR_ORANGE == _MASK_COLOR_ORANGE) {
-          titleColor = TitleColor.Orange;
-        } else if (misc["1"] & _MASK_COLOR_SILVER == _MASK_COLOR_SILVER) {
-          titleColor = TitleColor.Silver;
+      if (misc['1'] != null) {
+        if (misc['1'] & _colorRedMask == _colorRedMask) {
+          titleColor = TitleColor.red;
+        } else if (misc['1'] & _colorBlueMask == _colorBlueMask) {
+          titleColor = TitleColor.blue;
+        } else if (misc['1'] & _colorGreenMask == _colorGreenMask) {
+          titleColor = TitleColor.green;
+        } else if (misc['1'] & _colorOrangeMas == _colorOrangeMas) {
+          titleColor = TitleColor.orange;
+        } else if (misc['1'] & _colorSliverMask == _colorSliverMask) {
+          titleColor = TitleColor.silver;
         }
 
-        if (misc["1"] & _MASK_STYLE_BOLD == _MASK_STYLE_BOLD) {
-          titleStyle = TitleStyle.Bold;
-        } else if (misc["1"] & _MASK_STYLE_ITALIC == _MASK_STYLE_ITALIC) {
-          titleStyle = TitleStyle.Italic;
-        } else if (misc["1"] & _MASK_STYLE_UNDERLINE == _MASK_STYLE_UNDERLINE) {
-          titleStyle = TitleStyle.Underline;
+        if (misc['1'] & _styleBoldMask == _styleBoldMask) {
+          titleStyle = TitleStyle.bold;
+        } else if (misc['1'] & _styleItalicMask == _styleItalicMask) {
+          titleStyle = TitleStyle.italic;
+        } else if (misc['1'] & _styleUnderlineMask == _styleUnderlineMask) {
+          titleStyle = TitleStyle.underline;
         }
       }
 
-      if (misc["3"] != null) {
+      if (misc['3'] != null) {
         category = Category(
-          id: misc["3"],
+          id: misc['3'],
           title: json['subject'],
           isSubcategory: false,
         );
@@ -182,7 +170,7 @@ class Topic {
 
     int type = json['type'];
 
-    if (type & _MASK_SUBCATEGORY == _MASK_SUBCATEGORY) {
+    if (type & _subcategoryMask == _subcategoryMask) {
       category = Category(
         id: json['tid'],
         title: json['subject'],
@@ -206,16 +194,16 @@ class Topic {
       author: json['authorid'] is int
           ? (json['author'] is String
               ? json['author']
-              : "UID${json['authorid']}")
-          : "#ANONYMOUS#",
+              : 'UID${json['authorid']}')
+          : '#ANONYMOUS#',
       lastPoster: json['lastposter'],
-      isLocked: type & _MASK_LOCKED == _MASK_LOCKED,
+      isLocked: type & _locakedMask == _locakedMask,
       category: category,
-      hasAttachment: type & _MASK_ATTACHMENT == _MASK_ATTACHMENT,
+      hasAttachment: type & _attachmentMask == _attachmentMask,
     );
   }
 
-  bool get isBold => titleStyle == TitleStyle.Bold;
-  bool get isItalic => titleStyle == TitleStyle.Italic;
-  bool get isUnderline => titleStyle == TitleStyle.Underline;
+  bool get isBold => titleStyle == TitleStyle.bold;
+  bool get isItalic => titleStyle == TitleStyle.italic;
+  bool get isUnderline => titleStyle == TitleStyle.underline;
 }

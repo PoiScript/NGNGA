@@ -18,15 +18,15 @@ class BBCodeRender extends StatefulWidget {
   final void Function(String) openLink;
 
   BBCodeRender({
-    @required String data,
+    @required String raw,
     @required this.openPost,
     @required this.openUser,
     @required this.openLink,
-  })  : assert(data != null),
+  })  : assert(raw != null),
         assert(openPost != null),
         assert(openUser != null),
         assert(openLink != null),
-        this.data = data.replaceAll("<br/>", "\n");
+        data = raw.replaceAll('<br/>', '\n');
 
   @override
   _BBCodeRenderState createState() => _BBCodeRenderState();
@@ -42,7 +42,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     style = Theme.of(context)
         .textTheme
         .body1
-        .copyWith(fontFamily: "Noto Sans CJK SC");
+        .copyWith(fontFamily: 'Noto Sans CJK SC');
 
     List<Widget> children = [];
 
@@ -73,7 +73,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         // TODO:
         iter.moveNext();
       } else {
-        throw "Unexcepted element: ${iter.current}";
+        throw 'Unexcepted element: ${iter.current}';
       }
     }
 
@@ -94,7 +94,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     while (iter.moveNext()) {
       if (iter.current is ParagraphStartTag) {
-        throw "Nested paragraph is not allowed";
+        throw 'Nested paragraph is not allowed';
       } else if (iter.current is ParagraphEndTag) {
         break;
       } else if (_isStyle(iter.current)) {
@@ -114,7 +114,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is UidTag) {
         spans.add(_buildUid(context, iter.current));
       } else {
-        throw "Unexecpted element: ${iter.current}.";
+        throw 'Unexecpted element: ${iter.current}.';
       }
     }
 
@@ -141,7 +141,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     while (iter.moveNext()) {
       if (iter.current is CollapseStartTag) {
-        throw "Nested collapse is not allowed";
+        throw 'Nested collapse is not allowed';
       } else if (iter.current is CollapseEndTag) {
         break;
       } else if (_isStyle(iter.current)) {
@@ -161,7 +161,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is AlignStartTag) {
         // TODO:
       } else {
-        throw "Unexpected element: ${iter.current}.";
+        throw 'Unexpected element: ${iter.current}.';
       }
     }
 
@@ -209,7 +209,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is AlignStartTag) {
         // TODO: Handle this case.
       } else {
-        throw "Unexpected element: ${iter.current}.";
+        throw 'Unexpected element: ${iter.current}.';
       }
     }
 
@@ -268,7 +268,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     // TODO:
 
-    return Text("TABLE", style: TextStyle(color: Colors.red));
+    return Text('TABLE', style: TextStyle(color: Colors.red));
   }
 
   Widget _buildHeading(BuildContext context, Iterator<Tag> iter) {
@@ -282,7 +282,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     while (iter.moveNext()) {
       if (iter.current is HeadingStartTag) {
-        throw "Nested heading is not allowed";
+        throw 'Nested heading is not allowed';
       } else if (iter.current is HeadingEndTag) {
         break;
       } else if (_isStyle(iter.current)) {
@@ -290,7 +290,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is ParagraphStartTag) {
         children.add(_buildParagraph(context, iter));
       } else {
-        throw "Unexecpted element: ${iter.current}.";
+        throw 'Unexecpted element: ${iter.current}.';
       }
     }
 
@@ -326,7 +326,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             ),
           ),
           Text(
-            reply.username ?? "#ANONYMOUS#",
+            reply.username ?? '#ANONYMOUS#',
             style: Theme.of(context)
                 .textTheme
                 .body2
@@ -376,7 +376,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     while (iter.moveNext()) {
       if (iter.current is LinkStartTag) {
-        throw "Nested link is not allowed.";
+        throw 'Nested link is not allowed.';
       } else if (iter.current is LinkEndTag) {
         break;
       } else if (_isStyle(iter.current)) {
@@ -392,7 +392,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is StickerTag) {
         spans.add(_buildSticker(context, iter.current));
       } else {
-        throw "Unexecpted element: ${iter.current}.";
+        throw 'Unexecpted element: ${iter.current}.';
       }
     }
 
@@ -406,10 +406,10 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   InlineSpan _buildImage(BuildContext context, ImageTag image) {
     var url;
 
-    if (image.url.startsWith("./")) {
-      url = "https://img.nga.178.com/attachments${image.url.substring(1)}";
-    } else if (image.url.startsWith("/")) {
-      url = "https://nga.178.com${image.url}";
+    if (image.url.startsWith('./')) {
+      url = 'https://img.nga.178.com/attachments${image.url.substring(1)}';
+    } else if (image.url.startsWith('/')) {
+      url = 'https://nga.178.com${image.url}';
     } else {
       url = image.url;
     }
@@ -430,7 +430,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           },
           child: Hero(
             // FIXME: better way to create unique tag
-            tag: "tag${DateTime.now().toString()}",
+            tag: 'tag${DateTime.now().toString()}',
             child: Image.network(url),
           ),
         ),
@@ -438,7 +438,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           child: CircularProgressIndicator(),
         ),
         errorWidget: (context, url, error) => Text(
-          "fialed to load image $url",
+          'fialed to load image $url',
         ),
       ),
     );
@@ -483,7 +483,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
           child: Text(
-            "@${uid.username}",
+            '@${uid.username}',
             style: Theme.of(context)
                 .textTheme
                 .body2
@@ -510,7 +510,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
           child: Text(
-            "@${metions.username}",
+            '@${metions.username}',
             style: Theme.of(context)
                 .textTheme
                 .body2
@@ -589,7 +589,7 @@ class HeroPhotoViewWrapper extends StatelessWidget {
       ),
       child: PhotoView(
         imageProvider: imageProvider,
-        heroAttributes: const PhotoViewHeroAttributes(tag: "someTag"),
+        heroAttributes: const PhotoViewHeroAttributes(tag: 'someTag'),
       ),
     );
   }

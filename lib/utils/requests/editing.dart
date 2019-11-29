@@ -59,11 +59,11 @@ Future<PrepareEditingResponse> prepareEditing({
     postId: postId,
   );
 
-  final uri = "https://$baseUrl/post.php?${query.toString()}";
+  final uri = 'https://$baseUrl/post.php?${query.toString()}';
 
   print(uri);
 
-  final res = await client.get(uri, headers: {"cookie": cookie});
+  final res = await client.get(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 
@@ -88,24 +88,24 @@ Future<ApplyEditingResponse> applyEditing({
     postId: postId,
   );
 
-  query.write("&step=2");
+  query.write('&step=2');
 
   query.write(
-    "&post_content=${encodeUrlGbk(content).toString()}",
+    '&post_content=${encodeUrlGbk(content).toString()}',
   );
 
   if (subject.trim().isNotEmpty) {
     query.write(
-      "&post_subject=${encodeUrlGbk(subject.trim()).toString()}",
+      '&post_subject=${encodeUrlGbk(subject.trim()).toString()}',
     );
   }
 
   // we're manually encode url here, so we have to concatenate it by hand
-  final uri = "https://$baseUrl/post.php?${query.toString()}";
+  final uri = 'https://$baseUrl/post.php?${query.toString()}';
 
   print(uri);
 
-  final res = await client.post(uri, headers: {"cookie": cookie});
+  final res = await client.post(uri, headers: {'cookie': cookie});
 
   final json = jsonDecode(res.body);
 
@@ -118,36 +118,36 @@ StringBuffer _getQuery({
   int topicId,
   int postId,
 }) {
-  final sb = StringBuffer("__output=14");
+  final sb = StringBuffer('__output=14');
 
   switch (action) {
-    case ACTION_NEW_TOPIC:
-      sb.write("&action=new");
+    case actionNewTopic:
+      sb.write('&action=new');
       break;
-    case ACTION_QUOTE:
-      sb.write("&action=quote");
+    case actionQuote:
+      sb.write('&action=quote');
       break;
-    case ACTION_REPLY:
-      sb.write("&action=reply");
+    case actionReply:
+      sb.write('&action=reply');
       break;
-    case ACTION_MODIFY:
-      sb.write("&action=modify");
+    case actionModify:
+      sb.write('&action=modify');
       break;
-    case ACTION_COMMENT:
-      sb..write("&action=reply")..write("&comment=1");
+    case actionComment:
+      sb..write('&action=reply')..write('&comment=1');
       break;
   }
 
   if (categoryId != null) {
-    sb.write("&fid=$categoryId");
+    sb.write('&fid=$categoryId');
   }
 
   if (topicId != null) {
-    sb.write("&tid=$topicId");
+    sb.write('&tid=$topicId');
   }
 
   if (postId != null) {
-    sb.write("&pid=$postId");
+    sb.write('&pid=$postId');
   }
 
   return sb;

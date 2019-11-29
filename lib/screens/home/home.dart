@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  PageController _pageController = PageController(
+  final PageController _pageController = PageController(
     initialPage: 0,
     keepPage: true,
   );
@@ -22,8 +22,8 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(
           _selectedIndex == 0
-              ? "Favorites"
-              : _selectedIndex == 1 ? "Explore" : "Inbox",
+              ? 'Favorites'
+              : _selectedIndex == 1 ? 'Explore' : 'Inbox',
           style: Theme.of(context).textTheme.body2,
         ),
         actions: <Widget>[

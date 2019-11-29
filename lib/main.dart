@@ -12,7 +12,7 @@ import 'package:ngnga/store/actions/state_persist.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
-main() async {
+void main() async {
   final store = Store<AppState>(
     initialState: AppState.empty(),
     // actionObservers: [Log<AppState>.printer()],
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
           onGenerateRoute: _routes,
           navigatorKey: _navigatorKey,
           theme: _mapToThemeData(vm.theme),
-          initialRoute: store.state.userState == null ? "welcome" : "/",
+          initialRoute: store.state.userState == null ? 'welcome' : '/',
         ),
       ),
     );
@@ -53,34 +53,34 @@ class MyApp extends StatelessWidget {
     final Map<String, int> arguments = settings.arguments;
     Widget screen;
     switch (settings.name) {
-      case "/":
+      case '/':
         screen = HomePage();
         break;
-      case "/c":
-        screen = CategoryPageConnector(arguments["id"]);
+      case '/c':
+        screen = CategoryPageConnector(arguments['id']);
         break;
-      case "/t":
+      case '/t':
         screen = TopicPageConnector(
-          topicId: arguments["id"],
-          pageIndex: arguments["page"],
+          topicId: arguments['id'],
+          pageIndex: arguments['page'],
         );
         break;
-      case "/u":
-        screen = UserPage(id: arguments["id"]);
+      case '/u':
+        screen = UserPage(id: arguments['id']);
         break;
-      case "/s":
+      case '/s':
         screen = SettingsPageConnector();
         break;
-      case "/e":
+      case '/e':
         screen = EditorPageConnector(
-          action: arguments["action"],
-          categoryId: arguments["categoryId"],
-          topicId: arguments["topicId"],
-          postId: arguments["postId"],
+          action: arguments['action'],
+          categoryId: arguments['categoryId'],
+          topicId: arguments['topicId'],
+          postId: arguments['postId'],
         );
         break;
-      // use "welcome" instead of "/welcome" to make sure it's a top-level route
-      case "welcome":
+      // use 'welcome' instead of '/welcome' to make sure it's a top-level route
+      case 'welcome':
         screen = WelcomePageConnector();
         break;
       default:

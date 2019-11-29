@@ -15,15 +15,15 @@ class SaveState extends ReduxAction<AppState> {
     File file = File('${directory.path}/state.json');
 
     String json = jsonEncode({
-      "user": state.userState.toJson(),
-      "baseUrl": state.settings.baseUrl,
-      "pinned": state.pinned
+      'user': state.userState.toJson(),
+      'baseUrl': state.settings.baseUrl,
+      'pinned': state.pinned
           .map((id) => state.categories[id])
           .map(
             (category) => {
-              "id": category.id,
-              "title": category.title,
-              "isSubcategory": category.isSubcategory,
+              'id': category.id,
+              'title': category.title,
+              'isSubcategory': category.isSubcategory,
             },
           )
           .toList(),
@@ -31,7 +31,7 @@ class SaveState extends ReduxAction<AppState> {
 
     await file.writeAsString(json);
 
-    print("Saved state to ${file.path}");
+    print('Saved state to ${file.path}');
 
     return null;
   }
@@ -49,13 +49,13 @@ class LoadState extends ReduxAction<AppState> {
       String content = await file.readAsString();
       final json = jsonDecode(content);
 
-      print("Loaded state from ${file.path}");
+      print('Loaded state from ${file.path}');
 
-      Iterable<Category> categories = List.of(json["pinned"]).map(
+      Iterable<Category> categories = List.of(json['pinned']).map(
         (json) => Category(
-          id: json["id"],
-          title: json["title"],
-          isSubcategory: json["isSubcategory"],
+          id: json['id'],
+          title: json['title'],
+          isSubcategory: json['isSubcategory'],
         ),
       );
 
@@ -63,7 +63,7 @@ class LoadState extends ReduxAction<AppState> {
         userState:
             json['user'] != null ? UserState.fromJson(json['user']) : null,
         settings: state.settings.copy(
-          baseUrl: json["baseUrl"],
+          baseUrl: json['baseUrl'],
         ),
         pinned: state.pinned..addAll(categories.map((category) => category.id)),
         categories: state.categories
@@ -71,7 +71,7 @@ class LoadState extends ReduxAction<AppState> {
             categories.map((category) => MapEntry(category.id, category)),
           ),
       );
-    } catch (e) {
+    } on Exception catch (e) {
       print(e);
       // this file is corrupted or something, just delete it
       await file.delete();

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
-final dateFormatter = DateFormat("HH:mm:ss");
+final DateFormat dateFormatter = DateFormat('HH:mm:ss');
 
 class UpdateIndicator extends StatefulWidget {
   final Future<void> Function() fetch;
@@ -37,7 +37,7 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
     WidgetsBinding.instance.addObserver(this);
     _streamSub =
         Stream.periodic(const Duration(seconds: 20)).listen((_) => _fetch());
-    print("Start listening");
+    print('Start listening');
   }
 
   @override
@@ -45,7 +45,7 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _streamSub.cancel();
-    print("Cancel listening");
+    print('Cancel listening');
   }
 
   @override
@@ -61,14 +61,14 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
   _resumeListening() {
     if (!_manuallyPaused && _streamSub.isPaused) {
       _streamSub.resume();
-      print("Resume listening");
+      print('Resume listening');
     }
   }
 
   _pauseListening() {
     if (!_streamSub.isPaused) {
       _streamSub.pause();
-      print("Pause listening");
+      print('Pause listening');
     }
   }
 
@@ -112,39 +112,39 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
               }
             },
           ),
-          if (!_manuallyPaused)
+          if (_manuallyPaused)
+            Text(
+              'Auto-update disabled.',
+              style: Theme.of(context).textTheme.caption,
+            )
+          else
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  "Auto-update enabled.",
+                  'Auto-update enabled.',
                   style: Theme.of(context).textTheme.caption,
                 ),
                 if (_isLoading)
                   Text(
-                    "Loading...",
+                    'Loading...',
                     style: Theme.of(context).textTheme.caption,
-                  ),
-                if (!_isLoading)
+                  )
+                else
                   StreamBuilder(
                     initialData: DateTime.now(),
                     stream: Stream.periodic(const Duration(seconds: 1)),
                     builder: (context, snapshot) => Text(
-                      "Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)",
+                      'Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)',
                       style: Theme.of(context).textTheme.caption,
                     ),
                   ),
                 Text(
-                  "Update Interval: 20s",
+                  'Update Interval: 20s',
                   style: Theme.of(context).textTheme.caption,
                 )
               ],
-            ),
-          if (_manuallyPaused)
-            Text(
-              "Auto-update disabled.",
-              style: Theme.of(context).textTheme.caption,
             ),
         ],
       ),
@@ -171,7 +171,7 @@ class UpdateIndicatorConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  final topicId;
+  final int topicId;
 
   Future<void> Function() fetch;
 

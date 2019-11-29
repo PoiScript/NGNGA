@@ -33,9 +33,9 @@ class Logged extends UserState {
   final String cookie;
 
   Logged(this.uid, this.cid)
-      : cookie = "ngaPassportUid=$uid;ngaPassportCid=$cid;";
+      : cookie = 'ngaPassportUid=$uid;ngaPassportCid=$cid;';
 
-  bool isMe(int userId) => userId == this.uid;
+  bool isMe(int userId) => userId == uid;
 
   Map<String, dynamic> toJson() => {'isLogged': true, 'uid': uid, 'cid': cid};
 
@@ -49,7 +49,7 @@ class Guest extends UserState {
   Guest(this.uid);
 
   String get cookie =>
-      "ngaPassportUid=$uid;guestJs=${DateTime.now().millisecondsSinceEpoch ~/ 1000};";
+      'ngaPassportUid=$uid;guestJs=${DateTime.now().millisecondsSinceEpoch ~/ 1000};';
 
   bool isMe(int userId) => false;
 
@@ -75,7 +75,7 @@ class SettingsState {
   })  : assert(baseUrl != null),
         assert(theme != null);
 
-  SettingsState.empty() : this(baseUrl: "nga.178.com", theme: AppTheme.white);
+  SettingsState.empty() : this(baseUrl: 'nga.178.com', theme: AppTheme.white);
 
   SettingsState copy({String baseUrl, AppTheme theme}) => SettingsState(
         baseUrl: baseUrl ?? this.baseUrl,
@@ -229,7 +229,7 @@ class AppState {
     Map<int, CategoryState> categoryStates,
     Map<int, TopicState> topicStates,
     Event<Option<Post>> fetchReplyEvt,
-    Event<Editing> setEditing,
+    Event<Editing> setEditingEvt,
     Event<String> topicSnackBarEvt,
   }) =>
       AppState._(
@@ -245,30 +245,29 @@ class AppState {
         users: users ?? this.users,
         posts: posts ?? this.posts,
         fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
-        setEditingEvt: setEditing ?? this.setEditingEvt,
+        setEditingEvt: setEditingEvt ?? this.setEditingEvt,
         topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
       );
 
   factory AppState.empty() {
     // TODO: save category into categoryState when need
 
-    Map<int, Category> categories = Map()
-      ..addEntries(categoryGroups
-          .map((group) => group.categories)
-          .expand((x) => x)
-          .map((category) => MapEntry(category.id, category)));
+    Map<int, Category> categories = Map.fromEntries((categoryGroups
+        .map((group) => group.categories)
+        .expand((x) => x)
+        .map((category) => MapEntry(category.id, category))));
 
     return AppState._(
       userState: null,
-      users: Map(),
-      posts: Map(),
-      topics: Map(),
+      users: {},
+      posts: {},
+      topics: {},
       categories: categories,
       settings: SettingsState.empty(),
-      notifications: List(),
-      pinned: List(),
-      categoryStates: Map(),
-      topicStates: Map(),
+      notifications: [],
+      pinned: [],
+      categoryStates: {},
+      topicStates: {},
       favoriteState: CategoryState(
         lastPage: 0,
         topicsCount: 0,

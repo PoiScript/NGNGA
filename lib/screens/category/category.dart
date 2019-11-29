@@ -17,7 +17,7 @@ import 'popup_menu.dart';
 
 const kExpandedHeight = 150.0;
 
-final numberFormatter = NumberFormat("#,###,###,###");
+final NumberFormat numberFormatter = NumberFormat('#,###,###,###');
 
 class CategoryPage extends StatefulWidget {
   final Category category;
@@ -125,7 +125,7 @@ class _CategoryPageState extends State<CategoryPage>
                   padding: EdgeInsets.all(8.0),
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "${numberFormatter.format(widget.topicsCount)} topics",
+                    '${numberFormatter.format(widget.topicsCount)} topics',
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
@@ -144,6 +144,7 @@ class _CategoryPageState extends State<CategoryPage>
                     if (localIndex.isOdd) {
                       return localIndex ~/ 2;
                     }
+                    // ignore: avoid_returning_null
                     return null;
                   },
                   childCount: widget.topics.length * 2 + 1,
@@ -159,9 +160,9 @@ class _CategoryPageState extends State<CategoryPage>
         position: _offset,
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, "/e", arguments: {
-              "action": ACTION_NEW_TOPIC,
-              "categoryId": widget.category.id,
+            Navigator.pushNamed(context, '/e', arguments: {
+              'action': actionNewTopic,
+              'categoryId': widget.category.id,
             });
           },
           child: Icon(Icons.add),

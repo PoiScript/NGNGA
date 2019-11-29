@@ -44,7 +44,7 @@ class _PostDialogState extends State<PostDialog> {
 
   _consumeEvents() {
     Option option = widget.fetchReplyEvt.consume();
-    if (option != null)
+    if (option != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -53,6 +53,7 @@ class _PostDialogState extends State<PostDialog> {
           });
         }
       });
+    }
   }
 
   @override
@@ -81,7 +82,7 @@ class _PostDialogState extends State<PostDialog> {
 
   Widget _buildContent(Post post) {
     if (post == null) {
-      return Text("Post Not Found");
+      return Text('Post Not Found');
     }
 
     return Column(
@@ -93,7 +94,7 @@ class _PostDialogState extends State<PostDialog> {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  widget.users[post.userId]?.username ?? "#ANONYMOUS#",
+                  widget.users[post.userId]?.username ?? '#ANONYMOUS#',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.caption,
@@ -110,7 +111,7 @@ class _PostDialogState extends State<PostDialog> {
           ),
         ),
         BBCodeRender(
-          data: post.content,
+          raw: post.content,
           openLink: (url) {
             showDialog(
               context: context,

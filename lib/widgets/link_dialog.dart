@@ -10,7 +10,7 @@ class LinkDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return SimpleDialog(
       title: Text(
-        "链接",
+        '链接',
         style: Theme.of(context).textTheme.subtitle,
       ),
       children: <Widget>[
@@ -29,7 +29,7 @@ class LinkDialog extends StatelessWidget {
               Navigator.pop(context);
               launch(url);
             },
-            child: Text("打开"),
+            child: Text('打开'),
           ),
         ),
       ],

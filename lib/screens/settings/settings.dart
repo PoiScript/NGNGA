@@ -41,7 +41,7 @@ class SettingsPage extends StatelessWidget {
               : Colors.black,
         ),
         title: Text(
-          "Settings",
+          'Settings',
           style: Theme.of(context).textTheme.body2,
         ),
         titleSpacing: 0.0,
@@ -164,27 +164,27 @@ class SettingsPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               RadioListTile<String>(
-                title: Text("bbs.nga.cn"),
+                title: Text('bbs.nga.cn'),
                 groupValue: baseUrl,
-                value: "bbs.nga.cn",
+                value: 'bbs.nga.cn',
                 onChanged: (domain) {
                   changeBaseUrl(domain);
                   Navigator.of(context).pop();
                 },
               ),
               RadioListTile<String>(
-                title: Text("nga.178.com"),
+                title: Text('nga.178.com'),
                 groupValue: baseUrl,
-                value: "nga.178.com",
+                value: 'nga.178.com',
                 onChanged: (domain) {
                   changeBaseUrl(domain);
                   Navigator.of(context).pop();
                 },
               ),
               RadioListTile<String>(
-                title: Text("ngabbs.com"),
+                title: Text('ngabbs.com'),
                 groupValue: baseUrl,
-                value: "ngabbs.com",
+                value: 'ngabbs.com',
                 onChanged: (domain) {
                   changeBaseUrl(domain);
                   Navigator.of(context).pop();

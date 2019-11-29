@@ -23,5 +23,6 @@ jobs:
         with:
           flutter-version: "1.9.1+hotfix.4"
       - run: flutter pub get
+      - run: flutter analyze
       - run: flutter test
       - run: flutter build apk

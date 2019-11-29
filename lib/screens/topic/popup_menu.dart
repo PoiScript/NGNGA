@@ -43,22 +43,22 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.removeFromFavorites,
             child: Text(
-              "Remove from Favorites",
+              'Remove from Favorites',
               style: Theme.of(context).textTheme.body1,
             ),
-          ),
-        if (!isFavorited)
+          )
+        else
           PopupMenuItem<Choice>(
             value: Choice.addToFavorites,
             child: Text(
-              "Add to Favorites",
+              'Add to Favorites',
               style: Theme.of(context).textTheme.body1,
             ),
           ),
         PopupMenuItem<Choice>(
           value: Choice.copyLinkToClipboard,
           child: Text(
-            "Copy Link to clipboard",
+            'Copy Link to clipboard',
             style: Theme.of(context).textTheme.body1,
           ),
         )
@@ -73,12 +73,12 @@ class PopupMenu extends StatelessWidget {
             break;
           case Choice.copyLinkToClipboard:
             await Clipboard.setData(ClipboardData(
-              text: Uri.https(baseUrl, "read.php", {
-                "tid": topicId.toString(),
+              text: Uri.https(baseUrl, 'read.php', {
+                'tid': topicId.toString(),
               }).toString(),
             ));
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text("copied"),
+              content: Text('copied'),
             ));
             break;
           default:
@@ -112,7 +112,7 @@ class PopupMenuConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  final topicId;
+  final int topicId;
 
   String baseUrl;
 

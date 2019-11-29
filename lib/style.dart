@@ -1,90 +1,90 @@
 import 'package:flutter/material.dart';
 
-const TitleTextStyle = TextStyle(
+const titleTextStyle = TextStyle(
   fontWeight: FontWeight.w400,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
-const SubTitleTextStyle = TextStyle(
+const subTitleTextStyle = TextStyle(
   fontWeight: FontWeight.w400,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
-const SubheadTextStyle = TextStyle(
+const subheadTextStyle = TextStyle(
   fontWeight: FontWeight.w500,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
-const CaptionTextStyle = TextStyle(
+const captionTextStyle = TextStyle(
   fontWeight: FontWeight.w500,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
-const Body1TextStyle = TextStyle(
+const body1TextStyle = TextStyle(
   fontWeight: FontWeight.w400,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
-const Body2TextStyle = TextStyle(
+const body2TextStyle = TextStyle(
   fontWeight: FontWeight.w500,
-  fontFamily: "Roboto",
-  fontFamilyFallback: ["Noto Sans CJK SC"],
+  fontFamily: 'Roboto',
+  fontFamilyFallback: ['Noto Sans CJK SC'],
 );
 
 final ThemeData whiteTheme = ThemeData(
-  fontFamily: "Roboto",
+  fontFamily: 'Roboto',
   brightness: Brightness.light,
   textTheme: TextTheme(
-    title: TitleTextStyle,
-    subtitle: SubTitleTextStyle,
-    caption: CaptionTextStyle,
-    subhead: SubheadTextStyle,
-    body1: Body1TextStyle,
-    body2: Body2TextStyle,
+    title: titleTextStyle,
+    subtitle: subTitleTextStyle,
+    caption: captionTextStyle,
+    subhead: subheadTextStyle,
+    body1: body1TextStyle,
+    body2: body2TextStyle,
   ),
 );
 
 final ThemeData yellowTheme = ThemeData(
-  fontFamily: "Roboto",
+  fontFamily: 'Roboto',
   brightness: Brightness.light,
   textTheme: TextTheme(
-    title: TitleTextStyle,
-    subtitle: SubTitleTextStyle,
-    caption: CaptionTextStyle,
-    subhead: SubheadTextStyle,
-    body1: Body1TextStyle,
-    body2: Body2TextStyle,
+    title: titleTextStyle,
+    subtitle: subTitleTextStyle,
+    caption: captionTextStyle,
+    subhead: subheadTextStyle,
+    body1: body1TextStyle,
+    body2: body2TextStyle,
   ),
 );
 
 final ThemeData blackTheme = ThemeData(
-  fontFamily: "Roboto",
+  fontFamily: 'Roboto',
   brightness: Brightness.dark,
   textTheme: TextTheme(
-    title: TitleTextStyle,
-    subtitle: SubTitleTextStyle,
-    caption: CaptionTextStyle,
-    subhead: SubheadTextStyle,
-    body1: Body1TextStyle,
-    body2: Body2TextStyle,
+    title: titleTextStyle,
+    subtitle: subTitleTextStyle,
+    caption: captionTextStyle,
+    subhead: subheadTextStyle,
+    body1: body1TextStyle,
+    body2: body2TextStyle,
   ),
 );
 
 final ThemeData greyTheme = ThemeData(
-  fontFamily: "Roboto",
+  fontFamily: 'Roboto',
   brightness: Brightness.dark,
   primaryColor: Colors.grey,
   textTheme: TextTheme(
-    title: TitleTextStyle,
-    subtitle: SubTitleTextStyle,
-    caption: CaptionTextStyle,
-    subhead: SubheadTextStyle,
-    body1: Body1TextStyle,
-    body2: Body2TextStyle,
+    title: titleTextStyle,
+    subtitle: subTitleTextStyle,
+    caption: captionTextStyle,
+    subhead: subheadTextStyle,
+    body1: body1TextStyle,
+    body2: body2TextStyle,
   ),
 );

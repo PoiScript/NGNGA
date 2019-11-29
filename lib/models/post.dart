@@ -1,10 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-enum Vendor {
-  Android,
-  Apple,
-  Windows,
-}
+enum Vendor { android, apple, windows }
 
 class Post {
   final int id;
@@ -54,11 +50,11 @@ class Post {
         assert(content != null),
         assert(attachments != null),
         assert(editedBy == null || editedAt != null,
-            "editedAt should be set if editedBy is set"),
+            'editedAt should be set if editedBy is set'),
         assert(
             (vendorDetail == null && vendor == null) ||
                 (vendorDetail != null && vendor != null),
-            "vendor and vendorDetail should be set at the same time");
+            'vendor and vendorDetail should be set at the same time');
 
   Post copy({
     int id,
@@ -103,17 +99,17 @@ class Post {
 
     if (json['alterinfo'] is String) {
       for (var info in (json['alterinfo'] as String)
-          .split("\\t")
+          .split('\\t')
           .map((s) => s.trim())
           .where((s) => s.length >= 2)
           .map((s) => s.substring(1, s.length - 1))) {
         var words = info.split(' ');
-        if (words.first.startsWith("E")) {
+        if (words.first.startsWith('E')) {
           var timestamp = int.tryParse(words.first.substring(1));
           if (timestamp != null) {
             editedAt = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
           }
-          if (words.last != "0") {
+          if (words.last != '0') {
             editedBy = words.last;
           }
         }
@@ -129,17 +125,17 @@ class Post {
         switch (int.parse(json['from_client'].substring(0, space))) {
           case 7:
           case 101:
-            vendor = Vendor.Apple;
+            vendor = Vendor.apple;
             vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           case 8:
           case 100:
-            vendor = Vendor.Android;
+            vendor = Vendor.android;
             vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           case 9:
           case 103:
-            vendor = Vendor.Windows;
+            vendor = Vendor.windows;
             vendorDetail = json['from_client'].substring(space + 1).trim();
             break;
           default:
@@ -176,9 +172,9 @@ class Post {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         json['postdatetimestamp'] * 1000,
       ),
-      subject: json['subject']?.trim() ?? "",
+      subject: json['subject']?.trim() ?? '',
       content: json['content'],
-      vote: json["score"],
+      vote: json['score'],
       index: json['lou'],
       editedAt: editedAt,
       editedBy: editedBy,
@@ -186,7 +182,7 @@ class Post {
       vendorDetail: vendorDetail,
       attachments: attachments,
       commentIds: commentIds,
-      commentTo: json["comment_to_id"],
+      commentTo: json['comment_to_id'],
     );
   }
 }
