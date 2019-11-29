@@ -1,116 +1,24 @@
 import "dart:collection";
 
-bool listEquals<T>(List<T> a, List<T> b) {
-  if (a == null) return b == null;
-  if (b == null || a.length != b.length) return false;
-  for (int index = 0; index < a.length; index += 1) {
-    if (a[index] != b[index]) return false;
-  }
-  return true;
-}
-
-enum TagType {
-  // [quote]
-  QuoteStart,
-  // [/quote]
-  QuoteEnd,
-  // [table]
-  TableStart,
-  // [/table]
-  TableEnd,
-  // [collapse] or [collapse=xxxx]
-  CollapseStart,
-  // [/collapse]
-  CollapseEnd,
-  // [b]
-  BoldStart,
-  // [/b]
-  BoldEnd,
-  // [font=xxx]
-  FontStart,
-  // [/font]
-  FontEnd,
-  // [color=xxx]
-  ColorStart,
-  // [/color]
-  ColorEnd,
-  // [size=xxx]
-  SizeStart,
-  // [/size]
-  SizeEnd,
-  // [u]
-  UnderlineStart,
-  // [/u]
-  UnderlineEnd,
-  // [i]
-  ItalicStart,
-  // [/i]
-  ItalicEnd,
-  // [del]
-  DeleteStart,
-  // [/del]
-  DeleteEnd,
-  // [img]xxx[/img]
-  Image,
-  // [url=xxx]
-  LinkStart,
-  // [/url]
-  LinkEnd,
-  // [s:xxx]
-  Sticker,
-  // [h]
-  HeadingStart,
-  // [/h]
-  HeadingEnd,
-  // [tr]
-  TableRowStart,
-  // [/tr]
-  TableRowEnd,
-  // [td]
-  TableCellStart,
-  // [/td]
-  TableCellEnd,
-  // [@xxxx]
-  Metions,
-  // [hr]
-  Rule,
-  // [pid=xxx]xxx[/pid]
-  Pid,
-  // [uid=xxx]xxx[/uid]
-  Uid,
-  // [align]
-  AlignStart,
-  // [/align]
-  AlignEnd,
-  // // [list]
-  // ListStart,
-  // // [/list]
-  // ListEnd,
-  // // [*]
-  // ListItemStart,
-  // ListItemEnd,
-
-  Text,
-  ParagraphStart,
-  ParagraphEnd,
-
-  // [b]Reply to [pid=xxx,xxx,xxx]Reply[/pid] Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx)[/b]
-  // [pid=xxx,xxx,xxx]Reply[/pid] [b]Post by [uid=xxx]xxx[/uid] (xxxx-xx-xx xx:xx):[/b]
-  Reply
-}
-
 abstract class Tag extends LinkedListEntry<Tag> {
-  final TagType type;
   final List<Object> props;
 
-  Tag(this.type, {this.props = const []});
+  Tag({this.props = const []});
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Tag &&
-          runtimeType == other.runtimeType &&
-          listEquals(props, other.props);
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    } else if (other is Tag && runtimeType == other.runtimeType) {
+      if (props.length != other.props.length) return false;
+      for (int index = 0; index < props.length; index += 1) {
+        if (props[index] != other.props[index]) return false;
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   @override
   int get hashCode => runtimeType.hashCode ^ _propsHashCode;
@@ -124,214 +32,154 @@ abstract class Tag extends LinkedListEntry<Tag> {
   @override
   String toString() {
     if (props.isEmpty) {
-      return "$type";
+      return "$runtimeType";
     } else {
-      return "$type(${props.map((prop) => prop.toString()).join(',')})";
+      return "$runtimeType(${props.map((prop) => prop.toString()).join(',')})";
     }
   }
 }
 
-class AlignEnd extends Tag {
-  AlignEnd() : super(TagType.AlignEnd);
-}
+class AlignEndTag extends Tag {}
 
-class AlignStart extends Tag {
-  AlignStart() : super(TagType.AlignStart);
-}
+class AlignStartTag extends Tag {}
 
-class BoldEnd extends Tag {
-  BoldEnd() : super(TagType.BoldEnd);
-}
+class BoldEndTag extends Tag {}
 
-class BoldStart extends Tag {
-  BoldStart() : super(TagType.BoldStart);
-}
+class BoldStartTag extends Tag {}
 
-class CollapseEnd extends Tag {
-  CollapseEnd() : super(TagType.CollapseEnd);
-}
+class CollapseEndTag extends Tag {}
 
-class CollapseStart extends Tag {
+class CollapseStartTag extends Tag {
   final String description;
 
-  CollapseStart(String description)
+  CollapseStartTag(String description)
       : this.description = description ?? "点击显示隐藏的内容",
-        super(TagType.CollapseStart, props: [description]);
+        super(props: [description]);
 }
 
-class ColorEnd extends Tag {
-  ColorEnd() : super(TagType.ColorEnd);
-}
+class ColorEndTag extends Tag {}
 
-class ColorStart extends Tag {
+class ColorStartTag extends Tag {
   final String color;
 
-  ColorStart(this.color)
+  ColorStartTag(this.color)
       : assert(color != null),
-        super(TagType.ColorStart, props: [color]);
+        super(props: [color]);
 }
 
-class DeleteEnd extends Tag {
-  DeleteEnd() : super(TagType.DeleteEnd);
-}
+class DeleteEndTag extends Tag {}
 
-class DeleteStart extends Tag {
-  DeleteStart() : super(TagType.DeleteStart);
-}
+class DeleteStartTag extends Tag {}
 
-class FontEnd extends Tag {
-  FontEnd() : super(TagType.FontEnd);
-}
+class FontEndTag extends Tag {}
 
-class FontStart extends Tag {
-  FontStart() : super(TagType.FontStart);
-}
+class FontStartTag extends Tag {}
 
-class HeadingEnd extends Tag {
-  HeadingEnd() : super(TagType.HeadingEnd);
-}
+class HeadingEndTag extends Tag {}
 
-class HeadingStart extends Tag {
-  HeadingStart() : super(TagType.HeadingStart);
-}
+class HeadingStartTag extends Tag {}
 
-class Image extends Tag {
+class ImageTag extends Tag {
   final String url;
 
-  Image(this.url)
+  ImageTag(this.url)
       : assert(url != null),
-        super(TagType.Image, props: [url]);
+        super(props: [url]);
 }
 
-class ItalicEnd extends Tag {
-  ItalicEnd() : super(TagType.ItalicEnd);
-}
+class ItalicEndTag extends Tag {}
 
-class ItalicStart extends Tag {
-  ItalicStart() : super(TagType.ItalicStart);
-}
+class ItalicStartTag extends Tag {}
 
-class LinkEnd extends Tag {
-  LinkEnd() : super(TagType.LinkEnd);
-}
+class LinkEndTag extends Tag {}
 
-class LinkStart extends Tag {
+class LinkStartTag extends Tag {
   final String url;
 
-  LinkStart(this.url)
+  LinkStartTag(this.url)
       : assert(url != null && url.isNotEmpty),
-        super(TagType.LinkStart, props: [url]);
+        super(props: [url]);
 }
 
-class Metions extends Tag {
+class MetionsTag extends Tag {
   final String username;
 
-  Metions(this.username)
+  MetionsTag(this.username)
       : assert(username != null),
-        super(TagType.Metions, props: [username]);
+        super(props: [username]);
 }
 
-class ParagraphEnd extends Tag {
-  ParagraphEnd() : super(TagType.ParagraphEnd);
-}
+class ParagraphEndTag extends Tag {}
 
-class ParagraphStart extends Tag {
-  ParagraphStart() : super(TagType.ParagraphStart);
-}
+class ParagraphStartTag extends Tag {}
 
-class Pid extends Tag {
+class PidTag extends Tag {
   final int postId;
   final int topicId;
   final int pageIndex;
   final String content;
 
-  Pid(this.postId, this.topicId, this.pageIndex, this.content)
+  PidTag(this.postId, this.topicId, this.pageIndex, this.content)
       : assert(postId != null),
         assert(topicId != null),
         assert(pageIndex != null),
         assert(content != null),
-        super(TagType.Pid, props: [postId, topicId, pageIndex, content]);
+        super(props: [postId, topicId, pageIndex, content]);
 }
 
-class QuoteEnd extends Tag {
-  QuoteEnd() : super(TagType.QuoteEnd);
+class QuoteEndTag extends Tag {}
+
+class QuoteStartTag extends Tag {}
+
+class RuleTag extends Tag {}
+
+class SizeEndTag extends Tag {}
+
+class SizeStartTag extends Tag {}
+
+class StickerTag extends Tag {
+  final String name;
+
+  StickerTag(this.name)
+      : assert(name != null),
+        super(props: [name]);
 }
 
-class QuoteStart extends Tag {
-  QuoteStart() : super(TagType.QuoteStart);
-}
+class TableCellEndTag extends Tag {}
 
-class Rule extends Tag {
-  Rule() : super(TagType.Rule);
-}
+class TableCellStartTag extends Tag {}
 
-class SizeEnd extends Tag {
-  SizeEnd() : super(TagType.SizeEnd);
-}
+class TableEndTag extends Tag {}
 
-class SizeStart extends Tag {
-  SizeStart() : super(TagType.SizeStart);
-}
+class TableRowEndTag extends Tag {}
 
-class Sticker extends Tag {
-  final String path;
+class TableRowStartTag extends Tag {}
 
-  Sticker(this.path)
-      : assert(path != null),
-        super(TagType.Sticker, props: [path]);
-}
+class TableStartTag extends Tag {}
 
-class TableCellEnd extends Tag {
-  TableCellEnd() : super(TagType.TableCellEnd);
-}
-
-class TableCellStart extends Tag {
-  TableCellStart() : super(TagType.TableCellStart);
-}
-
-class TableEnd extends Tag {
-  TableEnd() : super(TagType.TableEnd);
-}
-
-class TableRowEnd extends Tag {
-  TableRowEnd() : super(TagType.TableRowEnd);
-}
-
-class TableRowStart extends Tag {
-  TableRowStart() : super(TagType.TableRowStart);
-}
-
-class TableStart extends Tag {
-  TableStart() : super(TagType.TableStart);
-}
-
-class Text extends Tag {
+class TextTag extends Tag {
   final String content;
 
-  Text(this.content)
+  TextTag(this.content)
       : assert(content != null),
-        super(TagType.Text, props: [content]);
+        super(props: [content]);
 }
 
-class Uid extends Tag {
+class UidTag extends Tag {
   final int id;
   final String username;
 
-  Uid(this.id, this.username)
+  UidTag(this.id, this.username)
       : assert(id != null),
         assert(username != null),
-        super(TagType.Uid, props: [id, username]);
+        super(props: [id, username]);
 }
 
-class UnderlineEnd extends Tag {
-  UnderlineEnd() : super(TagType.UnderlineEnd);
-}
+class UnderlineEndTag extends Tag {}
 
-class UnderlineStart extends Tag {
-  UnderlineStart() : super(TagType.UnderlineStart);
-}
+class UnderlineStartTag extends Tag {}
 
-class Reply extends Tag {
+class ReplyTag extends Tag {
   final int topicId;
   final int pageIndex;
   final int postId;
@@ -339,7 +187,7 @@ class Reply extends Tag {
   final String username;
   final DateTime dateTime;
 
-  Reply({
+  ReplyTag({
     this.topicId,
     this.pageIndex,
     this.postId,
@@ -352,7 +200,7 @@ class Reply extends Tag {
         // assert(userId != null),
         // assert(username != null),
         assert(dateTime != null),
-        super(TagType.Reply, props: [
+        super(props: [
           topicId,
           pageIndex,
           postId,

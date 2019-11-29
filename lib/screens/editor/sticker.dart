@@ -51,6 +51,7 @@ const pack0 = const [
   "ac:反对",
   "ac:赞同",
 ];
+
 const pack1 = const [
   "a2:goodjob",
   "a2:诶嘿",
@@ -99,6 +100,7 @@ const pack1 = const [
   "a2:jojo立4",
   "a2:jojo立5",
 ];
+
 const pack2 = const [
   "pst:举手",
   "pst:亲",
@@ -166,6 +168,7 @@ const pack2 = const [
   "pst:黑脸",
   "pst:鼻血",
 ];
+
 const pack3 = const [
   "dt:ROLL",
   "dt:上",
@@ -201,6 +204,7 @@ const pack3 = const [
   "dt:闲",
   "dt:黑脸",
 ];
+
 const pack4 = const [
   "pg:战斗力",
   "pg:哈啤",
@@ -258,7 +262,7 @@ class EditorSticker extends StatelessWidget {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) => GestureDetector(
-            child: Image.asset(stickerNameToPath[pack[index]]),
+            child: Sticker(name: pack[index]),
             onTap: () => insertSticker(pack[index]),
           ),
           childCount: pack.length,

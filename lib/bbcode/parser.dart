@@ -68,7 +68,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
@@ -90,7 +90,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
@@ -112,7 +112,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
@@ -132,7 +132,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
@@ -153,7 +153,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: int.parse(match[1]),
         topicId: int.parse(match[2]),
         pageIndex: int.parse(match[3]),
@@ -173,7 +173,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: 0,
         topicId: int.parse(match[1]),
         userId: int.parse(match[2]),
@@ -194,7 +194,7 @@ List<Tag> parseBBCode(String raw) {
     if (match == null) break;
 
     spans.add(_TagSpan(
-      Reply(
+      ReplyTag(
         postId: 0,
         topicId: int.parse(match[1]),
         userId: int.parse(match[2]),
@@ -212,52 +212,52 @@ List<Tag> parseBBCode(String raw) {
   spans
     // styling
     ..addAll("[b]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(BoldStart(), match, false),
+          (match) => _TagSpan.fromMatch(BoldStartTag(), match, false),
         ))
     ..addAll("[/b]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(BoldEnd(), match, true),
+          (match) => _TagSpan.fromMatch(BoldEndTag(), match, true),
         ))
     ..addAll("[i]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ItalicStart(), match, false),
+          (match) => _TagSpan.fromMatch(ItalicStartTag(), match, false),
         ))
     ..addAll("[/i]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ItalicEnd(), match, true),
+          (match) => _TagSpan.fromMatch(ItalicEndTag(), match, true),
         ))
     ..addAll("[u]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(UnderlineStart(), match, false),
+          (match) => _TagSpan.fromMatch(UnderlineStartTag(), match, false),
         ))
     ..addAll("[/u]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(UnderlineEnd(), match, true),
+          (match) => _TagSpan.fromMatch(UnderlineEndTag(), match, true),
         ))
     ..addAll("[del]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(DeleteStart(), match, false),
+          (match) => _TagSpan.fromMatch(DeleteStartTag(), match, false),
         ))
     ..addAll("[/del]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(DeleteEnd(), match, true),
+          (match) => _TagSpan.fromMatch(DeleteEndTag(), match, true),
         ))
     ..addAll(sizeStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(SizeStart(), match, false),
+          (match) => _TagSpan.fromMatch(SizeStartTag(), match, false),
         ))
     ..addAll("[/size]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(SizeEnd(), match, true),
+          (match) => _TagSpan.fromMatch(SizeEndTag(), match, true),
         ))
     ..addAll(fontStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(FontStart(), match, false),
+          (match) => _TagSpan.fromMatch(FontStartTag(), match, false),
         ))
     ..addAll("[/font]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(FontEnd(), match, true),
+          (match) => _TagSpan.fromMatch(FontEndTag(), match, true),
         ))
     ..addAll(colorStartRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ColorStart(match[1]), match, false),
+          (match) => _TagSpan.fromMatch(ColorStartTag(match[1]), match, false),
         ))
     ..addAll("[/color]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(ColorEnd(), match, true),
+          (match) => _TagSpan.fromMatch(ColorEndTag(), match, true),
         ))
     ..addAll("[h]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(HeadingStart(), match, false),
+          (match) => _TagSpan.fromMatch(HeadingStartTag(), match, false),
         ))
     ..addAll("[/h]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(HeadingEnd(), match, true),
+          (match) => _TagSpan.fromMatch(HeadingEndTag(), match, true),
         ))
     // containers
     // ..addAll(alignStartRegExp.allMatches(content).map(
@@ -271,140 +271,118 @@ List<Tag> parseBBCode(String raw) {
     //       _TagSpan(HeadingEnd(), match.end - 3, match.end, true),
     //     ]))
     ..addAll("[quote]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(QuoteStart(), match, false),
+          (match) => _TagSpan.fromMatch(QuoteStartTag(), match, false),
         ))
     ..addAll("[/quote]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(QuoteEnd(), match, true),
+          (match) => _TagSpan.fromMatch(QuoteEndTag(), match, true),
         ))
     ..addAll(collapseStartRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-              CollapseStart(match[1]?.substring(1)), match, false),
+              CollapseStartTag(match[1]?.substring(1)), match, false),
         ))
     ..addAll("[/collapse]".allMatches(content).map(
-          (match) => _TagSpan.fromMatch(CollapseEnd(), match, true),
+          (match) => _TagSpan.fromMatch(CollapseEndTag(), match, true),
         ))
     ..addAll(linkRegExp.allMatches(content).expand((match) => [
           _TagSpan(
-            LinkStart(match[1]?.substring(1) ?? match[2]),
+            LinkStartTag(match[1]?.substring(1) ?? match[2]),
             match.start,
             match.start + 5 + (match[1]?.length ?? 0),
             false,
           ),
-          _TagSpan(LinkEnd(), match.end - 6, match.end, false),
+          _TagSpan(LinkEndTag(), match.end - 6, match.end, false),
         ]))
     // inline objects
     ..addAll(ruleRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(Rule(), match, false),
+          (match) => _TagSpan.fromMatch(RuleTag(), match, false),
         ))
     ..addAll(uidRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-              Uid(int.parse(match[1]), match[2]), match, false),
+              UidTag(int.parse(match[1]), match[2]), match, false),
         ))
     ..addAll(metionsRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(Metions(match[1]), match, false),
+          (match) => _TagSpan.fromMatch(MetionsTag(match[1]), match, false),
         ))
     ..addAll(imageRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-            imageUrlToPath.containsKey(match[1])
-                ? Sticker(imageUrlToPath[match[1]])
-                : Image(match[1]),
+            imageUrlToName.containsKey(match[1])
+                ? StickerTag(imageUrlToName[match[1]])
+                : ImageTag(match[1]),
             match,
             false,
           ),
         ))
     ..addAll(stickerRegExp
         .allMatches(content)
-        .where((match) => stickerNameToPath.containsKey(match[1]))
+        .where((match) => stickerNames.contains(match[1]))
         .map(
-          (match) => _TagSpan.fromMatch(
-              Sticker(stickerNameToPath[match[1]]), match, false),
+          (match) => _TagSpan.fromMatch(StickerTag(match[1]), match, false),
         ))
     ..addAll(pidRegExp.allMatches(content).map(
           (match) => _TagSpan.fromMatch(
-            Pid(int.parse(match[2]), int.parse(match[3]), int.parse(match[4]),
-                match[5]),
+            PidTag(int.parse(match[2]), int.parse(match[3]),
+                int.parse(match[4]), match[5]),
             match,
             false,
           ),
         ));
 
-  if (spans.isEmpty) return [ParagraphStart(), Text(content), ParagraphEnd()];
+  if (spans.isEmpty)
+    return [
+      ParagraphStartTag(),
+      TextTag(content),
+      ParagraphEndTag(),
+    ];
 
   spans.sort((a, b) => a.start.compareTo(b.start));
 
   for (int i = 0; i < spans.length; i++) {
     if (spans[i].removed) continue;
 
-    switch (spans[i].tag.type) {
-      case TagType.QuoteStart:
-        _findQuoteEndTag(spans, i);
-        break;
-      case TagType.CollapseStart:
-        _findCollapseEndTag(spans, i);
-        break;
-      case TagType.BoldStart:
-        _findStylingEndTag(spans, i, TagType.BoldStart, TagType.BoldEnd);
-        break;
-      case TagType.FontStart:
-        _findStylingEndTag(spans, i, TagType.FontStart, TagType.FontEnd);
-        break;
-      case TagType.ColorStart:
-        _findStylingEndTag(spans, i, TagType.ColorStart, TagType.ColorEnd);
-        break;
-      case TagType.SizeStart:
-        _findStylingEndTag(spans, i, TagType.SizeStart, TagType.SizeEnd);
-        break;
-      case TagType.UnderlineStart:
-        _findStylingEndTag(
-            spans, i, TagType.UnderlineStart, TagType.UnderlineEnd);
-        break;
-      case TagType.ItalicStart:
-        _findStylingEndTag(spans, i, TagType.ItalicStart, TagType.ItalicEnd);
-        break;
-      case TagType.DeleteStart:
-        _findStylingEndTag(spans, i, TagType.DeleteStart, TagType.DeleteEnd);
-        break;
-      case TagType.HeadingStart:
-        _findStylingEndTag(spans, i, TagType.HeadingStart, TagType.HeadingEnd);
-        break;
-      case TagType.TableStart:
-        // TODO: Handle this case.
-        break;
-      case TagType.TableRowStart:
-        // TODO: Handle this case.
-        break;
-      case TagType.TableCellStart:
-        // TODO: Handle this case.
-        break;
-      case TagType.AlignStart:
-        _findAlignEndTag(spans, i);
-        break;
-      default:
-        break;
+    if (spans[i].tag is QuoteStartTag) {
+      _findQuoteEndTag(spans, i);
+    } else if (spans[i].tag is CollapseStartTag) {
+      _findCollapseEndTag(spans, i);
+    } else if (spans[i].tag is BoldStartTag) {
+      _findStylingEndTag<BoldStartTag, BoldEndTag>(spans, i);
+    } else if (spans[i].tag is FontStartTag) {
+      _findStylingEndTag<FontStartTag, FontEndTag>(spans, i);
+    } else if (spans[i].tag is ColorStartTag) {
+      _findStylingEndTag<ColorStartTag, ColorEndTag>(spans, i);
+    } else if (spans[i].tag is SizeStartTag) {
+      _findStylingEndTag<SizeStartTag, SizeEndTag>(spans, i);
+    } else if (spans[i].tag is UnderlineStartTag) {
+      _findStylingEndTag<UnderlineStartTag, UnderlineEndTag>(spans, i);
+    } else if (spans[i].tag is ItalicStartTag) {
+      _findStylingEndTag<ItalicStartTag, ItalicEndTag>(spans, i);
+    } else if (spans[i].tag is DeleteStartTag) {
+      _findStylingEndTag<DeleteStartTag, DeleteEndTag>(spans, i);
+    } else if (spans[i].tag is HeadingStartTag) {
+      _findStylingEndTag<HeadingStartTag, HeadingEndTag>(spans, i);
+    } else if (spans[i].tag is TableStartTag) {
+      // TODO: Handle this case.
+    } else if (spans[i].tag is TableRowStartTag) {
+      // TODO: Handle this case.
+    } else if (spans[i].tag is TableCellStartTag) {
+      // TODO: Handle this case.
+    } else if (spans[i].tag is AlignStartTag) {
+      _findAlignEndTag(spans, i);
     }
   }
 
   for (int i = 0; i < spans.length; i++) {
     if (spans[i].removed) continue;
 
-    switch (spans[i].tag.type) {
-      case TagType.AlignStart:
-        _handleAlignMisnested(spans, i);
-        break;
-      case TagType.QuoteStart:
-        _handleQuoteMisnested(spans, i);
-        break;
-      case TagType.TableStart:
-        // TODO: Handle this case.
-        break;
-      case TagType.TableRowStart:
-        // TODO: Handle this case.
-        break;
-      case TagType.TableCellStart:
-        // TODO: Handle this case.
-        break;
-      default:
-        break;
+    if (spans[i].tag is AlignStartTag) {
+      _handleAlignMisnested(spans, i);
+    } else if (spans[i].tag is QuoteStartTag) {
+      _handleQuoteMisnested(spans, i);
+    } else if (spans[i].tag is TableStartTag) {
+      // TODO: Handle this case.
+    } else if (spans[i].tag is TableRowStartTag) {
+      // TODO: Handle this case.
+    } else if (spans[i].tag is TableCellStartTag) {
+      // TODO: Handle this case.
     }
   }
 
@@ -419,39 +397,34 @@ List<Tag> parseBBCode(String raw) {
       String text = content.substring(lastEnd, span.start).trim();
       if (text.isNotEmpty) {
         if (!openingParagraph) {
-          tags.add(ParagraphStart());
+          tags.add(ParagraphStartTag());
           openingParagraph = true;
         }
-        tags.add(Text(text));
+        tags.add(TextTag(text));
       }
     }
 
     lastEnd = span.end;
 
-    switch (span.tag.type) {
-      case TagType.HeadingStart:
-      case TagType.HeadingEnd:
-      case TagType.Reply:
-      case TagType.Rule:
-      case TagType.CollapseStart:
-      case TagType.CollapseEnd:
-      case TagType.AlignStart:
-      case TagType.AlignEnd:
-      case TagType.TableStart:
-      case TagType.TableEnd:
-      case TagType.QuoteStart:
-      case TagType.QuoteEnd:
-        if (openingParagraph) {
-          tags.add(ParagraphEnd());
-          openingParagraph = false;
-        }
-        break;
-      default: // inlines
-        if (!openingParagraph) {
-          tags.add(ParagraphStart());
-          openingParagraph = true;
-        }
-        break;
+    if (span.tag is HeadingStartTag ||
+        span.tag is HeadingEndTag ||
+        span.tag is ReplyTag ||
+        span.tag is RuleTag ||
+        span.tag is CollapseStartTag ||
+        span.tag is CollapseEndTag ||
+        span.tag is AlignStartTag ||
+        span.tag is AlignEndTag ||
+        span.tag is TableStartTag ||
+        span.tag is TableEndTag ||
+        span.tag is QuoteStartTag ||
+        span.tag is QuoteEndTag) {
+      if (openingParagraph) {
+        tags.add(ParagraphEndTag());
+        openingParagraph = false;
+      }
+    } else if (!openingParagraph) {
+      tags.add(ParagraphStartTag());
+      openingParagraph = true;
     }
 
     tags.add(span.tag);
@@ -461,21 +434,22 @@ List<Tag> parseBBCode(String raw) {
     String text = content.substring(lastEnd).trim();
     if (text.isNotEmpty) {
       if (!openingParagraph) {
-        tags.add(ParagraphStart());
+        tags.add(ParagraphStartTag());
         openingParagraph = true;
       }
-      tags.add(Text(text));
+      tags.add(TextTag(text));
     }
   }
 
-  if (openingParagraph) tags.add(ParagraphEnd());
+  if (openingParagraph) {
+    tags.add(ParagraphEndTag());
+  }
 
   return tags;
 }
 
-_findStylingEndTag(
-    List<_TagSpan> spans, int start, TagType startTag, TagType endTag) {
-  int end = _findEndTag(spans, start, startTag, endTag);
+_findStylingEndTag<StartTag, EndTag>(List<_TagSpan> spans, int start) {
+  int end = _findEndTag<StartTag, EndTag>(spans, start);
 
   if (end == -1 || !spans[end].removed) {
     spans[start].removed = true;
@@ -485,7 +459,7 @@ _findStylingEndTag(
 }
 
 _findAlignEndTag(List<_TagSpan> spans, int start) {
-  int end = _findEndTag(spans, start, TagType.AlignStart, TagType.AlignEnd);
+  int end = _findEndTag<AlignStartTag, AlignEndTag>(spans, start);
 
   if (end == -1 || !spans[end].removed) {
     spans[start].removed = true;
@@ -495,7 +469,7 @@ _findAlignEndTag(List<_TagSpan> spans, int start) {
 }
 
 _handleAlignMisnested(List<_TagSpan> spans, int start) {
-  int end = _findEndTag(spans, start, TagType.AlignStart, TagType.AlignEnd);
+  int end = _findEndTag<AlignStartTag, AlignEndTag>(spans, start);
 
   List<_TagSpan> opening = [];
 
@@ -504,12 +478,11 @@ _handleAlignMisnested(List<_TagSpan> spans, int start) {
 
     if (span.removed) continue;
 
-    if (span.tag.type == TagType.CollapseStart ||
-        span.tag.type == TagType.QuoteStart) {
+    if (span.tag is CollapseStartTag || span.tag is QuoteStartTag) {
       opening.add(span);
-    } else if (span.tag.type == TagType.CollapseEnd) {
-      int collapseStart = opening
-          .lastIndexWhere((span) => span.tag.type == TagType.CollapseStart);
+    } else if (span.tag is CollapseEndTag) {
+      int collapseStart =
+          opening.lastIndexWhere((span) => span.tag is CollapseStartTag);
 
       if (collapseStart != -1) {
         opening.removeAt(collapseStart);
@@ -518,9 +491,9 @@ _handleAlignMisnested(List<_TagSpan> spans, int start) {
         spans[start].removed = true;
         return;
       }
-    } else if (span.tag.type == TagType.QuoteEnd) {
+    } else if (span.tag is QuoteEndTag) {
       int quoteStart =
-          opening.lastIndexWhere((span) => span.tag.type == TagType.QuoteEnd);
+          opening.lastIndexWhere((span) => span.tag is QuoteEndTag);
 
       if (quoteStart != -1) {
         opening.removeAt(quoteStart);
@@ -539,7 +512,7 @@ _handleAlignMisnested(List<_TagSpan> spans, int start) {
 }
 
 _findCollapseEndTag(List<_TagSpan> spans, int start) {
-  int end = spans.indexWhere((t) => t.tag.type == TagType.CollapseEnd, start);
+  int end = spans.indexWhere((t) => t.tag is CollapseEndTag, start);
 
   if (end != -1 && spans[end].removed) {
     spans[end].removed = false;
@@ -549,7 +522,7 @@ _findCollapseEndTag(List<_TagSpan> spans, int start) {
 }
 
 _findQuoteEndTag(List<_TagSpan> spans, int start) {
-  int end = _findEndTag(spans, start, TagType.QuoteStart, TagType.QuoteEnd);
+  int end = _findEndTag<QuoteStartTag, QuoteEndTag>(spans, start);
 
   if (end == -1 || !spans[end].removed) {
     spans[start].removed = true;
@@ -559,7 +532,7 @@ _findQuoteEndTag(List<_TagSpan> spans, int start) {
 }
 
 _handleQuoteMisnested(List<_TagSpan> spans, int start) {
-  int end = _findEndTag(spans, start, TagType.QuoteStart, TagType.QuoteEnd);
+  int end = _findEndTag<QuoteStartTag, QuoteEndTag>(spans, start);
 
   List<_TagSpan> opening = [];
 
@@ -568,11 +541,11 @@ _handleQuoteMisnested(List<_TagSpan> spans, int start) {
 
     if (span.removed) continue;
 
-    if (span.tag.type == TagType.CollapseStart) {
+    if (span.tag is CollapseStartTag) {
       opening.add(span);
-    } else if (span.tag.type == TagType.CollapseEnd) {
-      int collapseStart = opening
-          .lastIndexWhere((span) => span.tag.type == TagType.CollapseStart);
+    } else if (span.tag is CollapseEndTag) {
+      int collapseStart =
+          opening.lastIndexWhere((span) => span.tag is CollapseStartTag);
 
       if (collapseStart != -1) {
         opening.removeAt(collapseStart);
@@ -591,29 +564,26 @@ _handleQuoteMisnested(List<_TagSpan> spans, int start) {
 }
 
 _findLinkEndTag(List<_TagSpan> spans, int start) {
-  const allowedChildren = [
-    BoldStart,
-    BoldEnd,
-    FontStart,
-    FontEnd,
-    ColorStart,
-    ColorEnd,
-    SizeStart,
-    SizeEnd,
-    UnderlineStart,
-    UnderlineEnd,
-    ItalicStart,
-    ItalicEnd,
-    DeleteStart,
-    DeleteEnd,
-    Image,
-  ];
-
-  int end = _findEndTag(spans, start, TagType.LinkStart, TagType.LinkEnd);
+  int end = _findEndTag<LinkStartTag, LinkEndTag>(spans, start);
 
   for (int i = start; i < end - start; i++) {
-    final tag = spans[i];
-    if (!tag.removed && !allowedChildren.contains(tag.tag.type)) {
+    final span = spans[i];
+    if (!span.removed &&
+        span.tag is! BoldStartTag &&
+        span.tag is! BoldEndTag &&
+        span.tag is! FontStartTag &&
+        span.tag is! FontEndTag &&
+        span.tag is! ColorStartTag &&
+        span.tag is! ColorEndTag &&
+        span.tag is! SizeStartTag &&
+        span.tag is! SizeEndTag &&
+        span.tag is! UnderlineStartTag &&
+        span.tag is! UnderlineEndTag &&
+        span.tag is! ItalicStartTag &&
+        span.tag is! ItalicEndTag &&
+        span.tag is! DeleteStartTag &&
+        span.tag is! DeleteEndTag &&
+        span.tag is! ImageTag) {
       spans[start].removed = true;
       spans[end].removed = true;
       break;
@@ -621,20 +591,14 @@ _findLinkEndTag(List<_TagSpan> spans, int start) {
   }
 }
 
-int _findEndTag(
-  List<_TagSpan> spans,
-  int start,
-  TagType startTag,
-  TagType endTag,
-) {
+int _findEndTag<StartTag, EndTag>(List<_TagSpan> spans, int start) {
   int depth = 1;
   for (int i = start; i < spans.length; i++) {
-    if (spans[i].tag.type == startTag) {
+    if (spans[i].tag is StartTag) {
       depth += 1;
-    } else if (spans[i].tag.type == endTag) {
+    } else if (spans[i].tag is EndTag) {
+      if (depth == 2) return i;
       depth -= 1;
-
-      if (depth == 1) return i;
     }
   }
   return -1;

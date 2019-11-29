@@ -2,13 +2,12 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
-// import Text and Image widget under the material namespace
-import 'package:flutter/material.dart' as material show Text, Image;
-import 'package:flutter/material.dart' hide Text, Image;
+import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 import 'collapse.dart';
 import 'parser.dart';
+import 'sticker.dart';
 import 'tag.dart';
 
 class BBCodeRender extends StatefulWidget {
@@ -48,69 +47,33 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     List<Widget> children = [];
 
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.BoldStart:
-        case TagType.ColorStart:
-        case TagType.DeleteStart:
-        case TagType.FontStart:
-        case TagType.ItalicStart:
-        case TagType.SizeStart:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.ParagraphStart:
-          children.add(_buildParagraph(context, iter));
-          break;
-        case TagType.Reply:
-          children.add(_buildReply(context, iter.current as Reply, true));
-          break;
-        case TagType.CollapseStart:
-          children.add(_buildCollapse(context, iter));
-          break;
-        case TagType.QuoteStart:
-          children.add(_buildQuote(context, iter));
-          break;
-        case TagType.TableStart:
-          children.add(_buildTable(context, iter));
-          break;
-        case TagType.HeadingStart:
-          children.add(_buildHeading(context, iter));
-          break;
-        case TagType.Rule:
-          children.add(_buildRule(context));
-          break;
-        case TagType.AlignStart:
-          children.add(_buildHeading(context, iter));
-          // TODO:
-          iter.moveNext();
-          break;
-        case TagType.TableRowStart:
-        case TagType.Image:
-        case TagType.Sticker:
-        case TagType.Metions:
-        case TagType.UnderlineStart:
-        case TagType.Text:
-        case TagType.LinkStart:
-        case TagType.Pid:
-        case TagType.Uid:
-        case TagType.TableCellStart:
-        case TagType.QuoteEnd:
-        case TagType.TableEnd:
-        case TagType.CollapseEnd:
-        case TagType.BoldEnd:
-        case TagType.FontEnd:
-        case TagType.ColorEnd:
-        case TagType.SizeEnd:
-        case TagType.UnderlineEnd:
-        case TagType.ItalicEnd:
-        case TagType.DeleteEnd:
-        case TagType.LinkEnd:
-        case TagType.HeadingEnd:
-        case TagType.TableRowEnd:
-        case TagType.TableCellEnd:
-        case TagType.AlignEnd:
-        case TagType.ParagraphEnd:
-          throw "Unexcepted element: ${iter.current}";
-          break;
+      if (iter.current is BoldStartTag ||
+          iter.current is ColorStartTag ||
+          iter.current is DeleteStartTag ||
+          iter.current is FontStartTag ||
+          iter.current is ItalicStartTag ||
+          iter.current is SizeStartTag) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else if (iter.current is ReplyTag) {
+        children.add(_buildReply(context, iter.current, true));
+      } else if (iter.current is CollapseStartTag) {
+        children.add(_buildCollapse(context, iter));
+      } else if (iter.current is QuoteStartTag) {
+        children.add(_buildQuote(context, iter));
+      } else if (iter.current is TableStartTag) {
+        children.add(_buildTable(context, iter));
+      } else if (iter.current is HeadingStartTag) {
+        children.add(_buildHeading(context, iter));
+      } else if (iter.current is RuleTag) {
+        children.add(_buildRule(context));
+      } else if (iter.current is AlignStartTag) {
+        children.add(_buildHeading(context, iter));
+        // TODO:
+        iter.moveNext();
+      } else {
+        throw "Unexcepted element: ${iter.current}";
       }
     }
 
@@ -125,73 +88,33 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   Widget _buildParagraph(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.ParagraphStart);
+    assert(iter.current is ParagraphStartTag);
 
     List<InlineSpan> spans = [];
 
-    outerloop:
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.ParagraphStart:
-          throw "Nested paragraph is not allowed";
-          break;
-        case TagType.ParagraphEnd:
-          break outerloop;
-        case TagType.BoldStart:
-        case TagType.BoldEnd:
-        case TagType.ItalicStart:
-        case TagType.ItalicEnd:
-        case TagType.UnderlineStart:
-        case TagType.UnderlineEnd:
-        case TagType.DeleteStart:
-        case TagType.DeleteEnd:
-        case TagType.FontStart:
-        case TagType.FontEnd:
-        case TagType.ColorStart:
-        case TagType.ColorEnd:
-        case TagType.SizeStart:
-        case TagType.SizeEnd:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.Text:
-          spans.add(_buildText(context, iter.current as Text));
-          break;
-        case TagType.Image:
-          spans.add(_buildImage(context, iter.current as Image));
-          break;
-        case TagType.LinkStart:
-          spans.add(_buildLink(context, iter));
-          break;
-        case TagType.Sticker:
-          spans.add(_buildSticker(context, iter.current as Sticker));
-          break;
-        case TagType.Metions:
-          spans.add(_buildMetions(context, iter.current as Metions));
-          break;
-        case TagType.Pid:
-          spans.add(_buildPid(context, iter.current as Pid));
-          break;
-        case TagType.Uid:
-          spans.add(_buildUid(context, iter.current as Uid));
-          break;
-        case TagType.AlignStart:
-        case TagType.LinkEnd:
-        case TagType.AlignEnd:
-        case TagType.Rule:
-        case TagType.QuoteStart:
-        case TagType.QuoteEnd:
-        case TagType.CollapseStart:
-        case TagType.CollapseEnd:
-        case TagType.TableStart:
-        case TagType.TableEnd:
-        case TagType.HeadingStart:
-        case TagType.HeadingEnd:
-        case TagType.Reply:
-        case TagType.TableRowStart:
-        case TagType.TableRowEnd:
-        case TagType.TableCellStart:
-        case TagType.TableCellEnd:
-          throw "Unexecpted element: ${iter.current}.";
+      if (iter.current is ParagraphStartTag) {
+        throw "Nested paragraph is not allowed";
+      } else if (iter.current is ParagraphEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is TextTag) {
+        spans.add(_buildText(context, iter.current));
+      } else if (iter.current is ImageTag) {
+        spans.add(_buildImage(context, iter.current));
+      } else if (iter.current is LinkStartTag) {
+        spans.add(_buildLink(context, iter));
+      } else if (iter.current is StickerTag) {
+        spans.add(_buildSticker(context, iter.current));
+      } else if (iter.current is MetionsTag) {
+        spans.add(_buildMetions(context, iter.current));
+      } else if (iter.current is PidTag) {
+        spans.add(_buildPid(context, iter.current));
+      } else if (iter.current is UidTag) {
+        spans.add(_buildUid(context, iter.current));
+      } else {
+        throw "Unexecpted element: ${iter.current}.";
       }
     }
 
@@ -211,73 +134,34 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   Widget _buildCollapse(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.CollapseStart);
+    assert(iter.current is CollapseStartTag);
 
-    String description = (iter.current as CollapseStart).description;
+    String description = (iter.current as CollapseStartTag).description;
     List<Widget> children = [];
 
-    outerloop:
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.CollapseStart:
-          throw "Nested collapse is not allowed";
-        case TagType.CollapseEnd:
-          break outerloop;
-        case TagType.ItalicStart:
-        case TagType.ItalicEnd:
-        case TagType.DeleteStart:
-        case TagType.DeleteEnd:
-        case TagType.BoldStart:
-        case TagType.BoldEnd:
-        case TagType.FontStart:
-        case TagType.FontEnd:
-        case TagType.ColorStart:
-        case TagType.ColorEnd:
-        case TagType.SizeStart:
-        case TagType.SizeEnd:
-        case TagType.UnderlineStart:
-        case TagType.UnderlineEnd:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.ParagraphStart:
-          children.add(_buildParagraph(context, iter));
-          break;
-        case TagType.Reply:
-          children.add(_buildReply(context, iter.current as Reply, false));
-          break;
-        case TagType.QuoteStart:
-          children.add(_buildQuote(context, iter));
-          break;
-        case TagType.TableStart:
-          children.add(_buildTable(context, iter));
-          break;
-        case TagType.HeadingStart:
-          children.add(_buildHeading(context, iter));
-          break;
-        case TagType.Rule:
-          children.add(_buildRule(context));
-          break;
-        case TagType.AlignStart:
-          // TODO: Handle this case.
-          break;
-        case TagType.TableRowStart:
-        case TagType.TableRowEnd:
-        case TagType.TableCellStart:
-        case TagType.TableCellEnd:
-        case TagType.Image:
-        case TagType.Text:
-        case TagType.LinkStart:
-        case TagType.LinkEnd:
-        case TagType.Sticker:
-        case TagType.Metions:
-        case TagType.Pid:
-        case TagType.Uid:
-        case TagType.QuoteEnd:
-        case TagType.TableEnd:
-        case TagType.HeadingEnd:
-        case TagType.AlignEnd:
-        case TagType.ParagraphEnd:
-          throw "Unexpected element: ${iter.current}.";
+      if (iter.current is CollapseStartTag) {
+        throw "Nested collapse is not allowed";
+      } else if (iter.current is CollapseEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else if (iter.current is ReplyTag) {
+        children.add(_buildReply(context, iter.current, false));
+      } else if (iter.current is QuoteStartTag) {
+        children.add(_buildQuote(context, iter));
+      } else if (iter.current is TableStartTag) {
+        children.add(_buildTable(context, iter));
+      } else if (iter.current is HeadingStartTag) {
+        children.add(_buildHeading(context, iter));
+      } else if (iter.current is RuleTag) {
+        children.add(_buildRule(context));
+      } else if (iter.current is AlignStartTag) {
+        // TODO:
+      } else {
+        throw "Unexpected element: ${iter.current}.";
       }
     }
 
@@ -299,74 +183,33 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   Widget _buildQuote(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.QuoteStart);
+    assert(iter.current is QuoteStartTag);
 
     List<Widget> children = [];
 
-    outerloop:
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.QuoteStart:
-          children.add(_buildQuote(context, iter));
-          break;
-        case TagType.QuoteEnd:
-          break outerloop;
-        case TagType.ItalicStart:
-        case TagType.ItalicEnd:
-        case TagType.DeleteStart:
-        case TagType.DeleteEnd:
-        case TagType.BoldStart:
-        case TagType.BoldEnd:
-        case TagType.FontStart:
-        case TagType.FontEnd:
-        case TagType.ColorStart:
-        case TagType.ColorEnd:
-        case TagType.SizeStart:
-        case TagType.SizeEnd:
-        case TagType.UnderlineStart:
-        case TagType.UnderlineEnd:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.Reply:
-          children.add(_buildReply(context, iter.current as Reply, false));
-          break;
-        case TagType.ParagraphStart:
-          children.add(_buildParagraph(context, iter));
-          break;
-        case TagType.CollapseStart:
-          children.add(_buildCollapse(context, iter));
-          break;
-        case TagType.TableStart:
-          children.add(_buildTable(context, iter));
-          break;
-        case TagType.HeadingStart:
-          children.add(_buildHeading(context, iter));
-          break;
-        case TagType.Rule:
-          children.add(_buildRule(context));
-          break;
-        case TagType.AlignStart:
-          // TODO: Handle this case.
-          break;
-        case TagType.Text:
-        case TagType.Image:
-        case TagType.LinkStart:
-        case TagType.LinkEnd:
-        case TagType.Sticker:
-        case TagType.Metions:
-        case TagType.Pid:
-        case TagType.Uid:
-        case TagType.TableEnd:
-        case TagType.CollapseEnd:
-        case TagType.HeadingEnd:
-        case TagType.AlignEnd:
-        case TagType.ParagraphEnd:
-        case TagType.TableRowStart:
-        case TagType.TableCellStart:
-        case TagType.TableRowEnd:
-        case TagType.TableCellEnd:
-          throw "Unexpected element: ${iter.current}.";
-          break;
+      if (iter.current is QuoteStartTag) {
+        children.add(_buildQuote(context, iter));
+      } else if (iter.current is QuoteEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ReplyTag) {
+        children.add(_buildReply(context, iter.current, false));
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else if (iter.current is CollapseStartTag) {
+        children.add(_buildCollapse(context, iter));
+      } else if (iter.current is TableStartTag) {
+        children.add(_buildTable(context, iter));
+      } else if (iter.current is HeadingStartTag) {
+        children.add(_buildHeading(context, iter));
+      } else if (iter.current is RuleTag) {
+        children.add(_buildRule(context));
+      } else if (iter.current is AlignStartTag) {
+        // TODO: Handle this case.
+      } else {
+        throw "Unexpected element: ${iter.current}.";
       }
     }
 
@@ -377,10 +220,14 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           border: Border(
             left: BorderSide(
               width: 5.0,
-              color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Color.fromARGB(255, 0x31, 0x31, 0x31)
+                  : Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
             ),
           ),
-          color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Color.fromARGB(255, 0x3c, 0x3c, 0x3c)
+              : Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
         ),
         padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
         margin: EdgeInsets.only(bottom: 8.0),
@@ -393,10 +240,14 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         border: Border(
           left: BorderSide(
             width: 5.0,
-            color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Color.fromARGB(255, 0x31, 0x31, 0x31)
+                : Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
         ),
-        color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Color.fromARGB(255, 0x3c, 0x3c, 0x3c)
+            : Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
       ),
       padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
       margin: EdgeInsets.only(bottom: 8.0),
@@ -413,15 +264,15 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   // }
 
   Widget _buildTable(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.TableStart);
+    assert(iter.current is TableStartTag);
 
     // TODO:
 
-    return material.Text("TABLE", style: TextStyle(color: Colors.red));
+    return Text("TABLE", style: TextStyle(color: Colors.red));
   }
 
   Widget _buildHeading(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.HeadingStart);
+    assert(iter.current is HeadingStartTag);
 
     List<Widget> children = [];
 
@@ -429,57 +280,17 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     style =
         style.copyWith(fontSize: Theme.of(context).textTheme.subhead.fontSize);
 
-    outerloop:
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.HeadingStart:
-          throw "Nested heading is not allowed";
-        case TagType.HeadingEnd:
-          break outerloop;
-        case TagType.ItalicStart:
-        case TagType.ItalicEnd:
-        case TagType.DeleteStart:
-        case TagType.DeleteEnd:
-        case TagType.BoldStart:
-        case TagType.BoldEnd:
-        case TagType.FontStart:
-        case TagType.FontEnd:
-        case TagType.ColorStart:
-        case TagType.ColorEnd:
-        case TagType.SizeStart:
-        case TagType.SizeEnd:
-        case TagType.UnderlineStart:
-        case TagType.UnderlineEnd:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.ParagraphStart:
-          children.add(_buildParagraph(context, iter));
-          break;
-        case TagType.ParagraphEnd:
-        case TagType.AlignStart:
-        case TagType.AlignEnd:
-        case TagType.Rule:
-        case TagType.QuoteStart:
-        case TagType.QuoteEnd:
-        case TagType.CollapseStart:
-        case TagType.CollapseEnd:
-        case TagType.TableStart:
-        case TagType.Reply:
-        case TagType.TableEnd:
-        case TagType.Text:
-        case TagType.Image:
-        case TagType.Sticker:
-        case TagType.Metions:
-        case TagType.Pid:
-        case TagType.Uid:
-        case TagType.LinkStart:
-        case TagType.LinkEnd:
-        case TagType.TableRowStart:
-        case TagType.TableRowEnd:
-        case TagType.TableCellStart:
-        case TagType.TableCellEnd:
-          throw "Unexecpted element: ${iter.current}.";
-          break;
+      if (iter.current is HeadingStartTag) {
+        throw "Nested heading is not allowed";
+      } else if (iter.current is HeadingEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else {
+        throw "Unexecpted element: ${iter.current}.";
       }
     }
 
@@ -497,7 +308,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     return Divider();
   }
 
-  Widget _buildReply(BuildContext context, Reply reply, bool wrapQuote) {
+  Widget _buildReply(BuildContext context, ReplyTag reply, bool wrapQuote) {
     var row = InkWell(
       onTap: () => widget.openPost(
         reply.topicId,
@@ -514,7 +325,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
               color: Colors.grey[500],
             ),
           ),
-          material.Text(
+          Text(
             reply.username ?? "#ANONYMOUS#",
             style: Theme.of(context)
                 .textTheme
@@ -533,10 +344,14 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           border: Border(
             left: BorderSide(
               width: 5.0,
-              color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Color.fromARGB(255, 0x31, 0x31, 0x31)
+                  : Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
             ),
           ),
-          color: Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Color.fromARGB(255, 0x3c, 0x3c, 0x3c)
+              : Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
         ),
         padding: EdgeInsets.only(left: 8.0, top: 6.0, bottom: 6.0),
         child: row,
@@ -550,86 +365,45 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   InlineSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current.type == TagType.LinkStart);
+    assert(iter.current is LinkStartTag);
 
-    final url = (iter.current as LinkStart).url;
+    final url = (iter.current as LinkStartTag).url;
 
     final recognizer = TapGestureRecognizer()
       ..onTap = () => widget.openLink(url);
 
     List<InlineSpan> spans = [];
 
-    outerloop:
     while (iter.moveNext()) {
-      switch (iter.current.type) {
-        case TagType.LinkStart:
-          throw "Nested link is not allowed.";
-          break;
-        case TagType.LinkEnd:
-          break outerloop;
-        case TagType.ItalicStart:
-        case TagType.ItalicEnd:
-        case TagType.DeleteStart:
-        case TagType.DeleteEnd:
-        case TagType.BoldStart:
-        case TagType.BoldEnd:
-        case TagType.FontStart:
-        case TagType.FontEnd:
-        case TagType.ColorStart:
-        case TagType.ColorEnd:
-        case TagType.SizeStart:
-        case TagType.SizeEnd:
-        case TagType.UnderlineStart:
-        case TagType.UnderlineEnd:
-          _applyStyle(context, iter.current);
-          break;
-        case TagType.Text:
-          spans.add(TextSpan(
-            recognizer: recognizer,
-            text: (iter.current as Text).content,
-            style: style.copyWith(color: Colors.blue),
-          ));
-          break;
-        case TagType.Image:
-          spans.add(_buildImage(context, iter.current as Image));
-          break;
-        case TagType.Sticker:
-          spans.add(_buildSticker(context, iter.current as Sticker));
-          break;
-        case TagType.Metions:
-        case TagType.Pid:
-        case TagType.Uid:
-        case TagType.AlignStart:
-        case TagType.AlignEnd:
-        case TagType.Rule:
-        case TagType.QuoteStart:
-        case TagType.QuoteEnd:
-        case TagType.CollapseStart:
-        case TagType.CollapseEnd:
-        case TagType.TableStart:
-        case TagType.TableEnd:
-        case TagType.HeadingStart:
-        case TagType.HeadingEnd:
-        case TagType.ParagraphStart:
-        case TagType.ParagraphEnd:
-        case TagType.Reply:
-        case TagType.TableRowStart:
-        case TagType.TableRowEnd:
-        case TagType.TableCellStart:
-        case TagType.TableCellEnd:
-          throw "Unexecpted element: ${iter.current}.";
-          break;
+      if (iter.current is LinkStartTag) {
+        throw "Nested link is not allowed.";
+      } else if (iter.current is LinkEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is TextTag) {
+        spans.add(TextSpan(
+          recognizer: recognizer,
+          text: (iter.current as TextTag).content,
+          style: style.copyWith(color: Colors.blue),
+        ));
+      } else if (iter.current is ImageTag) {
+        spans.add(_buildImage(context, iter.current));
+      } else if (iter.current is StickerTag) {
+        spans.add(_buildSticker(context, iter.current));
+      } else {
+        throw "Unexecpted element: ${iter.current}.";
       }
     }
 
     if (spans.length == 1) {
       return spans[0];
+    } else {
+      return TextSpan(children: spans);
     }
-
-    return TextSpan(children: spans);
   }
 
-  InlineSpan _buildImage(BuildContext context, Image image) {
+  InlineSpan _buildImage(BuildContext context, ImageTag image) {
     var url;
 
     if (image.url.startsWith("./")) {
@@ -657,30 +431,27 @@ class _BBCodeRenderState extends State<BBCodeRender> {
           child: Hero(
             // FIXME: better way to create unique tag
             tag: "tag${DateTime.now().toString()}",
-            child: material.Image.network(url),
+            child: Image.network(url),
           ),
         ),
         placeholder: (context, url) => Center(
           child: CircularProgressIndicator(),
         ),
-        errorWidget: (context, url, error) => material.Text(
+        errorWidget: (context, url, error) => Text(
           "fialed to load image $url",
         ),
       ),
     );
   }
 
-  InlineSpan _buildSticker(BuildContext context, Sticker sticker) {
+  InlineSpan _buildSticker(BuildContext context, StickerTag sticker) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
-      child: Container(
-        margin: EdgeInsets.all(2.0),
-        child: material.Image.asset(sticker.path, width: 32.0),
-      ),
+      child: Sticker(name: sticker.name),
     );
   }
 
-  InlineSpan _buildPid(BuildContext context, Pid pid) {
+  InlineSpan _buildPid(BuildContext context, PidTag pid) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -697,7 +468,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  InlineSpan _buildUid(BuildContext context, Uid uid) {
+  InlineSpan _buildUid(BuildContext context, UidTag uid) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -711,7 +482,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             borderRadius: BorderRadius.circular(4.0),
             color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
-          child: material.Text(
+          child: Text(
             "@${uid.username}",
             style: Theme.of(context)
                 .textTheme
@@ -724,7 +495,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  InlineSpan _buildMetions(BuildContext context, Metions metions) {
+  InlineSpan _buildMetions(BuildContext context, MetionsTag metions) {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: InkWell(
@@ -738,7 +509,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             borderRadius: BorderRadius.circular(4.0),
             color: Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
           ),
-          child: material.Text(
+          child: Text(
             "@${metions.username}",
             style: Theme.of(context)
                 .textTheme
@@ -751,43 +522,56 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     );
   }
 
-  InlineSpan _buildText(BuildContext context, Text text) {
+  InlineSpan _buildText(BuildContext context, TextTag text) {
     return TextSpan(text: text.content, style: style);
   }
 
+  bool _isStyle(Tag tag) =>
+      tag is ParagraphEndTag ||
+      tag is BoldStartTag ||
+      tag is BoldEndTag ||
+      tag is ItalicStartTag ||
+      tag is ItalicEndTag ||
+      tag is UnderlineStartTag ||
+      tag is UnderlineEndTag ||
+      tag is DeleteStartTag ||
+      tag is DeleteEndTag ||
+      tag is FontStartTag ||
+      tag is FontEndTag ||
+      tag is ColorStartTag ||
+      tag is ColorEndTag ||
+      tag is SizeStartTag ||
+      tag is SizeEndTag;
+
   _applyStyle(BuildContext context, Tag tag) {
-    switch (tag.type) {
-      case TagType.BoldStart:
-        style = style.copyWith(fontWeight: FontWeight.w500);
-        break;
-      case TagType.BoldEnd:
-        style = style.copyWith(fontWeight: FontWeight.w400);
-        break;
-      case TagType.ItalicStart:
-        style = style.copyWith(fontStyle: FontStyle.italic);
-        break;
-      case TagType.ItalicEnd:
-        style = style.copyWith(fontStyle: FontStyle.normal);
-        break;
-      case TagType.UnderlineStart:
-      case TagType.UnderlineEnd:
-        // TODO:
-        break;
-      case TagType.DeleteStart:
-        style = style.copyWith(decoration: TextDecoration.lineThrough);
-        break;
-      case TagType.DeleteEnd:
-        style = style.copyWith(decoration: TextDecoration.none);
-        break;
-      case TagType.FontStart:
-      case TagType.FontEnd:
-      case TagType.ColorStart:
-      case TagType.ColorEnd:
-      case TagType.SizeStart:
-      case TagType.SizeEnd:
-        break;
-      default:
-        break;
+    if (tag is BoldStartTag) {
+      style = style.copyWith(fontWeight: FontWeight.w500);
+    } else if (tag is BoldEndTag) {
+      style = style.copyWith(fontWeight: FontWeight.w400);
+    } else if (tag is ItalicStartTag) {
+      style = style.copyWith(fontStyle: FontStyle.italic);
+    } else if (tag is ItalicEndTag) {
+      style = style.copyWith(fontStyle: FontStyle.normal);
+    } else if (tag is UnderlineStartTag) {
+      // TODO
+    } else if (tag is UnderlineEndTag) {
+      // TODO:
+    } else if (tag is DeleteStartTag) {
+      style = style.copyWith(decoration: TextDecoration.lineThrough);
+    } else if (tag is DeleteEndTag) {
+      style = style.copyWith(decoration: TextDecoration.none);
+    } else if (tag is FontStartTag) {
+      // TODO:
+    } else if (tag is FontEndTag) {
+      // TODO:
+    } else if (tag is ColorStartTag) {
+      // TODO:
+    } else if (tag is ColorEndTag) {
+      // TODO:
+    } else if (tag is SizeStartTag) {
+      // TODO:
+    } else if (tag is SizeEndTag) {
+      // TODO:
     }
   }
 }
