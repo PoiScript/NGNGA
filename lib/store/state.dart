@@ -16,31 +16,35 @@ abstract class UserState {
   bool isMe(int userId);
 
   Map<String, dynamic> toJson();
+
+  static UserState fromJson(Map<String, dynamic> json) {
+    if (json['isLogged']) {
+      return Logged.fromJson(json);
+    } else {
+      return Guest.fromJson(json);
+    }
+  }
 }
 
 class Logged extends UserState {
   final int uid;
   final String cid;
+  final bool isLogged = true;
+  final String cookie;
 
-  bool isLogged = true;
-
-  Logged(this.uid, this.cid);
-
-  String get cookie => "ngaPassportUid=$uid;ngaPassportCid=$cid;";
+  Logged(this.uid, this.cid)
+      : cookie = "ngaPassportUid=$uid;ngaPassportCid=$cid;";
 
   bool isMe(int userId) => userId == this.uid;
 
   Map<String, dynamic> toJson() => {'isLogged': true, 'uid': uid, 'cid': cid};
 
-  Logged.fromJson(Map<String, dynamic> json)
-      : cid = json['cid'],
-        uid = json['uid'];
+  Logged.fromJson(Map<String, dynamic> json) : this(json['uid'], json['cid']);
 }
 
 class Guest extends UserState {
   final String uid;
-
-  bool isLogged = false;
+  final bool isLogged = false;
 
   Guest(this.uid);
 

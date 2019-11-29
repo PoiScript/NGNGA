@@ -19,11 +19,13 @@ class SaveState extends ReduxAction<AppState> {
       "baseUrl": state.settings.baseUrl,
       "pinned": state.pinned
           .map((id) => state.categories[id])
-          .map((category) => {
-                "id": category.id,
-                "title": category.title,
-                "isSubcategory": category.isSubcategory,
-              })
+          .map(
+            (category) => {
+              "id": category.id,
+              "title": category.title,
+              "isSubcategory": category.isSubcategory,
+            },
+          )
           .toList(),
     });
 
@@ -57,18 +59,9 @@ class LoadState extends ReduxAction<AppState> {
         ),
       );
 
-      UserState userState;
-
-      if (json['user'] is Map && json['user']['isLogged'] is bool) {
-        if (json['user']['isLogged']) {
-          userState = Logged.fromJson(json['user']);
-        } else {
-          userState = Guest.fromJson(json['user']);
-        }
-      }
-
       return state.copy(
-        userState: userState,
+        userState:
+            json['user'] != null ? UserState.fromJson(json['user']) : null,
         settings: state.settings.copy(
           baseUrl: json["baseUrl"],
         ),
