@@ -1,85 +1,283 @@
 import 'package:flutter/material.dart';
 
-// https://github.com/ymback/NGA-CLIENT-VER-OPEN-SOURCE/blob/822b4236c65d077c0d61a8159498f7a610c51d49/nga_phone_base_3.0/src/main/java/sp/phone/util/EmoticonUtils.java
-const imageUrlToName = {
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca81a77f.png':
-      'ac:blink',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd3b4b3bd.png':
-      'ac:goodjob',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcba15fcf.png':
-      'ac:中枪',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcb6e96d1.png':
-      'ac:偷笑',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2a0d49a.png':
-      'ac:冷',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c10aa0303.png':
-      'ac:凌乱',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcaaacb45.png':
-      'ac:反对',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c104b8e27.png':
-      'ac:吻',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc587c6f9.png':
-      'ac:呆',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c1076f119.png':
-      'ac:咦',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2497822.png':
-      'ac:哦',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd2fa0790.png':
-      'ac:哭',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c0f6da079.png':
-      'ac:哭1',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4cc6331.png':
-      'ac:哭笑',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf37c4c9.png':
-      'ac:哼',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc4f51be7.png':
-      'ac:喷',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c1101747c.png':
-      'ac:嘲笑',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c10d1f08c.png':
-      'ac:嘲笑1',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcdd279bc.png':
-      'ac:囧',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bce27ab4d.png':
-      'ac:委屈',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd35aec58.png':
-      'ac:心',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcdfd9c69.png':
-      'ac:忧伤',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc835856c.png':
-      'ac:怒',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bce4f2963.png':
-      'ac:怕',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd330dfad.png':
-      'ac:惊',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc7d91913.png':
-      'ac:愁',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052c112b3b1b.png':
-      'ac:抓狂',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf0ba2db.png':
-      'ac:抠鼻',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc8638067.png':
-      'ac:擦汗',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca55cb6e.png':
-      'ac:无语',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc521c04b.png':
-      'ac:晕',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bca2a2f43.png':
-      'ac:汗',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcad49530.png':
-      'ac:瞎',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bceb823da.png':
-      'ac:羞',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bc80140e3.png':
-      'ac:羡慕',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcb3b8944.png':
-      'ac:花痴',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcf68ddc2.png':
-      'ac:衰',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bd27520ef.png':
-      'ac:赞同',
-  'http://img.nga.178.com/attachments/mon_201209/14/-47218_5052bcbe35760.png':
-      'ac:闪光',
+String urlToName(String url) {
+  if (url.startsWith('http://img.nga.178.com/attachments/mon_201209/14/')) {
+    return _pathToName[url
+        .substring('http://img.nga.178.com/attachments/mon_201209/14/'.length)];
+  }
+
+  if (url.startsWith('https://img.nga.178.com/attachments/mon_201209/14/')) {
+    return _pathToName[url.substring(
+        'https://img.nga.178.com/attachments/mon_201209/14/'.length)];
+  }
+
+  if (url.startsWith('http://img4.nga.cn/ngabbs/post/smile/')) {
+    return _pathToName[
+        url.substring('http://img4.nga.cn/ngabbs/post/smile/'.length)];
+  }
+
+  if (url.startsWith('https://img4.nga.cn/ngabbs/post/smile/')) {
+    return _pathToName[
+        url.substring('https://img4.nga.cn/ngabbs/post/smile/'.length)];
+  }
+
+  if (url.startsWith('https://img4.nga.178.com/ngabbs/post/smile/')) {
+    return _pathToName[
+        url.substring('https://img4.nga.178.com/ngabbs/post/smile/'.length)];
+  }
+
+  if (url.startsWith('http://img4.nga.178.com/ngabbs/post/smile/')) {
+    return _pathToName[
+        url.substring('http://img4.nga.178.com/ngabbs/post/smile/'.length)];
+  }
+  return null;
+}
+
+const _pathToName = {
+  // https://github.com/ymback/NGA-CLIENT-VER-OPEN-SOURCE/blob/822b4236c65d077c0d61a8159498f7a610c51d49/nga_phone_base_3.0/src/main/java/sp/phone/util/EmoticonUtils.java
+  '-47218_5052bca81a77f.png': 'ac:blink',
+  '-47218_5052bd3b4b3bd.png': 'ac:goodjob',
+  '-47218_5052bcba15fcf.png': 'ac:中枪',
+  '-47218_5052bcb6e96d1.png': 'ac:偷笑',
+  '-47218_5052bd2a0d49a.png': 'ac:冷',
+  '-47218_5052c10aa0303.png': 'ac:凌乱',
+  '-47218_5052bcaaacb45.png': 'ac:反对',
+  '-47218_5052c104b8e27.png': 'ac:吻',
+  '-47218_5052bc587c6f9.png': 'ac:呆',
+  '-47218_5052c1076f119.png': 'ac:咦',
+  '-47218_5052bd2497822.png': 'ac:哦',
+  '-47218_5052bd2fa0790.png': 'ac:哭',
+  '-47218_5052c0f6da079.png': 'ac:哭1',
+  '-47218_5052bc4cc6331.png': 'ac:哭笑',
+  '-47218_5052bcf37c4c9.png': 'ac:哼',
+  '-47218_5052bc4f51be7.png': 'ac:喷',
+  '-47218_5052c1101747c.png': 'ac:嘲笑',
+  '-47218_5052c10d1f08c.png': 'ac:嘲笑1',
+  '-47218_5052bcdd279bc.png': 'ac:囧',
+  '-47218_5052bce27ab4d.png': 'ac:委屈',
+  '-47218_5052bd35aec58.png': 'ac:心',
+  '-47218_5052bcdfd9c69.png': 'ac:忧伤',
+  '-47218_5052bc835856c.png': 'ac:怒',
+  '-47218_5052bce4f2963.png': 'ac:怕',
+  '-47218_5052bd330dfad.png': 'ac:惊',
+  '-47218_5052bc7d91913.png': 'ac:愁',
+  '-47218_5052c112b3b1b.png': 'ac:抓狂',
+  '-47218_5052bcf0ba2db.png': 'ac:抠鼻',
+  '-47218_5052bc8638067.png': 'ac:擦汗',
+  '-47218_5052bca55cb6e.png': 'ac:无语',
+  '-47218_5052bc521c04b.png': 'ac:晕',
+  '-47218_5052bca2a2f43.png': 'ac:汗',
+  '-47218_5052bcad49530.png': 'ac:瞎',
+  '-47218_5052bceb823da.png': 'ac:羞',
+  '-47218_5052bc80140e3.png': 'ac:羡慕',
+  '-47218_5052bcb3b8944.png': 'ac:花痴',
+  '-47218_5052bcf68ddc2.png': 'ac:衰',
+  '-47218_5052bd27520ef.png': 'ac:赞同',
+  '-47218_5052bcbe35760.png': 'ac:闪光',
+  'ac0.png': 'ac:blink',
+  'ac1.png': 'ac:goodjob',
+  'ac2.png': 'ac:上',
+  'ac3.png': 'ac:中枪',
+  'ac4.png': 'ac:偷笑',
+  'ac5.png': 'ac:冷',
+  'ac6.png': 'ac:凌乱',
+  'ac8.png': 'ac:吓',
+  'ac9.png': 'ac:吻',
+  'ac10.png': 'ac:呆',
+  'ac11.png': 'ac:咦',
+  'ac12.png': 'ac:哦',
+  'ac13.png': 'ac:哭',
+  'ac14.png': 'ac:哭1',
+  'ac15.png': 'ac:哭笑',
+  'ac17.png': 'ac:喘',
+  'ac23.png': 'ac:心',
+  'ac21.png': 'ac:囧',
+  'ac33.png': 'ac:晕',
+  'ac34.png': 'ac:汗',
+  'ac35.png': 'ac:瞎',
+  'ac36.png': 'ac:羞',
+  'ac37.png': 'ac:羡慕',
+  'ac22.png': 'ac:委屈',
+  'ac24.png': 'ac:忧伤',
+  'ac25.png': 'ac:怒',
+  'ac26.png': 'ac:怕',
+  'ac27.png': 'ac:惊',
+  'ac28.png': 'ac:愁',
+  'ac29.png': 'ac:抓狂',
+  'ac16.png': 'ac:哼',
+  'ac18.png': 'ac:喷',
+  'ac19.png': 'ac:嘲笑',
+  'ac20.png': 'ac:嘲笑1',
+  'ac30.png': 'ac:抠鼻',
+  'ac32.png': 'ac:无语',
+  'ac40.png': 'ac:衰',
+  'ac44.png': 'ac:黑枪',
+  'ac38.png': 'ac:花痴',
+  'ac43.png': 'ac:闪光',
+  'ac31.png': 'ac:擦汗',
+  'ac39.png': 'ac:茶',
+  'ac41.png': 'ac:计划通',
+  'ac7.png': 'ac:反对',
+  'ac42.png': 'ac:赞同',
+  'a2_02.png': 'a2:goodjob',
+  'a2_05.png': 'a2:诶嘿',
+  'a2_03.png': 'a2:偷笑',
+  'a2_04.png': 'a2:怒',
+  'a2_07.png': 'a2:笑',
+  'a2_08.png': 'a2:那个…',
+  'a2_09.png': 'a2:哦嗬嗬嗬',
+  'a2_10.png': 'a2:舔',
+  'a2_14.png': 'a2:鬼脸',
+  'a2_16.png': 'a2:冷',
+  'a2_15.png': 'a2:大哭',
+  'a2_17.png': 'a2:哭',
+  'a2_21.png': 'a2:恨',
+  'a2_23.png': 'a2:中枪',
+  'a2_24.png': 'a2:囧',
+  'a2_25.png': 'a2:你看看你',
+  'a2_27.png': 'a2:doge',
+  'a2_28.png': 'a2:自戳双目',
+  'a2_30.png': 'a2:偷吃',
+  'a2_31.png': 'a2:冷笑',
+  'a2_32.png': 'a2:壁咚',
+  'a2_33.png': 'a2:不活了',
+  'a2_36.png': 'a2:不明觉厉',
+  'a2_51.png': 'a2:是在下输了',
+  'a2_53.png': 'a2:你为猴这么',
+  'a2_54.png': 'a2:干杯',
+  'a2_55.png': 'a2:干杯2',
+  'a2_47.png': 'a2:异议',
+  'a2_48.png': 'a2:认真',
+  'a2_45.png': 'a2:你已经死了',
+  'a2_49.png': 'a2:你这种人…',
+  'a2_18.png': 'a2:妮可妮可妮',
+  'a2_19.png': 'a2:惊',
+  'a2_52.png': 'a2:抢镜头',
+  'a2_26.png': 'a2:yes',
+  'a2_11.png': 'a2:有何贵干',
+  'a2_12.png': 'a2:病娇',
+  'a2_13.png': 'a2:lucky',
+  'a2_20.png': 'a2:poi',
+  'a2_22.png': 'a2:囧2',
+  'a2_42.png': 'a2:威吓',
+  'a2_37.png': 'a2:jojo立',
+  'a2_38.png': 'a2:jojo立2',
+  'a2_39.png': 'a2:jojo立3',
+  'a2_41.png': 'a2:jojo立4',
+  'a2_40.png': 'a2:jojo立5',
+  'pt00.png': 'pst:举手',
+  'pt01.png': 'pst:亲',
+  'pt02.png': 'pst:偷笑',
+  'pt03.png': 'pst:偷笑2',
+  'pt04.png': 'pst:偷笑3',
+  'pt05.png': 'pst:傻眼',
+  'pt06.png': 'pst:傻眼2',
+  'pt07.png': 'pst:兔子',
+  'pt08.png': 'pst:发光',
+  'pt09.png': 'pst:呆',
+  'pt10.png': 'pst:呆2',
+  'pt11.png': 'pst:呆3',
+  'pt12.png': 'pst:呕',
+  'pt13.png': 'pst:呵欠',
+  'pt14.png': 'pst:哭',
+  'pt15.png': 'pst:哭2',
+  'pt16.png': 'pst:哭3',
+  'pt17.png': 'pst:嘲笑',
+  'pt18.png': 'pst:基',
+  'pt19.png': 'pst:宅',
+  'pt20.png': 'pst:安慰',
+  'pt21.png': 'pst:幸福',
+  'pt22.png': 'pst:开心',
+  'pt23.png': 'pst:开心2',
+  'pt24.png': 'pst:开心3',
+  'pt25.png': 'pst:怀疑',
+  'pt26.png': 'pst:怒',
+  'pt27.png': 'pst:怒2',
+  'pt28.png': 'pst:怨',
+  'pt29.png': 'pst:惊吓',
+  'pt30.png': 'pst:惊吓2',
+  'pt31.png': 'pst:惊呆',
+  'pt32.png': 'pst:惊呆2',
+  'pt33.png': 'pst:惊呆3',
+  'pt34.png': 'pst:惨',
+  'pt35.png': 'pst:斜眼',
+  'pt36.png': 'pst:晕',
+  'pt37.png': 'pst:汗',
+  'pt38.png': 'pst:泪',
+  'pt39.png': 'pst:泪2',
+  'pt40.png': 'pst:泪3',
+  'pt41.png': 'pst:泪4',
+  'pt42.png': 'pst:满足',
+  'pt43.png': 'pst:满足2',
+  'pt44.png': 'pst:火星',
+  'pt45.png': 'pst:牙疼',
+  'pt46.png': 'pst:电击',
+  'pt47.png': 'pst:看戏',
+  'pt48.png': 'pst:眼袋',
+  'pt49.png': 'pst:眼镜',
+  'pt50.png': 'pst:笑而不语',
+  'pt51.png': 'pst:紧张',
+  'pt52.png': 'pst:美味',
+  'pt53.png': 'pst:背',
+  'pt54.png': 'pst:脸红',
+  'pt55.png': 'pst:脸红2',
+  'pt56.png': 'pst:腐',
+  'pt57.png': 'pst:星星眼',
+  'pt58.png': 'pst:谢',
+  'pt59.png': 'pst:醉',
+  'pt60.png': 'pst:闷',
+  'pt61.png': 'pst:闷2',
+  'pt62.png': 'pst:音乐',
+  'pt63.png': 'pst:黑脸',
+  'pt64.png': 'pst:鼻血',
+  'dt01.png': 'dt:ROLL',
+  'dt02.png': 'dt:上',
+  'dt03.png': 'dt:傲娇',
+  'dt04.png': 'dt:叉出去',
+  'dt05.png': 'dt:发光',
+  'dt06.png': 'dt:呵欠',
+  'dt07.png': 'dt:哭',
+  'dt08.png': 'dt:啃古头',
+  'dt09.png': 'dt:嘲笑',
+  'dt10.png': 'dt:心',
+  'dt11.png': 'dt:怒',
+  'dt12.png': 'dt:怒2',
+  'dt13.png': 'dt:怨',
+  'dt14.png': 'dt:惊',
+  'dt15.png': 'dt:惊2',
+  'dt16.png': 'dt:无语',
+  'dt17.png': 'dt:星星眼',
+  'dt18.png': 'dt:星星眼2',
+  'dt19.png': 'dt:晕',
+  'dt20.png': 'dt:注意',
+  'dt21.png': 'dt:注意2',
+  'dt22.png': 'dt:泪',
+  'dt23.png': 'dt:泪2',
+  'dt24.png': 'dt:烧',
+  'dt25.png': 'dt:笑',
+  'dt26.png': 'dt:笑2',
+  'dt27.png': 'dt:笑3',
+  'dt28.png': 'dt:脸红',
+  'dt29.png': 'dt:药',
+  'dt30.png': 'dt:衰',
+  'dt31.png': 'dt:鄙视',
+  'dt32.png': 'dt:闲',
+  'dt33.png': 'dt:黑脸',
+  'pg01.png': 'pg:战斗力',
+  'pg02.png': 'pg:哈啤',
+  'pg03.png': 'pg:满分',
+  'pg04.png': 'pg:衰',
+  'pg05.png': 'pg:拒绝',
+  'pg06.png': 'pg:心',
+  'pg07.png': 'pg:严肃',
+  'pg08.png': 'pg:吃瓜',
+  'pg09.png': 'pg:嘣',
+  'pg10.png': 'pg:嘣2',
+  'pg11.png': 'pg:冻',
+  'pg12.png': 'pg:谢',
+  'pg13.png': 'pg:哭',
+  'pg14.png': 'pg:响指',
+  'pg15.png': 'pg:转身',
 };
 
 const stickerNames = [

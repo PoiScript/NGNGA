@@ -312,15 +312,14 @@ List<Tag> parseBBCode(String raw) {
           (match) =>
               _TagSpan.fromMatch(MetionsTag(match[1]), match, removed: false),
         ))
-    ..addAll(imageRegExp.allMatches(content).map(
-          (match) => _TagSpan.fromMatch(
-            imageUrlToName.containsKey(match[1])
-                ? StickerTag(imageUrlToName[match[1]])
-                : ImageTag(match[1]),
-            match,
-            removed: false,
-          ),
-        ))
+    ..addAll(imageRegExp.allMatches(content).map((match) {
+      String name = urlToName(match[1]);
+      return _TagSpan.fromMatch(
+        name == null ? ImageTag(match[1]) : StickerTag(name),
+        match,
+        removed: false,
+      );
+    }))
     ..addAll(stickerRegExp
         .allMatches(content)
         .where((match) => stickerNames.contains(match[1]))
