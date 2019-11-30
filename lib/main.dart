@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
       child: StoreConnector<AppState, ViewModel>(
         model: ViewModel(),
         builder: (context, vm) => MaterialApp(
+          debugShowCheckedModeBanner: false,
           onGenerateRoute: _routes,
           navigatorKey: _navigatorKey,
           theme: _mapToThemeData(vm.theme),
