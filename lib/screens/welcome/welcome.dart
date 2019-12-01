@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 import 'package:ngnga/store/actions/user_state.dart';
 import 'package:ngnga/store/state.dart';
