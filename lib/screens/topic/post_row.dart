@@ -18,6 +18,7 @@ import 'package:ngnga/widgets/post_dialog.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 
 import 'attach_viewer.dart';
+import 'comment_sheet.dart';
 
 final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -428,10 +429,10 @@ class _PostRowState extends State<PostRow> {
                 color: Color.fromARGB(255, 144, 144, 144),
               ),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AttachViewer(post.attachments),
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => CommentSheetConnector(
+                    postIds: post.commentIds,
                   ),
                 );
               },
