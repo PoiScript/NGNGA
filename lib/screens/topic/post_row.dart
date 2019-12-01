@@ -71,13 +71,21 @@ class _PostRowState extends State<PostRow> {
       margin: EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
+          GestureDetector(
+            child: _buildAvatar(),
+            onTap: () {
+              Navigator.pushNamed(context, '/u',
+                  arguments: {'uesrId': widget.user.id});
+            },
+          ),
+          Container(width: 8.0),
           Expanded(
-            child: Row(
-              children: <Widget>[
-                _buildAvatar(),
-                Container(width: 8.0),
-                _buildUsername(),
-              ],
+            child: GestureDetector(
+              child: _buildUsername(),
+              onTap: () {
+                Navigator.pushNamed(context, '/u',
+                    arguments: {'uesrId': widget.user.id});
+              },
             ),
           ),
           InkWell(
@@ -142,48 +150,29 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildUsername() {
-    return Row(
-      children: <Widget>[
-        if (widget.user.id > 0)
-          Expanded(
-            child: Text(
-              widget.user.username,
-              style: Theme.of(context).textTheme.subhead,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        if (widget.user.id == 0)
-          Text(
-            '#ANONYMOUS#',
-            style: Theme.of(context)
-                .textTheme
-                .subhead
-                .copyWith(color: Colors.grey),
-          ),
-        // if (post.commentTo != null)
-        //   Padding(
-        //     padding: EdgeInsets.all(8.0),
-        //     child: InkResponse(
-        //       child: Icon(
-        //         Icons.comment,
-        //         size: 16.0,
-        //         color: Color.fromARGB(255, 144, 144, 144),
-        //       ),
-        //     ),
-        //   ),
-      ],
-    );
+    if (widget.user.id > 0) {
+      return Text(
+        widget.user.username,
+        style: Theme.of(context).textTheme.subhead,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    } else {
+      return Text(
+        '#ANONYMOUS#',
+        style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.grey),
+      );
+    }
   }
 
   Widget _buildMetaRow() {
-    return Row(
+    return Wrap(
+      spacing: 4.0,
+      alignment: WrapAlignment.center,
       children: [
         // edit icon
         if (post.editedAt != null)
           Icon(Icons.edit, color: Colors.grey, size: 16),
-        if (post.editedAt != null)
-          Container(width: 4),
 
         // vendor icon
         if (post.vendor != null)
@@ -192,8 +181,6 @@ class _PostRowState extends State<PostRow> {
             color: Colors.grey,
             size: 16.0,
           ),
-        if (post.vendor != null)
-          Container(width: 4),
 
         // post index
         if (post.index != 0)
@@ -201,8 +188,6 @@ class _PostRowState extends State<PostRow> {
             '#${post.index}',
             style: Theme.of(context).textTheme.caption,
           ),
-        if (post.index != 0)
-          Container(width: 4),
 
         // post send date in duration format, updated by minutes
         StreamBuilder<DateTime>(

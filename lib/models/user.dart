@@ -1,23 +1,28 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
+
 class User {
   final int id;
   final String username;
   final List<String> avatars;
   final String signature;
   final int postsCount;
+
   final DateTime createdAt;
+  final DateTime lastVisited;
 
   User({
-    this.id,
-    this.username,
-    this.avatars,
-    this.signature,
-    this.postsCount,
-    this.createdAt,
+    @required this.id,
+    @required this.username,
+    @required this.avatars,
+    @required this.signature,
+    @required this.postsCount,
+    @required this.createdAt,
+    @required this.lastVisited,
   });
 
-  factory User.fromJson(Map<String, dynamic> json, int id) {
+  factory User.fromJson(Map<String, dynamic> json) {
     List<String> avatars = [];
 
     if (json['avatar'] is String) {
@@ -44,13 +49,16 @@ class User {
     }
 
     return User(
-      id: id,
-      username: id <= 0 ? '#ANONYMOUS#' : json['username'],
+      id: json['uid'],
+      username: json['uid'] <= 0 ? '#ANONYMOUS#' : json['username'],
       avatars: avatars,
       signature: json['signature'] ?? json['sign'],
       postsCount: json['postnum'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(
-        json['regdate'] ?? 0 * 1000,
+        (json['regdate'] ?? 0) * 1000,
+      ),
+      lastVisited: DateTime.fromMillisecondsSinceEpoch(
+        (json['thisvisit'] ?? 0) * 1000,
       ),
     );
   }
