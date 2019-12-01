@@ -72,7 +72,9 @@ class MyApp extends StatelessWidget {
         screen = HomePage();
         break;
       case '/c':
-        screen = CategoryPageConnector(arguments['id']);
+        screen = CategoryPageConnector(
+          categoryId: arguments['id'],
+        );
         break;
       case '/t':
         screen = TopicPageConnector(
@@ -81,7 +83,9 @@ class MyApp extends StatelessWidget {
         );
         break;
       case '/u':
-        screen = UserPage(id: arguments['id']);
+        screen = UserPageConnector(
+          userId: arguments['uesrId'],
+        );
         break;
       case '/s':
         screen = SettingsPageConnector();

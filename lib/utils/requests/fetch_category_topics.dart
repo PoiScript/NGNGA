@@ -54,17 +54,11 @@ Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
   @required int page,
   @required bool isSubcategory,
 }) async {
-  final uri = isSubcategory
-      ? Uri.https(baseUrl, 'thread.php', {
-          'stid': categoryId.toString(),
-          'page': (page + 1).toString(),
-          '__output': '11',
-        })
-      : Uri.https(baseUrl, 'thread.php', {
-          'fid': categoryId.toString(),
-          'page': (page + 1).toString(),
-          '__output': '11',
-        });
+  final uri = Uri.https(baseUrl, 'thread.php', {
+    isSubcategory ? 'stid' : 'fid': categoryId.toString(),
+    'page': (page + 1).toString(),
+    '__output': '11',
+  });
 
   print(uri);
 

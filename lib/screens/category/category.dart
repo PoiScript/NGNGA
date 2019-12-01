@@ -45,7 +45,7 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin<CategoryPage> {
   final ScrollController _scrollController = ScrollController();
 
   AnimationController _animationController;
@@ -55,10 +55,8 @@ class _CategoryPageState extends State<CategoryPage>
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
+    _animationController =
+        AnimationController(vsync: this, duration: kThemeAnimationDuration);
 
     _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
         .animate(_animationController);
@@ -100,7 +98,7 @@ class _CategoryPageState extends State<CategoryPage>
                       ? Colors.white
                       : Colors.black,
                 ),
-                backgroundColor: Theme.of(context).cardColor,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 actions: <Widget>[
                   PopupMenuConnector(categoryId: widget.category.id),
                 ],
@@ -159,14 +157,13 @@ class _CategoryPageState extends State<CategoryPage>
       floatingActionButton: SlideTransition(
         position: _offset,
         child: FloatingActionButton(
+          child: Icon(Icons.add),
           onPressed: () {
             Navigator.pushNamed(context, '/e', arguments: {
               'action': actionNewTopic,
               'categoryId': widget.category.id,
             });
           },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.blue,
         ),
       ),
     );
@@ -176,7 +173,9 @@ class _CategoryPageState extends State<CategoryPage>
 class CategoryPageConnector extends StatelessWidget {
   final int categoryId;
 
-  CategoryPageConnector(this.categoryId);
+  CategoryPageConnector({
+    @required this.categoryId,
+  });
 
   @override
   Widget build(BuildContext context) {

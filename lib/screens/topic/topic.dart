@@ -52,7 +52,7 @@ class TopicPage extends StatefulWidget {
 }
 
 class _TopicPageState extends State<TopicPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin<TopicPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   AnimationController _animationController;
@@ -62,10 +62,8 @@ class _TopicPageState extends State<TopicPage>
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
+    _animationController =
+        AnimationController(vsync: this, duration: kThemeAnimationDuration);
 
     _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
         .animate(_animationController);
@@ -131,12 +129,11 @@ class _TopicPageState extends State<TopicPage>
         child: FloatingActionButton(
           onPressed: () {
             Navigator.pushNamed(context, '/e', arguments: {
-              'action': actionReply,
+              'action': actionNewPost,
               'topicId': widget.topic.id,
             });
           },
           child: Icon(Icons.add),
-          backgroundColor: Colors.blue,
         ),
       ),
     );

@@ -54,7 +54,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.categoryId,
     @required this.category,
     @required this.navigateToCategory,
-  }) : super(equals: [categoryId, category]);
+  }) : super(equals: [category]);
 
   @override
   ViewModel fromStore() {

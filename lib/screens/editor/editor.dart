@@ -13,11 +13,12 @@ import 'styling.dart';
 
 // use int instead of enum to indicate edit action, so it can be passed from routing argument
 const int actionNewTopic = 0;
-const int actionQuote = 1;
-const int actionReply = 2;
-const int actionModify = 3;
-const int actionComment = 4;
-const int actionNoop = 5;
+const int actionNewPost = 1;
+const int actionQuote = 2;
+const int actionReply = 3;
+const int actionModify = 4;
+const int actionComment = 5;
+const int actionNoop = 6;
 
 class EditorPage extends StatefulWidget {
   final Event<Editing> setEditingEvt;
@@ -314,22 +315,26 @@ class EditorPageConnector extends StatelessWidget {
     @required this.categoryId,
     @required this.topicId,
     @required this.postId,
-  })  : assert(action == actionNewTopic ||
-            action == actionQuote ||
-            action == actionReply ||
-            action == actionModify ||
-            action == actionComment ||
-            action == actionNoop),
-        assert(action != actionNewTopic ||
-            (categoryId != null && topicId == null && postId == null)),
-        assert(
-            action != actionQuote || (categoryId == null && topicId != null)),
-        assert(
-            action != actionReply || (categoryId == null && topicId != null)),
-        assert(
-            action != actionModify || (categoryId == null && topicId != null)),
-        assert(
-            action != actionComment || (categoryId == null && topicId != null));
+  })  : assert(action != null),
+        assert(_validateArgs(action, categoryId, topicId, postId));
+
+  static bool _validateArgs(
+      int action, int categoryId, int topicId, int postId) {
+    switch (action) {
+      case actionNewTopic:
+        return categoryId != null && topicId == null && postId == null;
+      case actionNewPost:
+        return categoryId == null && topicId != null && postId == null;
+      case actionQuote:
+      case actionReply:
+      case actionModify:
+      case actionComment:
+        return categoryId == null && topicId != null && postId != null;
+      case actionNoop:
+        return categoryId == null && topicId == null && postId == null;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
