@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/screens/editor/sticker.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -138,7 +139,7 @@ class _EditorPageState extends State<EditorPage> {
                 focusNode: _subjectFocusNode,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                  labelText: 'Subject',
+                  labelText: AppLocalizations.of(context).subject,
                   border: InputBorder.none,
                 ),
                 controller: _subjectController,
@@ -147,41 +148,41 @@ class _EditorPageState extends State<EditorPage> {
                     .subhead
                     .copyWith(fontFamily: 'Noto Sans CJK SC'),
               ),
-              isPreviewing
-                  ? Container(
-                      padding: EdgeInsets.all(8.0),
-                      alignment: Alignment.centerLeft,
-                      child: BBCodeRender(
-                        raw: _contentController.text,
-                        // TODO
-                        openLink: (x) => {},
-                        openPost: (x, y, z) => {},
-                        openUser: (x) => {},
-                      ),
-                    )
-                  : TextField(
-                      readOnly: isPreviewing,
-                      focusNode: _contentFocusNode,
-                      keyboardType: TextInputType.multiline,
-                      decoration: InputDecoration(
-                        labelText: 'Content',
-                        border: InputBorder.none,
-                      ),
-                      controller: _contentController,
-                      maxLines: null,
-                      autofocus: true,
-                      style: Theme.of(context)
-                          .textTheme
-                          .body1
-                          .copyWith(fontFamily: 'Noto Sans CJK SC'),
-                    ),
+              if (isPreviewing)
+                Container(
+                  padding: EdgeInsets.all(8.0),
+                  alignment: Alignment.centerLeft,
+                  child: BBCodeRender(
+                    raw: _contentController.text,
+                    // TODO
+                    openLink: (x) => {},
+                    openPost: (x, y, z) => {},
+                    openUser: (x) => {},
+                  ),
+                )
+              else
+                TextField(
+                  readOnly: isPreviewing,
+                  focusNode: _contentFocusNode,
+                  keyboardType: TextInputType.multiline,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).content,
+                    border: InputBorder.none,
+                  ),
+                  controller: _contentController,
+                  maxLines: null,
+                  autofocus: true,
+                  style: Theme.of(context)
+                      .textTheme
+                      .body1
+                      .copyWith(fontFamily: 'Noto Sans CJK SC'),
+                )
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: _submit,
+          onPressed: isSending ? null : _submit,
           child: Icon(Icons.send),
-          backgroundColor: Colors.blue,
         ),
         bottomSheet: BottomAppBar(
           child: Column(

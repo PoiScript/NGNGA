@@ -4,6 +4,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
@@ -114,7 +115,7 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
           ),
           if (_manuallyPaused)
             Text(
-              'Auto-update disabled.',
+              AppLocalizations.of(context).autoUpdateDisabled,
               style: Theme.of(context).textTheme.caption,
             )
           else
@@ -123,12 +124,12 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Auto-update enabled.',
+                  AppLocalizations.of(context).autoUpdateEnabled,
                   style: Theme.of(context).textTheme.caption,
                 ),
                 if (_isLoading)
                   Text(
-                    'Loading...',
+                    AppLocalizations.of(context).loading,
                     style: Theme.of(context).textTheme.caption,
                   )
                 else
@@ -136,12 +137,15 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
                     initialData: DateTime.now(),
                     stream: Stream.periodic(const Duration(seconds: 1)),
                     builder: (context, snapshot) => Text(
-                      'Last Updated: ${dateFormatter.format(_lastUpdated)} (${DateTime.now().difference(_lastUpdated).inSeconds}s ago)',
+                      AppLocalizations.of(context).lastUpdated(
+                        dateFormatter.format(_lastUpdated),
+                        DateTime.now().difference(_lastUpdated).inSeconds,
+                      ),
                       style: Theme.of(context).textTheme.caption,
                     ),
                   ),
                 Text(
-                  'Update Interval: 20s',
+                  AppLocalizations.of(context).updateInterval(20),
                   style: Theme.of(context).textTheme.caption,
                 )
               ],

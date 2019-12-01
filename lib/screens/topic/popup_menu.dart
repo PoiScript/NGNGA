@@ -1,6 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -43,7 +44,7 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.removeFromFavorites,
             child: Text(
-              'Remove from Favorites',
+              AppLocalizations.of(context).removeFromFavorites,
               style: Theme.of(context).textTheme.body1,
             ),
           )
@@ -51,14 +52,14 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.addToFavorites,
             child: Text(
-              'Add to Favorites',
+              AppLocalizations.of(context).addToFavorites,
               style: Theme.of(context).textTheme.body1,
             ),
           ),
         PopupMenuItem<Choice>(
           value: Choice.copyLinkToClipboard,
           child: Text(
-            'Copy Link to clipboard',
+            AppLocalizations.of(context).copyLinkToClipboard,
             style: Theme.of(context).textTheme.body1,
           ),
         )
@@ -66,10 +67,16 @@ class PopupMenu extends StatelessWidget {
       onSelected: (choice) async {
         switch (choice) {
           case Choice.removeFromFavorites:
-            removeFromFavorites();
+            await removeFromFavorites();
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context).removedFromFavorites),
+            ));
             break;
           case Choice.addToFavorites:
-            addToFavorites();
+            await addToFavorites();
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context).addedToFavorites),
+            ));
             break;
           case Choice.copyLinkToClipboard:
             await Clipboard.setData(ClipboardData(
@@ -78,7 +85,7 @@ class PopupMenu extends StatelessWidget {
               }).toString(),
             ));
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('copied'),
+              content: Text(AppLocalizations.of(context).copiedLinkToClipboard),
             ));
             break;
           default:

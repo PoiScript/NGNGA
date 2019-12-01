@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'explore.dart';
 import 'favorites.dart';
@@ -22,8 +23,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(
           _selectedIndex == 0
-              ? 'Favorites'
-              : _selectedIndex == 1 ? 'Explore' : 'Inbox',
+              ? AppLocalizations.of(context).favorites
+              : _selectedIndex == 1
+                  ? AppLocalizations.of(context).explore
+                  : AppLocalizations.of(context).inbox,
           style: Theme.of(context).textTheme.body2,
         ),
         actions: <Widget>[

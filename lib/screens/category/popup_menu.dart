@@ -1,6 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -43,7 +44,7 @@ class PopupMenu extends StatelessWidget {
         PopupMenuItem<Choice>(
           value: Choice.copyLinkToClipboard,
           child: Text(
-            'Copy Link to clipboard',
+            AppLocalizations.of(context).copyLinkToClipboard,
             style: Theme.of(context).textTheme.body1,
           ),
         ),
@@ -51,7 +52,7 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.removeFromPinned,
             child: Text(
-              'Remove from pinned',
+              AppLocalizations.of(context).removeFromPinned,
               style: Theme.of(context).textTheme.body1,
             ),
           )
@@ -59,7 +60,7 @@ class PopupMenu extends StatelessWidget {
           PopupMenuItem<Choice>(
             value: Choice.addToPinned,
             child: Text(
-              'Add to pinned',
+              AppLocalizations.of(context).addToPinned,
               style: Theme.of(context).textTheme.body1,
             ),
           ),
@@ -73,19 +74,19 @@ class PopupMenu extends StatelessWidget {
               }).toString(),
             ));
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Copied to clipboard'),
+              content: Text(AppLocalizations.of(context).copiedLinkToClipboard),
             ));
             break;
           case Choice.addToPinned:
             addToPinned();
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Added to pinned'),
+              content: Text(AppLocalizations.of(context).addedToPinned),
             ));
             break;
           case Choice.removeFromPinned:
             removeFromPinned();
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Removed from pinned'),
+              content: Text(AppLocalizations.of(context).removedFromPinned),
             ));
             break;
         }

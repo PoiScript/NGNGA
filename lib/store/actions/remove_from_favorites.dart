@@ -21,9 +21,7 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
       baseUrl: state.settings.baseUrl,
     );
 
-    return state.copy(
-      topicSnackBarEvt: Event('成功移出收藏'),
-    );
+    return null;
   }
 
   void after() => dispatch(FetchFavoritesAction());

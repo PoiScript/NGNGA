@@ -1,6 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/store/actions/change_theme.dart';
 import 'package:ngnga/store/actions/settings.dart';
 import 'package:ngnga/store/state.dart';
@@ -41,7 +42,7 @@ class SettingsPage extends StatelessWidget {
               : Colors.black,
         ),
         title: Text(
-          'Settings',
+          AppLocalizations.of(context).settings,
           style: Theme.of(context).textTheme.body2,
         ),
         titleSpacing: 0.0,
@@ -49,12 +50,8 @@ class SettingsPage extends StatelessWidget {
       ),
       body: ListView(
         children: <Widget>[
-          Container(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Theme',
-              style: Theme.of(context).textTheme.subhead,
-            ),
+          ListTile(
+            title: Text(AppLocalizations.of(context).theme),
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -68,14 +65,14 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text('Change domain'),
+            title: Text(AppLocalizations.of(context).changeDomain),
             subtitle: Text(baseUrl),
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayDomainDialog(context),
           ),
           if (user is Logged)
             ListTile(
-              title: Text('Edit Cookies'),
+              title: Text(AppLocalizations.of(context).editCookies),
               subtitle: Text('Logged as user ${(user as Logged).uid}'),
               trailing: Icon(Icons.keyboard_arrow_right),
               onTap: () => _displayCookiesDialog(context),
@@ -93,7 +90,7 @@ class SettingsPage extends StatelessWidget {
           //   },
           // ),
           ListTile(
-            title: Text('About'),
+            title: Text(AppLocalizations.of(context).about),
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => {},
           ),
@@ -157,7 +154,7 @@ class SettingsPage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Change Domain',
+            AppLocalizations.of(context).changeDomain,
             style: Theme.of(context).textTheme.body2,
           ),
           content: Column(

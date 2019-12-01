@@ -1,5 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/screens/category/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
@@ -45,6 +47,18 @@ class MyApp extends StatelessWidget {
           navigatorKey: _navigatorKey,
           theme: _mapToThemeData(vm.theme),
           initialRoute: store.state.userState == null ? 'welcome' : '/',
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            const AppLocalizationsDelegate(),
+          ],
+          supportedLocales: [
+            const Locale('en', ''),
+            const Locale('zh', ''),
+            // TODO: chinese variants
+            // const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+            // const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+          ],
         ),
       ),
     );

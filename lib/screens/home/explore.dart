@@ -1,6 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/categories.dart';
@@ -27,7 +28,7 @@ class Explore extends StatelessWidget {
             ),
             color: Theme.of(context).cardColor,
             child: Text(
-              'Pinned',
+              AppLocalizations.of(context).pinned,
               style: Theme.of(context).textTheme.caption,
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
@@ -217,24 +218,18 @@ class _PostRowState extends State<PostRow> {
 
   Widget _buildMetaList() {
     List<ListTile> listChildren = [
-      if (post.index != 0)
-        ListTile(
-          dense: true,
-          leading: const Icon(Icons.info),
-          title: Text('第 ${post.index} 楼'),
-        ),
       ListTile(
         dense: true,
         leading: const Icon(Icons.access_time),
-        title: Text('创建时间'),
-        subtitle: Text(dateFormatter.format(widget.post.createdAt)),
+        title: Text(AppLocalizations.of(context).createdAt),
+        subtitle: Text(dateFormatter.format(post.createdAt)),
       ),
       if (post.editedAt != null)
         ListTile(
           dense: true,
           leading: const Icon(Icons.edit),
-          title: Text('编辑时间'),
-          subtitle: Text(dateFormatter.format(widget.post.editedAt)),
+          title: Text(AppLocalizations.of(context).editedAt),
+          subtitle: Text(dateFormatter.format(post.editedAt)),
         ),
       if (post.vendor != null) _buildVendorListTile(),
     ];
@@ -251,13 +246,13 @@ class _PostRowState extends State<PostRow> {
     String title;
     switch (post.vendor) {
       case Vendor.android:
-        title = '发送自 Android 客户端';
+        title = AppLocalizations.of(context).sentFromAndroid;
         break;
       case Vendor.apple:
-        title = '发送自 iOS 客户端';
+        title = AppLocalizations.of(context).sentFromApple;
         break;
       case Vendor.windows:
-        title = '发送自 Windows Phone 客户端';
+        title = AppLocalizations.of(context).sentFromWindows;
         break;
     }
     if (post.vendorDetail.isEmpty) {
@@ -282,7 +277,7 @@ class _PostRowState extends State<PostRow> {
         PopupMenuItem<Choice>(
           value: Choice.displayInBBCode,
           child: Text(
-            'Display in BBCode',
+            AppLocalizations.of(context).displayInBBCode,
             style: Theme.of(context).textTheme.body1,
           ),
         ),
@@ -290,7 +285,7 @@ class _PostRowState extends State<PostRow> {
         PopupMenuItem<Choice>(
           value: Choice.dispalyInRichText,
           child: Text(
-            'Display in RichText',
+            AppLocalizations.of(context).dispalyInRichText,
             style: Theme.of(context).textTheme.body1,
           ),
         ),
@@ -298,28 +293,28 @@ class _PostRowState extends State<PostRow> {
         PopupMenuItem<Choice>(
           value: Choice.editThisPost,
           child: Text(
-            'Edit This Post',
+            AppLocalizations.of(context).edit,
             style: Theme.of(context).textTheme.body1,
           ),
         ),
       PopupMenuItem<Choice>(
         value: Choice.replyToThisPost,
         child: Text(
-          'Reply To This Post',
+          AppLocalizations.of(context).reply,
           style: Theme.of(context).textTheme.body1,
         ),
       ),
       PopupMenuItem<Choice>(
         value: Choice.quoteFromThisPost,
         child: Text(
-          'Quote From This Post',
+          AppLocalizations.of(context).quote,
           style: Theme.of(context).textTheme.body1,
         ),
       ),
       PopupMenuItem<Choice>(
         value: Choice.commentOnThisPost,
         child: Text(
-          'Comment On This Post',
+          AppLocalizations.of(context).comment,
           style: Theme.of(context).textTheme.body1,
         ),
       ),

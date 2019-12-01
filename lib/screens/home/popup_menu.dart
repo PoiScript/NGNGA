@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 
 enum Choice {
@@ -20,7 +22,7 @@ class PopupMenu extends StatelessWidget {
         PopupMenuItem<Choice>(
           value: Choice.jumpToSettingsPage,
           child: Text(
-            'Settings',
+            AppLocalizations.of(context).settings,
             style: Theme.of(context).textTheme.body1,
           ),
         ),

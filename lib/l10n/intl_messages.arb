@@ -1,0 +1,228 @@
+{
+  "@@last_modified": "2019-12-01T14:30:03.513356",
+  "Favorites": "Favorites",
+  "@Favorites": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Explore": "Explore",
+  "@Explore": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Inbox": "Inbox",
+  "@Inbox": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Pinned": "Pinned",
+  "@Pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Settings": "Settings",
+  "@Settings": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Add to Favorites": "Add to Favorites",
+  "@Add to Favorites": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Added to Favorites": "Added to Favorites",
+  "@Added to Favorites": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Remove from Favorites": "Remove from Favorites",
+  "@Remove from Favorites": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Removed from Favorites": "Removed from Favorites",
+  "@Removed from Favorites": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Add to pinned": "Add to pinned",
+  "@Add to pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Added to pinned": "Added to pinned",
+  "@Added to pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Remove from pinned": "Remove from pinned",
+  "@Remove from pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Removed from pinned": "Removed from pinned",
+  "@Removed from pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Copy Link To Clipboard": "Copy Link To Clipboard",
+  "@Copy Link To Clipboard": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Copied Link To Clipboard": "Copied Link To Clipboard",
+  "@Copied Link To Clipboard": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "comment": "comment",
+  "@comment": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "edit": "edit",
+  "@edit": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "reply": "reply",
+  "@reply": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "quote": "quote",
+  "@quote": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Display In BBCode": "Display In BBCode",
+  "@Display In BBCode": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Display In RichText": "Display In RichText",
+  "@Display In RichText": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Edited At": "Edited At",
+  "@Edited At": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Posted At": "Posted At",
+  "@Posted At": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Sent from Android": "Sent from Android",
+  "@Sent from Android": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Sent from Apple": "Sent from Apple",
+  "@Sent from Apple": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Sent from Windows": "Sent from Windows",
+  "@Sent from Windows": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Theme": "Theme",
+  "@Theme": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Language": "Language",
+  "@Language": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "About": "About",
+  "@About": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Change Domain": "Change Domain",
+  "@Change Domain": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Edit Cookies": "Edit Cookies",
+  "@Edit Cookies": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Auto-update Enabled": "Auto-update Enabled",
+  "@Auto-update Enabled": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Auto-update Disabled": "Auto-update Disabled",
+  "@Auto-update Disabled": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Loading...": "Loading...",
+  "@Loading...": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "lastUpdated": "Last Updated: {dateTime} ({seconds}s ago)",
+  "@lastUpdated": {
+    "type": "text",
+    "placeholders": {
+      "dateTime": {},
+      "seconds": {}
+    }
+  },
+  "updateInterval": "Update Interval: {interval}s",
+  "@updateInterval": {
+    "type": "text",
+    "placeholders": {
+      "interval": {}
+    }
+  },
+  "Subject": "Subject",
+  "@Subject": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Content": "Content",
+  "@Content": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Signature": "Signature",
+  "@Signature": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Posts Count": "Posts Count",
+  "@Posts Count": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Last Visited": "Last Visited",
+  "@Last Visited": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Created At": "Created At",
+  "@Created At": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "User": "User",
+  "@User": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "No Signature": "No Signature",
+  "@No Signature": {
+    "type": "text",
+    "placeholders": {}
+  }
+}
