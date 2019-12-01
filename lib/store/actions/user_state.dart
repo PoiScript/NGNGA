@@ -1,10 +1,29 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/requests/login_as_guest.dart';
 
-class GuestLoginAction extends ReduxAction<AppState> {
+class LoggedAction extends ReduxAction<AppState> {
+  final int uid;
+  final String cid;
+
+  LoggedAction({
+    @required this.uid,
+    @required this.cid,
+  });
+
+  @override
+  AppState reduce() {
+    return state.copy(
+      userState: Logged(uid, cid),
+    );
+  }
+}
+
+class LoginAsGuestAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     String uid = await loginAsGuest(
