@@ -26,6 +26,18 @@ void main() async {
   return runApp(MyApp(store: store));
 }
 
+final Map<AppTheme, ThemeData> themeDataMap = {
+  AppTheme.white: whiteTheme,
+  AppTheme.black: blackTheme,
+  AppTheme.grey: greyTheme,
+  AppTheme.yellow: yellowTheme,
+};
+
+final Map<AppLocale, Locale> localeMap = {
+  AppLocale.en: Locale('en', ''),
+  AppLocale.zh: Locale('zh', ''),
+};
+
 class MyApp extends StatelessWidget {
   final Store<AppState> store;
 
@@ -45,8 +57,9 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           onGenerateRoute: _routes,
           navigatorKey: _navigatorKey,
-          theme: _mapToThemeData(vm.theme),
+          theme: themeDataMap[vm.theme],
           initialRoute: store.state.userState == null ? 'welcome' : '/',
+          locale: localeMap[vm.locale],
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -107,34 +120,22 @@ class MyApp extends StatelessWidget {
     }
     return MaterialPageRoute(builder: (context) => screen);
   }
-
-  ThemeData _mapToThemeData(AppTheme theme) {
-    ThemeData themeData;
-    switch (theme) {
-      case AppTheme.white:
-        themeData = whiteTheme;
-        break;
-      case AppTheme.black:
-        themeData = blackTheme;
-        break;
-      case AppTheme.grey:
-        themeData = greyTheme;
-        break;
-      case AppTheme.yellow:
-        themeData = yellowTheme;
-        break;
-    }
-    return themeData;
-  }
 }
 
 class ViewModel extends BaseModel<AppState> {
   ViewModel();
 
   AppTheme theme;
+  AppLocale locale;
 
-  ViewModel.build({@required this.theme}) : super(equals: [theme]);
+  ViewModel.build({
+    @required this.theme,
+    @required this.locale,
+  }) : super(equals: [theme, locale]);
 
   @override
-  ViewModel fromStore() => ViewModel.build(theme: state.settings.theme);
+  ViewModel fromStore() => ViewModel.build(
+        theme: state.settings.theme,
+        locale: state.settings.locale,
+      );
 }

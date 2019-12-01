@@ -1,4 +1,5 @@
 import 'package:async_redux/async_redux.dart';
+
 import 'package:ngnga/store/state.dart';
 
 import 'state_persist.dart';
@@ -11,9 +12,7 @@ class ChangeBaseUrlAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      settings: state.settings.copy(
-        baseUrl: baseUrl,
-      ),
+      settings: state.settings.copy(baseUrl: baseUrl),
     );
   }
 
@@ -33,6 +32,21 @@ class ChangeCookiesAction extends ReduxAction<AppState> {
   AppState reduce() {
     return state.copy(
       userState: Logged(uid, cid),
+    );
+  }
+
+  void after() => dispatch(SaveState());
+}
+
+class ChangeLocaleAction extends ReduxAction<AppState> {
+  final AppLocale locale;
+
+  ChangeLocaleAction(this.locale);
+
+  @override
+  AppState reduce() {
+    return state.copy(
+      settings: state.settings.copy(locale: locale),
     );
   }
 

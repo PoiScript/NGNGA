@@ -58,28 +58,39 @@ class Guest extends UserState {
   Guest.fromJson(Map<String, dynamic> json) : uid = json['uid'];
 }
 
-enum AppTheme {
-  white,
-  black,
-  grey,
-  yellow,
-}
+enum AppTheme { white, black, grey, yellow }
+
+enum AppLocale { en, zh }
 
 class SettingsState {
   final String baseUrl;
   final AppTheme theme;
+  final AppLocale locale;
 
   SettingsState({
     @required this.baseUrl,
     @required this.theme,
+    @required this.locale,
   })  : assert(baseUrl != null),
+        assert(locale != null),
         assert(theme != null);
 
-  SettingsState.empty() : this(baseUrl: 'nga.178.com', theme: AppTheme.white);
+  SettingsState.empty()
+      : this(
+          baseUrl: 'ngabbs.com',
+          theme: AppTheme.white,
+          locale: AppLocale.en,
+        );
 
-  SettingsState copy({String baseUrl, AppTheme theme}) => SettingsState(
+  SettingsState copy({
+    String baseUrl,
+    AppTheme theme,
+    AppLocale locale,
+  }) =>
+      SettingsState(
         baseUrl: baseUrl ?? this.baseUrl,
         theme: theme ?? this.theme,
+        locale: locale ?? this.locale,
       );
 }
 
@@ -181,9 +192,10 @@ class AppState {
   final Event<Editing> setEditingEvt;
   final Event<String> topicSnackBarEvt;
 
-  final Client client = Client();
+  final Client client;
 
   AppState._({
+    @required this.client,
     @required this.categories,
     @required this.categoryStates,
     @required this.favoriteState,
@@ -199,6 +211,7 @@ class AppState {
     @required this.users,
     @required this.userState,
   })  : assert(categoryStates != null),
+        assert(client != null),
         assert(favoriteState != null),
         assert(fetchReplyEvt != null),
         assert(notifications != null),
@@ -212,6 +225,7 @@ class AppState {
         assert(users != null);
 
   AppState copy({
+    Client client,
     UserState userState,
     SettingsState settings,
     CategoryState favoriteState,
@@ -228,6 +242,7 @@ class AppState {
     Event<String> topicSnackBarEvt,
   }) =>
       AppState._(
+        client: client ?? this.client,
         userState: userState ?? this.userState,
         settings: settings ?? this.settings,
         pinned: pinned ?? this.pinned,
@@ -253,6 +268,7 @@ class AppState {
         .map((category) => MapEntry(category.id, category))));
 
     return AppState._(
+      client: Client(),
       userState: null,
       users: {},
       posts: {},

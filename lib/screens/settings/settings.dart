@@ -12,24 +12,30 @@ import 'cookies_editor.dart';
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
   final UserState user;
-  final AppTheme selectedTheme;
+  final AppTheme currentTheme;
+  final AppLocale currentLocale;
 
   final Function(String) changeBaseUrl;
   final Function({int uid, String cid}) changeCookies;
   final Function(AppTheme) changeTheme;
+  final Function(AppLocale) changeLocale;
 
   SettingsPage({
     @required this.baseUrl,
     @required this.user,
-    @required this.selectedTheme,
+    @required this.currentTheme,
+    @required this.currentLocale,
     @required this.changeCookies,
     @required this.changeBaseUrl,
     @required this.changeTheme,
+    @required this.changeLocale,
   })  : assert(baseUrl != null),
         assert(user != null),
-        assert(selectedTheme != null),
+        assert(currentTheme != null),
+        assert(currentLocale != null),
         assert(changeCookies != null),
         assert(changeBaseUrl != null),
+        assert(changeLocale != null),
         assert(changeTheme != null);
 
   @override
@@ -77,6 +83,17 @@ class SettingsPage extends StatelessWidget {
               trailing: Icon(Icons.keyboard_arrow_right),
               onTap: () => _displayCookiesDialog(context),
             ),
+          ListTile(
+            title: Text(AppLocalizations.of(context).language),
+            subtitle: Text(
+              const {
+                AppLocale.en: 'English',
+                AppLocale.zh: '中文'
+              }[currentLocale],
+            ),
+            trailing: Icon(Icons.keyboard_arrow_right),
+            onTap: () => _displayLanguageDialog(context),
+          ),
           // ListTile(
           //   title: Text('Device Info'),
           //   trailing: Icon(Icons.keyboard_arrow_right),
@@ -102,7 +119,7 @@ class SettingsPage extends StatelessWidget {
   Widget _themeButton(BuildContext context, AppTheme appTheme) {
     ThemeData theme = _mapToThemeData(appTheme);
     return Card(
-      color: selectedTheme == appTheme
+      color: currentTheme == appTheme
           ? Color.alphaBlend(
               Color.fromRGBO(0, 0, 0, 0.2),
               theme.cardColor,
@@ -115,7 +132,7 @@ class SettingsPage extends StatelessWidget {
             height: 100,
             width: 100,
             alignment: Alignment.center,
-            child: selectedTheme == appTheme
+            child: currentTheme == appTheme
                 ? Icon(
                     Icons.check,
                     size: 50,
@@ -123,7 +140,7 @@ class SettingsPage extends StatelessWidget {
                   )
                 : null,
           ),
-          onTap: selectedTheme == appTheme ? null : () => changeTheme(appTheme),
+          onTap: currentTheme == appTheme ? null : () => changeTheme(appTheme),
         ),
       ),
     );
@@ -203,6 +220,43 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+
+  _displayLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context).language,
+            style: Theme.of(context).textTheme.body2,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RadioListTile<AppLocale>(
+                title: Text('English'),
+                groupValue: currentLocale,
+                value: AppLocale.en,
+                onChanged: (locale) {
+                  changeLocale(locale);
+                  Navigator.of(context).pop();
+                },
+              ),
+              RadioListTile<AppLocale>(
+                title: Text('中文'),
+                groupValue: currentLocale,
+                value: AppLocale.zh,
+                onChanged: (locale) {
+                  changeLocale(locale);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class CirclePainter extends CustomPainter {
@@ -236,10 +290,12 @@ class SettingsPageConnector extends StatelessWidget {
       builder: (context, vm) => SettingsPage(
         baseUrl: vm.baseUrl,
         user: vm.user,
-        selectedTheme: vm.selectedTheme,
+        currentLocale: vm.currentLocale,
+        currentTheme: vm.currentTheme,
         changeCookies: vm.changeCookies,
         changeBaseUrl: vm.changeDomain,
         changeTheme: vm.changeTheme,
+        changeLocale: vm.changeLocale,
       ),
     );
   }
@@ -248,32 +304,39 @@ class SettingsPageConnector extends StatelessWidget {
 class ViewModel extends BaseModel<AppState> {
   String baseUrl;
   UserState user;
-  AppTheme selectedTheme;
+  AppTheme currentTheme;
+  AppLocale currentLocale;
 
   Function(String) changeDomain;
   Function({int uid, String cid}) changeCookies;
   Function(AppTheme) changeTheme;
+  Function(AppLocale) changeLocale;
 
   ViewModel();
 
   ViewModel.build({
     @required this.baseUrl,
     @required this.user,
-    @required this.selectedTheme,
+    @required this.currentTheme,
+    @required this.currentLocale,
     @required this.changeCookies,
     @required this.changeDomain,
     @required this.changeTheme,
-  }) : super(equals: [selectedTheme, baseUrl, user]);
+    @required this.changeLocale,
+  }) : super(equals: [currentTheme, currentLocale, baseUrl, user]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-        baseUrl: state.settings.baseUrl,
-        user: state.userState,
-        selectedTheme: state.settings.theme,
-        changeDomain: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
-        changeCookies: ({int uid, String cid}) =>
-            store.dispatch(ChangeCookiesAction(uid: uid, cid: cid)),
-        changeTheme: (theme) => store.dispatch(ChangeThemeAction(theme)));
+      baseUrl: state.settings.baseUrl,
+      user: state.userState,
+      currentTheme: state.settings.theme,
+      currentLocale: state.settings.locale,
+      changeDomain: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
+      changeCookies: ({int uid, String cid}) =>
+          store.dispatch(ChangeCookiesAction(uid: uid, cid: cid)),
+      changeTheme: (theme) => store.dispatch(ChangeThemeAction(theme)),
+      changeLocale: (locale) => store.dispatch(ChangeLocaleAction(locale)),
+    );
   }
 }
