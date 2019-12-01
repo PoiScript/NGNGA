@@ -42,18 +42,16 @@ class FetchReplyAction extends ReduxAction<AppState> {
       return state.copy(
         topics: state.topics..[topicId] = res.topic,
         fetchReplyEvt: Event(Option(null)),
-        users: state.users
-          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        users: state.users..addAll(res.users),
       );
     } else {
       return state.copy(
         topics: state.topics..[topicId] = res.topic,
         fetchReplyEvt: Event(Option(res.posts.first)),
-        users: state.users
-          ..addEntries(res.users.map((user) => MapEntry(user.id, user))),
+        users: state.users..addAll(res.users),
         posts: state.posts
-          ..addEntries(res.posts.map((post) =>
-              MapEntry(post.id == 0 ? 2 ^ 32 - topicId : post.id, post))),
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+          ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
       );
     }
   }

@@ -21,7 +21,7 @@ import 'attach_viewer.dart';
 final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
 class PostRow extends StatefulWidget {
-  final Post post;
+  final PostItem post;
   final User user;
   final bool sentByMe;
 
@@ -47,6 +47,8 @@ class PostRow extends StatefulWidget {
 class _PostRowState extends State<PostRow> {
   DisplayMode _displayMode = DisplayMode.richText;
 
+  Post get post => widget.post.inner;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -55,8 +57,7 @@ class _PostRowState extends State<PostRow> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeader(),
-          if (widget.post.subject.isNotEmpty && widget.post.index != 0)
-            _buildSubject(),
+          if (widget.post.subject.isNotEmpty) _buildSubject(),
           _buildContent(),
           _buildFooter(),
         ],
@@ -69,9 +70,15 @@ class _PostRowState extends State<PostRow> {
       margin: EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
-          _buildAvatar(),
-          Container(width: 8.0),
-          Expanded(child: _buildUsername()),
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                _buildAvatar(),
+                Container(width: 8.0),
+                _buildUsername(),
+              ],
+            ),
+          ),
           InkWell(
             child: Container(
               padding: EdgeInsets.all(8.0),
@@ -123,8 +130,7 @@ class _PostRowState extends State<PostRow> {
       height: 32.0,
       child: CachedNetworkImage(
         // user can have mulitples avatars, so we pick one of them randomly to display
-        imageUrl:
-            widget.user.avatars[widget.post.index % widget.user.avatars.length],
+        imageUrl: widget.user.avatars[post.index % widget.user.avatars.length],
         imageBuilder: (context, imageProvider) => CircleAvatar(
           radius: 16,
           backgroundImage: imageProvider,
@@ -154,17 +160,17 @@ class _PostRowState extends State<PostRow> {
                 .subhead
                 .copyWith(color: Colors.grey),
           ),
-        if (widget.post.commentTo != null)
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: InkResponse(
-              child: Icon(
-                Icons.comment,
-                size: 16.0,
-                color: Color.fromARGB(255, 144, 144, 144),
-              ),
-            ),
-          ),
+        // if (post.commentTo != null)
+        //   Padding(
+        //     padding: EdgeInsets.all(8.0),
+        //     child: InkResponse(
+        //       child: Icon(
+        //         Icons.comment,
+        //         size: 16.0,
+        //         color: Color.fromARGB(255, 144, 144, 144),
+        //       ),
+        //     ),
+        //   ),
       ],
     );
   }
@@ -173,35 +179,35 @@ class _PostRowState extends State<PostRow> {
     return Row(
       children: [
         // edit icon
-        if (widget.post.editedAt != null)
+        if (post.editedAt != null)
           Icon(Icons.edit, color: Colors.grey, size: 16),
-        if (widget.post.editedAt != null)
+        if (post.editedAt != null)
           Container(width: 4),
 
         // vendor icon
-        if (widget.post.vendor != null)
+        if (post.vendor != null)
           Icon(
-            VendorIcons.fromVendor(widget.post.vendor),
+            VendorIcons.fromVendor(post.vendor),
             color: Colors.grey,
             size: 16.0,
           ),
-        if (widget.post.vendor != null)
+        if (post.vendor != null)
           Container(width: 4),
 
         // post index
-        if (widget.post.index != 0)
+        if (post.index != 0)
           Text(
-            '#${widget.post.index}',
+            '#${post.index}',
             style: Theme.of(context).textTheme.caption,
           ),
-        if (widget.post.index != 0)
+        if (post.index != 0)
           Container(width: 4),
 
         // post send date in duration format, updated by minutes
         StreamBuilder<DateTime>(
           stream: Stream.periodic(const Duration(minutes: 1)),
           builder: (context, snapshot) => Text(
-            duration(DateTime.now(), widget.post.createdAt),
+            duration(DateTime.now(), post.createdAt),
             style: Theme.of(context).textTheme.caption,
           ),
         ),
@@ -211,11 +217,11 @@ class _PostRowState extends State<PostRow> {
 
   Widget _buildMetaList() {
     List<ListTile> listChildren = [
-      if (widget.post.index != 0)
+      if (post.index != 0)
         ListTile(
           dense: true,
           leading: const Icon(Icons.info),
-          title: Text('第 ${widget.post.index} 楼'),
+          title: Text('第 ${post.index} 楼'),
         ),
       ListTile(
         dense: true,
@@ -223,14 +229,14 @@ class _PostRowState extends State<PostRow> {
         title: Text('创建时间'),
         subtitle: Text(dateFormatter.format(widget.post.createdAt)),
       ),
-      if (widget.post.editedAt != null)
+      if (post.editedAt != null)
         ListTile(
           dense: true,
           leading: const Icon(Icons.edit),
           title: Text('编辑时间'),
           subtitle: Text(dateFormatter.format(widget.post.editedAt)),
         ),
-      if (widget.post.vendor != null) _buildVendorListTile(),
+      if (post.vendor != null) _buildVendorListTile(),
     ];
 
     return ListView.separated(
@@ -243,7 +249,7 @@ class _PostRowState extends State<PostRow> {
 
   ListTile _buildVendorListTile() {
     String title;
-    switch (widget.post.vendor) {
+    switch (post.vendor) {
       case Vendor.android:
         title = '发送自 Android 客户端';
         break;
@@ -254,18 +260,18 @@ class _PostRowState extends State<PostRow> {
         title = '发送自 Windows Phone 客户端';
         break;
     }
-    if (widget.post.vendorDetail.isEmpty) {
+    if (post.vendorDetail.isEmpty) {
       return ListTile(
         dense: true,
-        leading: Icon(VendorIcons.fromVendor(widget.post.vendor)),
+        leading: Icon(VendorIcons.fromVendor(post.vendor)),
         title: Text(title),
       );
     } else {
       return ListTile(
         dense: true,
-        leading: Icon(VendorIcons.fromVendor(widget.post.vendor)),
+        leading: Icon(VendorIcons.fromVendor(post.vendor)),
         title: Text(title),
-        subtitle: Text(widget.post.vendorDetail),
+        subtitle: Text(post.vendorDetail),
       );
     }
   }
@@ -331,29 +337,29 @@ class _PostRowState extends State<PostRow> {
       case Choice.editThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': actionModify,
-          'topicId': widget.post.topicId,
-          'postId': widget.post.id,
+          'topicId': post.topicId,
+          'postId': post.id,
         });
         break;
       case Choice.replyToThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': actionReply,
-          'topicId': widget.post.topicId,
-          'postId': widget.post.id,
+          'topicId': post.topicId,
+          'postId': post.id,
         });
         break;
       case Choice.quoteFromThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': actionQuote,
-          'topicId': widget.post.topicId,
-          'postId': widget.post.id,
+          'topicId': post.topicId,
+          'postId': post.id,
         });
         break;
       case Choice.commentOnThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': actionComment,
-          'topicId': widget.post.topicId,
-          'postId': widget.post.id,
+          'topicId': post.topicId,
+          'postId': post.id,
         });
         break;
     }
@@ -372,12 +378,12 @@ class _PostRowState extends State<PostRow> {
         return Container(
           padding: EdgeInsets.only(bottom: 6.0),
           child: SelectableText(
-            widget.post.content.replaceAll('<br/>', '\n'),
+            post.content.replaceAll('<br/>', '\n'),
           ),
         );
       case DisplayMode.richText:
         return BBCodeRender(
-          raw: widget.post.content,
+          raw: post.content,
           openUser: (userId) {
             showDialog(
               context: context,
@@ -408,7 +414,7 @@ class _PostRowState extends State<PostRow> {
     return Row(
       children: <Widget>[
         // attachments icon
-        if (widget.post.attachments.isNotEmpty)
+        if (post.attachments.isNotEmpty)
           Padding(
             padding: EdgeInsets.all(8.0),
             child: InkResponse(
@@ -421,18 +427,18 @@ class _PostRowState extends State<PostRow> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AttachViewer(widget.post.attachments),
+                    builder: (context) => AttachViewer(post.attachments),
                   ),
                 );
               },
             ),
           ),
-        if (widget.post.attachments.length > 1)
+        if (post.attachments.length > 1)
           Text(
-            '${widget.post.attachments.length}',
+            '${post.attachments.length}',
             style: Theme.of(context).textTheme.caption,
           ),
-        if (widget.post.commentIds.isNotEmpty)
+        if (post.commentIds.isNotEmpty)
           Padding(
             padding: EdgeInsets.all(8.0),
             child: InkResponse(
@@ -445,15 +451,15 @@ class _PostRowState extends State<PostRow> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AttachViewer(widget.post.attachments),
+                    builder: (context) => AttachViewer(post.attachments),
                   ),
                 );
               },
             ),
           ),
-        if (widget.post.commentIds.length > 1)
+        if (post.commentIds.length > 1)
           Text(
-            '${widget.post.commentIds.length}',
+            '${post.commentIds.length}',
             style: Theme.of(context).textTheme.caption,
           ),
         const Spacer(),
@@ -468,9 +474,9 @@ class _PostRowState extends State<PostRow> {
             onTap: () => widget.upvote(),
           ),
         ),
-        if (widget.post.vote > 0)
+        if (post.vote > 0)
           Text(
-            widget.post.vote.toString(),
+            post.vote.toString(),
             style: Theme.of(context).textTheme.caption,
           ),
         Padding(
@@ -543,7 +549,7 @@ class _PostRowState extends State<PostRow> {
 }
 
 class PostRowConnector extends StatelessWidget {
-  final Post post;
+  final PostItem post;
   final User user;
 
   const PostRowConnector({
@@ -557,8 +563,8 @@ class PostRowConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(
         postId: post.id,
-        userId: post.userId,
-        topicId: post.topicId,
+        userId: post.inner.userId,
+        topicId: post.inner.topicId,
       ),
       builder: (context, vm) => PostRow(
         post: post,

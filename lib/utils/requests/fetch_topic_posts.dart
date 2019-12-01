@@ -2,43 +2,42 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 
-import 'fetch_reply.dart';
-
 class FetchTopicPostsResponse {
   final Topic topic;
-  final List<Post> posts;
+  final List<PostItem> posts;
   final List<Post> comments;
-  final List<User> users;
+  final Map<int, User> users;
 
   final int maxPage;
 
   FetchTopicPostsResponse._({
-    this.topic,
-    this.posts,
-    this.users,
-    this.comments,
-    this.maxPage,
+    @required this.topic,
+    @required this.posts,
+    @required this.users,
+    @required this.comments,
+    @required this.maxPage,
   });
 
   factory FetchTopicPostsResponse.fromJson(Map<String, dynamic> json) {
-    List<User> users = [];
-    List<Post> posts = [];
+    Map<int, User> users = {};
+    List<PostItem> posts = [];
     List<Post> comments = [];
 
     for (var entry in Map.from(json['data']['__U']).entries) {
-      int userId = int.tryParse(entry.key);
+      if (entry.key == '__MEDALS' ||
+          entry.key == '__REPUTATIONS' ||
+          entry.key == '__GROUPS') continue;
 
-      if (userId == null) continue;
-
-      users.add(User.fromJson(entry.value, userId));
+      users[int.parse(entry.key)] = User.fromJson(entry.value);
     }
 
     for (var value in List.from(json['data']['__R'])) {
-      posts.add(Post.fromJson(value));
+      posts.add(PostItem.fromJson(value));
 
       if (value['comment'] is List) {
         for (var value in List.of(value['comment'])) {
@@ -76,56 +75,27 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
 
   final json = jsonDecode(response.body);
 
-  List<User> users = [];
-  List<Post> posts = [];
-  List<Post> comments = [];
+  return FetchTopicPostsResponse.fromJson(json);
+}
 
-  for (var entry in Map.from(json['data']['__U']).entries) {
-    int userId = int.tryParse(entry.key);
+Future<FetchTopicPostsResponse> fetchReply({
+  @required Client client,
+  @required String baseUrl,
+  @required String cookie,
+  @required int topicId,
+  @required int postId,
+}) async {
+  final uri = Uri.https(baseUrl, 'read.php', {
+    'pid': postId.toString(),
+    'tid': topicId.toString(),
+    '__output': '11',
+  });
 
-    if (userId == null) continue;
+  print(uri);
 
-    users.add(User.fromJson(entry.value, userId));
-  }
+  final res = await client.get(uri, headers: {'cookie': cookie});
 
-  for (var value in List.from(json['data']['__R'])) {
-    if (value['comment_to_id'] is int) {
-      int index = comments.indexWhere((c) => c.id == value['pid']);
+  final json = jsonDecode(res.body);
 
-      if (index == -1) {
-        var response = await fetchReply(
-          client: client,
-          cookie: cookie,
-          postId: value['comment_to_id'],
-          topicId: topicId,
-          baseUrl: baseUrl,
-        );
-        posts.addAll(response.posts);
-        users.addAll(response.users);
-        comments.addAll(response.comments);
-        index = comments.indexWhere((c) => c.id == value['pid']);
-      }
-
-      posts.add(comments[index].copy(
-        index: value['lou'],
-        commentTo: value['comment_to_id'],
-      ));
-    } else {
-      posts.add(Post.fromJson(value));
-
-      if (value['comment'] is List) {
-        for (var value in List.of(value['comment'])) {
-          comments.add(Post.fromJson(value));
-        }
-      }
-    }
-  }
-
-  return FetchTopicPostsResponse._(
-    topic: Topic.fromJson(json['data']['__T']),
-    posts: posts,
-    comments: comments,
-    users: users,
-    maxPage: (json['data']['__ROWS'] - 1) ~/ json['data']['__R__ROWS_PAGE'],
-  );
+  return FetchTopicPostsResponse.fromJson(json);
 }

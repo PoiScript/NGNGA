@@ -115,8 +115,7 @@ class CategoryState {
 }
 
 class TopicState {
-  final List<int> postIds;
-  final int postsCount;
+  final List<PostItem> posts;
 
   final int firstPage;
   final int lastPage;
@@ -126,24 +125,21 @@ class TopicState {
     @required this.firstPage,
     @required this.lastPage,
     @required this.maxPage,
-    @required this.postIds,
-    @required this.postsCount,
-  })  : assert(postIds != null),
+    @required this.posts,
+  })  : assert(posts != null),
         assert(maxPage >= lastPage && lastPage >= firstPage && firstPage >= 0);
 
   TopicState copy({
     int firstPage,
     int lastPage,
     int maxPage,
-    int postsCount,
-    List<int> postIds,
+    List<PostItem> posts,
   }) =>
       TopicState(
         firstPage: firstPage ?? this.firstPage,
         lastPage: lastPage ?? this.lastPage,
         maxPage: maxPage ?? this.maxPage,
-        postIds: postIds ?? this.postIds,
-        postsCount: postsCount ?? this.postsCount,
+        posts: posts ?? this.posts,
       );
 }
 
@@ -188,33 +184,32 @@ class AppState {
   final Client client = Client();
 
   AppState._({
-    @required this.userState,
-    @required this.settings,
+    @required this.categories,
+    @required this.categoryStates,
     @required this.favoriteState,
+    @required this.fetchReplyEvt,
     @required this.notifications,
     @required this.pinned,
-    @required this.users,
     @required this.posts,
-    @required this.topics,
-    @required this.categories,
-    @required this.topicStates,
-    @required this.categoryStates,
-    @required this.fetchReplyEvt,
     @required this.setEditingEvt,
+    @required this.settings,
+    @required this.topics,
     @required this.topicSnackBarEvt,
+    @required this.topicStates,
+    @required this.users,
+    @required this.userState,
   })  : assert(categoryStates != null),
-        assert(settings != null),
-        assert(notifications != null),
         assert(favoriteState != null),
-        assert(pinned != null),
-        assert(users != null),
-        assert(posts != null),
-        assert(topics != null),
-        assert(topicStates != null),
-        assert(categoryStates != null),
         assert(fetchReplyEvt != null),
+        assert(notifications != null),
+        assert(pinned != null),
+        assert(posts != null),
         assert(setEditingEvt != null),
-        assert(topicSnackBarEvt != null);
+        assert(settings != null),
+        assert(topics != null),
+        assert(topicSnackBarEvt != null),
+        assert(topicStates != null),
+        assert(users != null);
 
   AppState copy({
     UserState userState,

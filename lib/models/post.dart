@@ -1,8 +1,22 @@
 import 'package:flutter/widgets.dart';
 
-enum Vendor { android, apple, windows }
+abstract class PostItem {
+  static PostItem fromJson(Map<String, dynamic> json) {
+    if (json['comment_to_id'] != null) {
+      return Comment.fromJson(json);
+    } else if (json['pid'] == 0) {
+      return TopicPost.fromJson(json);
+    } else {
+      return Post.fromJson(json);
+    }
+  }
 
-class Post {
+  int get id;
+  Post get inner;
+  String get subject;
+}
+
+class Post extends PostItem {
   final int id;
   final int topicId;
   final int userId;
@@ -23,6 +37,8 @@ class Post {
 
   final List<int> commentIds;
   final int commentTo;
+
+  Post get inner => this;
 
   Post({
     this.id,
@@ -186,6 +202,55 @@ class Post {
     );
   }
 }
+
+class Comment extends PostItem {
+  final int index;
+  final int id;
+  final Post post;
+  final int commentTo;
+  final String subject;
+
+  Post get inner => post;
+
+  Comment({
+    this.id,
+    this.index,
+    this.post,
+    this.commentTo,
+    this.subject,
+  })  : assert(id != null),
+        assert(index != null),
+        assert(subject != null),
+        assert(post != null),
+        assert(commentTo != null);
+
+  Comment.fromJson(Map<String, dynamic> json)
+      : id = json['pid'],
+        index = json['lou'],
+        commentTo = json['comment_to_id'],
+        subject = json['subject'],
+        post = null;
+
+  Comment addPost(Post post) => Comment(
+        id: id,
+        commentTo: commentTo,
+        index: index,
+        subject: subject,
+        post: post,
+      );
+}
+
+class TopicPost extends PostItem {
+  final Post post;
+
+  int get id => 2 ^ 32 - post.topicId;
+  Post get inner => post;
+  String get subject => post.subject;
+
+  TopicPost.fromJson(Map<String, dynamic> json) : post = Post.fromJson(json);
+}
+
+enum Vendor { android, apple, windows }
 
 class Attachment {
   final String url;

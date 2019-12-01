@@ -5,8 +5,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ngnga/models/post.dart';
 
+import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
@@ -22,7 +22,7 @@ final DateFormat dateFormatter = DateFormat('HH:mm:ss');
 
 class TopicPage extends StatefulWidget {
   final Topic topic;
-  final List<Post> posts;
+  final List<PostItem> posts;
   final List<User> users;
   final bool reachMaxPage;
 
@@ -215,7 +215,7 @@ class TopicPageConnector extends StatelessWidget {
   TopicPageConnector({
     @required this.topicId,
     @required this.pageIndex,
-  }) : assert(topicId != null && pageIndex != null && pageIndex >= 0);
+  }) : assert(topicId != null && pageIndex >= 0);
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +242,7 @@ class ViewModel extends BaseModel<AppState> {
   final int topicId;
 
   Topic topic;
-  List<Post> posts;
+  List<PostItem> posts;
   List<User> users;
   bool reachMaxPage;
 
@@ -268,17 +268,15 @@ class ViewModel extends BaseModel<AppState> {
   ViewModel fromStore() {
     final topicState = state.topicStates[topicId];
 
-    List<Post> posts = [];
     List<User> users = [];
 
-    for (int id in topicState.postIds) {
-      posts.add(state.posts[id]);
-      users.add(state.users[state.posts[id].userId]);
+    for (var post in topicState.posts) {
+      users.add(state.users[post.inner.userId]);
     }
 
     return ViewModel.build(
       topicId: topicId,
-      posts: posts,
+      posts: topicState.posts,
       users: users,
       reachMaxPage: topicState.lastPage == topicState.maxPage,
       topic: state.topics[topicId],
