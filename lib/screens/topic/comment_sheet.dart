@@ -1,12 +1,12 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:ngnga/bbcode/render.dart';
 
+import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/store/state.dart';
 
 class CommentSheet extends StatelessWidget {
-  final List<Post> posts;
+  final List<PostItem> posts;
 
   const CommentSheet({
     Key key,
@@ -23,7 +23,7 @@ class CommentSheet extends StatelessWidget {
       itemBuilder: (context, index) {
         if (posts[index] == null) {
           return Text(
-            'Comment deleted',
+            'Comment not found',
             style: Theme.of(context)
                 .textTheme
                 .caption
@@ -32,7 +32,7 @@ class CommentSheet extends StatelessWidget {
         }
 
         return BBCodeRender(
-          raw: posts[index].content,
+          raw: posts[index].inner.content,
           // TODO
           openLink: (x) => {},
           openPost: (x, y, z) => {},
@@ -65,7 +65,7 @@ class CommentSheetConnector extends StatelessWidget {
 class ViewModel extends BaseModel<AppState> {
   final List<int> postIds;
 
-  List<Post> posts;
+  List<PostItem> posts;
 
   ViewModel({this.postIds});
 

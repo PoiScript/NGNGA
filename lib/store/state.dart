@@ -126,7 +126,7 @@ class CategoryState {
 }
 
 class TopicState {
-  final List<PostItem> posts;
+  final List<int> postIds;
 
   final int firstPage;
   final int lastPage;
@@ -136,21 +136,21 @@ class TopicState {
     @required this.firstPage,
     @required this.lastPage,
     @required this.maxPage,
-    @required this.posts,
-  })  : assert(posts != null),
+    @required this.postIds,
+  })  : assert(postIds != null),
         assert(maxPage >= lastPage && lastPage >= firstPage && firstPage >= 0);
 
   TopicState copy({
     int firstPage,
     int lastPage,
     int maxPage,
-    List<PostItem> posts,
+    List<int> postIds,
   }) =>
       TopicState(
         firstPage: firstPage ?? this.firstPage,
         lastPage: lastPage ?? this.lastPage,
         maxPage: maxPage ?? this.maxPage,
-        posts: posts ?? this.posts,
+        postIds: postIds ?? this.postIds,
       );
 }
 
@@ -180,7 +180,7 @@ class AppState {
   final List<UserNotification> notifications;
 
   final Map<int, User> users;
-  final Map<int, Post> posts;
+  final Map<int, PostItem> posts;
   final Map<int, Topic> topics;
   final Map<int, Category> categories;
 
@@ -231,7 +231,7 @@ class AppState {
     CategoryState favoriteState,
     List<int> pinned,
     List<UserNotification> notifications,
-    Map<int, Post> posts,
+    Map<int, PostItem> posts,
     Map<int, User> users,
     Map<int, Topic> topics,
     Map<int, Category> categories,

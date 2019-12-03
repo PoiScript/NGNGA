@@ -59,16 +59,17 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
       baseUrl: state.settings.baseUrl,
     );
 
-    List<int> topicIds = res.topics.map((t) => t.id).toList();
-
     return state.copy(
       categoryStates: state.categoryStates
         ..update(
           categoryId,
           (categoryState) => categoryState.copy(
             topicIds: categoryState.topicIds
-              ..removeWhere((id) => topicIds.contains(id))
-              ..addAll(topicIds),
+              ..addAll(
+                res.topics
+                    .map((t) => t.id)
+                    .where((id) => !categoryState.topicIds.contains(id)),
+              ),
             topicsCount: res.topicCount,
             lastPage: lastPage + 1,
             maxPage: res.maxPage,

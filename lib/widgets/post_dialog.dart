@@ -70,19 +70,25 @@ class _PostDialogState extends State<PostDialog> {
       children.add(Divider());
     }
 
-    if (children.isNotEmpty) children.removeLast();
+    if (children.isNotEmpty) {
+      children.removeLast();
+    }
 
     return SimpleDialog(
       contentPadding: EdgeInsets.all(16.0),
-      children: <Widget>[
-        Column(children: children),
-      ],
+      children: children,
     );
   }
 
   Widget _buildContent(Post post) {
     if (post == null) {
-      return Text('Post Not Found');
+      return Text(
+        'Post Not Found',
+        style: Theme.of(context)
+            .textTheme
+            .caption
+            .copyWith(fontStyle: FontStyle.italic),
+      );
     }
 
     return Column(

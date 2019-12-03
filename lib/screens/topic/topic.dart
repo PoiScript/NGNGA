@@ -266,14 +266,17 @@ class ViewModel extends BaseModel<AppState> {
     final topicState = state.topicStates[topicId];
 
     List<User> users = [];
+    List<PostItem> posts = [];
 
-    for (var post in topicState.posts) {
+    for (int id in topicState.postIds) {
+      PostItem post = state.posts[id];
+      posts.add(post);
       users.add(state.users[post.inner.userId]);
     }
 
     return ViewModel.build(
       topicId: topicId,
-      posts: topicState.posts,
+      posts: posts,
       users: users,
       reachMaxPage: topicState.lastPage == topicState.maxPage,
       topic: state.topics[topicId],

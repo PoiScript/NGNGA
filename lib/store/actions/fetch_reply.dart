@@ -26,7 +26,7 @@ class FetchReplyAction extends ReduxAction<AppState> {
 
     if (state.posts.containsKey(postId)) {
       return state.copy(
-        fetchReplyEvt: Event(Option(state.posts[postId])),
+        fetchReplyEvt: Event(Option(state.posts[postId].inner)),
       );
     }
 
@@ -40,17 +40,17 @@ class FetchReplyAction extends ReduxAction<AppState> {
 
     if (res.posts.isEmpty) {
       return state.copy(
-        topics: state.topics..[topicId] = res.topic,
+        topics: state.topics..update(topicId, (_) => res.topic),
         fetchReplyEvt: Event(Option(null)),
         users: state.users..addAll(res.users),
       );
     } else {
       return state.copy(
-        topics: state.topics..[topicId] = res.topic,
-        fetchReplyEvt: Event(Option(res.posts.first)),
+        topics: state.topics..update(topicId, (_) => res.topic),
+        fetchReplyEvt: Event(Option(res.posts.first.inner)),
         users: state.users..addAll(res.users),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
           ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
       );
     }

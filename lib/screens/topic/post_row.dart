@@ -347,9 +347,12 @@ class _PostRowState extends State<PostRow> {
   }
 
   Widget _buildSubject() {
-    return Text(
-      widget.post.subject,
-      style: Theme.of(context).textTheme.subhead,
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        widget.post.subject,
+        style: Theme.of(context).textTheme.subhead,
+      ),
     );
   }
 

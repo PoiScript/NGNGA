@@ -18,6 +18,7 @@ abstract class PostItem {
 
 class Post extends PostItem {
   final int id;
+  final int index;
   final int topicId;
   final int userId;
   final int replyTo;
@@ -29,14 +30,11 @@ class Post extends PostItem {
   final Vendor vendor;
   final String vendorDetail;
 
-  final int index;
-
   final int vote;
 
   final List<Attachment> attachments;
 
   final List<int> commentIds;
-  final int commentTo;
 
   Post get inner => this;
 
@@ -55,7 +53,6 @@ class Post extends PostItem {
     this.editedAt,
     this.editedBy,
     this.attachments,
-    this.commentTo,
     this.commentIds,
   })  : assert(id != null),
         assert(topicId != null),
@@ -105,7 +102,6 @@ class Post extends PostItem {
         editedAt: editedAt ?? this.editedAt,
         editedBy: editedBy ?? this.editedBy,
         attachments: attachments ?? this.attachments,
-        commentTo: commentTo ?? this.commentTo,
         commentIds: commentIds ?? this.commentIds,
       );
 
@@ -188,7 +184,7 @@ class Post extends PostItem {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         json['postdatetimestamp'] * 1000,
       ),
-      subject: json['subject']?.trim() ?? '',
+      subject: json['subject'] ?? '',
       content: json['content'],
       vote: json['score'],
       index: json['lou'],
@@ -198,7 +194,6 @@ class Post extends PostItem {
       vendorDetail: vendorDetail,
       attachments: attachments,
       commentIds: commentIds,
-      commentTo: json['comment_to_id'],
     );
   }
 }
@@ -246,6 +241,8 @@ class TopicPost extends PostItem {
   int get id => 2 ^ 32 - post.topicId;
   Post get inner => post;
   String get subject => post.subject;
+
+  TopicPost(this.post);
 
   TopicPost.fromJson(Map<String, dynamic> json) : post = Post.fromJson(json);
 }

@@ -66,11 +66,12 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
           (topicState) => topicState.copy(
             maxPage: res.maxPage,
             firstPage: firstPage - 1,
-            posts: List.of(res.posts)..addAll(topicState.posts),
+            postIds: List.of(res.posts.map((post) => post.id))
+              ..addAll(topicState.postIds),
           ),
         ),
       posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
         ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
     );
   }
@@ -98,17 +99,16 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
             (topicState) => topicState.copy(
               lastPage: lastPage + 1,
               maxPage: res.maxPage,
-              posts: topicState.posts..addAll(res.posts),
+              postIds: topicState.postIds
+                ..addAll(res.posts.map((post) => post.id)),
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
           ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
       );
     } else {
       final res = await fetch(topicId: topicId, page: lastPage);
-
-      List<int> postIds = res.posts.map((post) => post.id).toList();
 
       return state.copy(
         topics: state.topics..[topicId] = res.topic,
@@ -118,13 +118,14 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
             topicId,
             (topicState) => topicState.copy(
               maxPage: res.maxPage,
-              posts: topicState.posts
-                ..removeWhere((post) => postIds.contains(post.id))
-                ..addAll(res.posts),
+              postIds: topicState.postIds
+                ..addAll(res.posts
+                    .map((post) => post.id)
+                    .where((id) => !topicState.postIds.contains(id))),
             ),
           ),
         posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
           ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
       );
     }
@@ -155,11 +156,11 @@ class FetchPostsAction extends FetchPostsBaseAction {
             firstPage: pageIndex,
             lastPage: pageIndex,
             maxPage: res.maxPage,
-            posts: List.of(res.posts),
+            postIds: List.of(res.posts.map((post) => post.id)),
           ),
         ),
       posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post.inner)))
+        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
         ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
     );
   }
