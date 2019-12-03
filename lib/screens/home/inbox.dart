@@ -1,5 +1,5 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart' hide Notification;
+import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 
 import 'package:ngnga/store/actions/fetch_notifications.dart';
@@ -9,7 +9,7 @@ import 'package:ngnga/utils/requests.dart';
 
 class Inbox extends StatelessWidget {
   final Future<void> Function() fetch;
-  final List<Notification> notifications;
+  final List<UserNotification> notifications;
 
   const Inbox({
     Key key,
@@ -28,7 +28,7 @@ class Inbox extends StatelessWidget {
         separatorBuilder: (context, inex) => Divider(),
         itemCount: notifications.length,
         itemBuilder: (context, index) {
-          Notification notification = notifications[index];
+          UserNotification notification = notifications[index];
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -109,7 +109,7 @@ class InboxConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   Future<void> Function() fetch;
-  List<Notification> notifications;
+  List<UserNotification> notifications;
 
   ViewModel();
 

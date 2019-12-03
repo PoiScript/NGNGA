@@ -1,5 +1,5 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart' hide Notification;
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import 'package:ngnga/models/category.dart';
@@ -177,7 +177,7 @@ class AppState {
 
   final List<int> pinned;
 
-  final List<Notification> notifications;
+  final List<UserNotification> notifications;
 
   final Map<int, User> users;
   final Map<int, Post> posts;
@@ -230,7 +230,7 @@ class AppState {
     SettingsState settings,
     CategoryState favoriteState,
     List<int> pinned,
-    List<Notification> notifications,
+    List<UserNotification> notifications,
     Map<int, Post> posts,
     Map<int, User> users,
     Map<int, Topic> topics,

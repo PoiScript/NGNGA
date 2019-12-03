@@ -15,7 +15,7 @@ enum NotificationType {
   metionOnReply,
 }
 
-class Notification {
+class UserNotification {
   final NotificationType type;
   final int userId;
   final String username;
@@ -25,7 +25,7 @@ class Notification {
   final DateTime dateTime;
   final int pageIndex;
 
-  Notification._({
+  UserNotification._({
     this.type,
     this.userId,
     this.username,
@@ -36,7 +36,7 @@ class Notification {
     this.pageIndex,
   });
 
-  factory Notification.fromJson(Map<String, dynamic> json) {
+  factory UserNotification.fromJson(Map<String, dynamic> json) {
     NotificationType type;
 
     switch (json['0']) {
@@ -62,12 +62,12 @@ class Notification {
         throw 'Unknown notification type';
     }
 
-    return Notification._(
+    return UserNotification._(
       type: type,
       userId: json['1'],
       username: json['2'],
       topicId: json['6'],
-      topicTitle: json['5'] != null ? unescape.convert(json['5']) : null,
+      topicTitle: unescape.convert(json['5']),
       postId: json['7'],
       dateTime: DateTime.fromMillisecondsSinceEpoch(
         json['9'] * 1000,
@@ -78,7 +78,7 @@ class Notification {
 }
 
 class NotificationResponse {
-  final List<Notification> notifications;
+  final List<UserNotification> notifications;
   final int unreadCount;
   final DateTime lastChecked;
 
@@ -95,10 +95,10 @@ class NotificationResponse {
         );
     Map<String, dynamic> json = jsonDecode(content);
 
-    List<Notification> notifications = [];
+    List<UserNotification> notifications = [];
 
     for (var value in json['0']) {
-      notifications.add(Notification.fromJson(value));
+      notifications.add(UserNotification.fromJson(value));
     }
 
     return NotificationResponse._(
