@@ -1,6 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/store/actions/fetch_notifications.dart';
 import 'package:ngnga/store/state.dart';
@@ -37,20 +38,13 @@ class Inbox extends StatelessWidget {
                 child: Row(
                   children: <Widget>[
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            notification.username,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                          Text(
-                            _description(notification.type),
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        ],
+                      child: Text(
+                        _description(
+                          context,
+                          notification.type,
+                          notification.username,
+                        ),
+                        style: Theme.of(context).textTheme.caption,
                       ),
                     ),
                     // StreamBuilder<DateTime>(
@@ -75,20 +69,24 @@ class Inbox extends StatelessWidget {
     );
   }
 
-  String _description(NotificationType type) {
+  String _description(
+    BuildContext context,
+    NotificationType type,
+    String username,
+  ) {
     switch (type) {
       case NotificationType.postOnYourTopic:
-        return '回复了你的主题';
+        return AppLocalizations.of(context).replyYourTopic(username);
       case NotificationType.replyOnYourPost:
-        return '回复了你在该主题中的回复';
+        return AppLocalizations.of(context).replyYourPost(username);
       case NotificationType.commentOnYourTopic:
-        return '评论了你的主题';
+        return AppLocalizations.of(context).commentYourTopic(username);
       case NotificationType.commentOnYourPost:
-        return '评论了你在该主题中的回复';
+        return AppLocalizations.of(context).commentYourPost(username);
       case NotificationType.metionOnTopic:
-        return '在主题中 @ 了你';
+        return AppLocalizations.of(context).metionYouOnTopic(username);
       case NotificationType.metionOnReply:
-        return '在回复中 @ 了你';
+        return AppLocalizations.of(context).metionYouOnReply(username);
     }
     return null;
   }

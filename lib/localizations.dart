@@ -80,12 +80,18 @@ class AppLocalizations {
   String get autoUpdateDisabled =>
       Intl.message('Auto-update Disabled', locale: localeName);
   String get loading => Intl.message('Loading...', locale: localeName);
-  String lastUpdated(String dateTime, int seconds) =>
-      Intl.message('Last Updated: $dateTime (${seconds}s ago)',
-          name: 'lastUpdated', args: [dateTime, seconds], locale: localeName);
-  String updateInterval(int interval) =>
-      Intl.message('Update Interval: ${interval}s',
-          name: 'updateInterval', args: [interval], locale: localeName);
+  String lastUpdated(String dateTime, int seconds) => Intl.message(
+        'Last Updated: $dateTime (${seconds}s ago)',
+        name: 'lastUpdated',
+        args: [dateTime, seconds],
+        locale: localeName,
+      );
+  String updateInterval(int interval) => Intl.message(
+        'Update Interval: ${interval}s',
+        name: 'updateInterval',
+        args: [interval],
+        locale: localeName,
+      );
 
   String get subject => Intl.message('Subject', locale: localeName);
   String get content => Intl.message('Content', locale: localeName);
@@ -96,6 +102,47 @@ class AppLocalizations {
   String get createdAt => Intl.message('Created At', locale: localeName);
   String get user => Intl.message('User', locale: localeName);
   String get noSignature => Intl.message('No Signature', locale: localeName);
+
+  String get commentNotFound =>
+      Intl.message('Comment Not Found', locale: localeName);
+  String get postNotFound => Intl.message('Post Not Found', locale: localeName);
+
+  String replyYourTopic(String username) => Intl.message(
+        '$username replied your topic at',
+        name: 'replyYourTopic',
+        args: [username],
+        locale: localeName,
+      );
+  String replyYourPost(String username) => Intl.message(
+        '$username replied your post at',
+        name: 'replyYourPost',
+        args: [username],
+        locale: localeName,
+      );
+  String commentYourTopic(String username) => Intl.message(
+        '$username commented on your topic at',
+        name: 'commentYourTopic',
+        args: [username],
+        locale: localeName,
+      );
+  String commentYourPost(String username) => Intl.message(
+        '$username commented your post at',
+        name: 'commentYourPost',
+        args: [username],
+        locale: localeName,
+      );
+  String metionYouOnTopic(String username) => Intl.message(
+        '$username metioned you at',
+        name: 'metionYouOnTopic',
+        args: [username],
+        locale: localeName,
+      );
+  String metionYouOnReply(String username) => Intl.message(
+        '$username metioned you at',
+        name: 'metionYouOnReply',
+        args: [username],
+        locale: localeName,
+      );
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

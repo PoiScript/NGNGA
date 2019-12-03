@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "@@last_modified": "2019-12-01T14:30:03.513356",
+  "@@last_modified": "2019-12-03T14:05:57.889150",
   "Favorites": "Favorites",
   "@Favorites": {
     "type": "text",
@@ -225,5 +225,57 @@
   "@No Signature": {
     "type": "text",
     "placeholders": {}
+  },
+  "Comment Not Found": "Comment Not Found",
+  "@Comment Not Found": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Post Not Found": "Post Not Found",
+  "@Post Not Found": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "replyYourTopic": "{username} replied your topic at",
+  "@replyYourTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "replyYourPost": "{username} replied your post at",
+  "@replyYourPost": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "commentYourTopic": "{username} commented on your topic at",
+  "@commentYourTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "commentYourPost": "{username} commented your post at",
+  "@commentYourPost": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "metionYouOnTopic": "{username} metioned you at",
+  "@metionYouOnTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "metionYouOnReply": "{username} metioned you at",
+  "@metionYouOnReply": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
   }
 }

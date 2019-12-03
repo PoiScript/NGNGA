@@ -1,177 +1,177 @@
 {
   "@@locale": "zh",
-  "@@last_modified": "2019-12-01T14:30:03.513356",
-  "Favorites": "Favorites",
+  "@@last_modified": "2019-12-03T14:05:57.889150",
+  "Favorites": "收藏",
   "@Favorites": {
     "type": "text",
     "placeholders": {}
   },
-  "Explore": "Explore",
+  "Explore": "探索",
   "@Explore": {
     "type": "text",
     "placeholders": {}
   },
-  "Inbox": "Inbox",
+  "Inbox": "信息",
   "@Inbox": {
     "type": "text",
     "placeholders": {}
   },
-  "Pinned": "Pinned",
+  "Pinned": "顶置",
   "@Pinned": {
     "type": "text",
     "placeholders": {}
   },
-  "Settings": "Settings",
+  "Settings": "设置",
   "@Settings": {
     "type": "text",
     "placeholders": {}
   },
-  "Add to Favorites": "Add to Favorites",
+  "Add to Favorites": "添加进收藏",
   "@Add to Favorites": {
     "type": "text",
     "placeholders": {}
   },
-  "Added to Favorites": "Added to Favorites",
+  "Added to Favorites": "已添加进收藏",
   "@Added to Favorites": {
     "type": "text",
     "placeholders": {}
   },
-  "Remove from Favorites": "Remove from Favorites",
+  "Remove from Favorites": "移出收藏",
   "@Remove from Favorites": {
     "type": "text",
     "placeholders": {}
   },
-  "Removed from Favorites": "Removed from Favorites",
+  "Removed from Favorites": "已移出收藏",
   "@Removed from Favorites": {
     "type": "text",
     "placeholders": {}
   },
-  "Add to pinned": "Add to pinned",
+  "Add to pinned": "添加进顶置",
   "@Add to pinned": {
     "type": "text",
     "placeholders": {}
   },
-  "Added to pinned": "Added to pinned",
+  "Added to pinned": "已添加进顶置",
   "@Added to pinned": {
     "type": "text",
     "placeholders": {}
   },
-  "Remove from pinned": "Remove from pinned",
+  "Remove from pinned": "移出顶置",
   "@Remove from pinned": {
     "type": "text",
     "placeholders": {}
   },
-  "Removed from pinned": "Removed from pinned",
+  "Removed from pinned": "已移出顶置",
   "@Removed from pinned": {
     "type": "text",
     "placeholders": {}
   },
-  "Copy Link To Clipboard": "Copy Link To Clipboard",
+  "Copy Link To Clipboard": "复制链接",
   "@Copy Link To Clipboard": {
     "type": "text",
     "placeholders": {}
   },
-  "Copied Link To Clipboard": "Copied Link To Clipboard",
+  "Copied Link To Clipboard": "已复制链接",
   "@Copied Link To Clipboard": {
     "type": "text",
     "placeholders": {}
   },
-  "comment": "comment",
+  "comment": "评论",
   "@comment": {
     "type": "text",
     "placeholders": {}
   },
-  "edit": "edit",
+  "edit": "编辑",
   "@edit": {
     "type": "text",
     "placeholders": {}
   },
-  "reply": "reply",
+  "reply": "回复",
   "@reply": {
     "type": "text",
     "placeholders": {}
   },
-  "quote": "quote",
+  "quote": "引用",
   "@quote": {
     "type": "text",
     "placeholders": {}
   },
-  "Display In BBCode": "Display In BBCode",
+  "Display In BBCode": "显示源码",
   "@Display In BBCode": {
     "type": "text",
     "placeholders": {}
   },
-  "Display In RichText": "Display In RichText",
+  "Display In RichText": "隐藏源码",
   "@Display In RichText": {
     "type": "text",
     "placeholders": {}
   },
-  "Edited At": "Edited At",
+  "Edited At": "编辑时间",
   "@Edited At": {
     "type": "text",
     "placeholders": {}
   },
-  "Posted At": "Posted At",
+  "Posted At": "发送时间",
   "@Posted At": {
     "type": "text",
     "placeholders": {}
   },
-  "Sent from Android": "Sent from Android",
+  "Sent from Android": "发送自 Android 客户端",
   "@Sent from Android": {
     "type": "text",
     "placeholders": {}
   },
-  "Sent from Apple": "Sent from Apple",
+  "Sent from Apple": "发送自 iOS 客户端",
   "@Sent from Apple": {
     "type": "text",
     "placeholders": {}
   },
-  "Sent from Windows": "Sent from Windows",
+  "Sent from Windows": "发送自 Windows 客户端",
   "@Sent from Windows": {
     "type": "text",
     "placeholders": {}
   },
-  "Theme": "Theme",
+  "Theme": "主题",
   "@Theme": {
     "type": "text",
     "placeholders": {}
   },
-  "Language": "Language",
+  "Language": "语言",
   "@Language": {
     "type": "text",
     "placeholders": {}
   },
-  "About": "About",
+  "About": "关于",
   "@About": {
     "type": "text",
     "placeholders": {}
   },
-  "Change Domain": "Change Domain",
+  "Change Domain": "更换域名",
   "@Change Domain": {
     "type": "text",
     "placeholders": {}
   },
-  "Edit Cookies": "Edit Cookies",
+  "Edit Cookies": "编辑 Cookies",
   "@Edit Cookies": {
     "type": "text",
     "placeholders": {}
   },
-  "Auto-update Enabled": "Auto-update Enabled",
+  "Auto-update Enabled": "自动更新已启用",
   "@Auto-update Enabled": {
     "type": "text",
     "placeholders": {}
   },
-  "Auto-update Disabled": "Auto-update Disabled",
+  "Auto-update Disabled": "自动更新已关闭",
   "@Auto-update Disabled": {
     "type": "text",
     "placeholders": {}
   },
-  "Loading...": "Loading...",
+  "Loading...": "加载中...",
   "@Loading...": {
     "type": "text",
     "placeholders": {}
   },
-  "lastUpdated": "Last Updated: {dateTime} ({seconds}s ago)",
+  "lastUpdated": "上次更新：{dateTime}（{seconds} 秒前）",
   "@lastUpdated": {
     "type": "text",
     "placeholders": {
@@ -179,51 +179,103 @@
       "seconds": {}
     }
   },
-  "updateInterval": "Update Interval: {interval}s",
+  "updateInterval": "更新间隔：{interval} 秒",
   "@updateInterval": {
     "type": "text",
     "placeholders": {
       "interval": {}
     }
   },
-  "Subject": "Subject",
+  "Subject": "主题",
   "@Subject": {
     "type": "text",
     "placeholders": {}
   },
-  "Content": "Content",
+  "Content": "内容",
   "@Content": {
     "type": "text",
     "placeholders": {}
   },
-  "Signature": "Signature",
+  "Signature": "签名",
   "@Signature": {
     "type": "text",
     "placeholders": {}
   },
-  "Posts Count": "Posts Count",
+  "Posts Count": "发帖数目",
   "@Posts Count": {
     "type": "text",
     "placeholders": {}
   },
-  "Last Visited": "Last Visited",
+  "Last Visited": "上次访问",
   "@Last Visited": {
     "type": "text",
     "placeholders": {}
   },
-  "Created At": "Created At",
+  "Created At": "创建时间",
   "@Created At": {
     "type": "text",
     "placeholders": {}
   },
-  "User": "User",
+  "User": "用户",
   "@User": {
     "type": "text",
     "placeholders": {}
   },
-  "No Signature": "No Signature",
+  "No Signature": "无签名",
   "@No Signature": {
     "type": "text",
     "placeholders": {}
+  },
+  "Comment Not Found": "未找到评论",
+  "@Comment Not Found": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Post Not Found": "未找到回复",
+  "@Post Not Found": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "replyYourTopic": "{username} 回复了你的帖子",
+  "@replyYourTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "replyYourPost": "{username} 回复了你的回复",
+  "@replyYourPost": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "commentYourTopic": "{username} 评论了你的主题",
+  "@commentYourTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "commentYourPost": "{username} 评论了你的帖子",
+  "@commentYourPost": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "metionYouOnTopic": "{username} 在主题中 @ 了你",
+  "@metionYouOnTopic": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "metionYouOnReply": "{username} 在回复中 @ le你",
+  "@metionYouOnReply": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
   }
 }

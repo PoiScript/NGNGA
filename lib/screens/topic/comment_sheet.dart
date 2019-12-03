@@ -2,6 +2,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/store/state.dart';
 
@@ -23,7 +24,7 @@ class CommentSheet extends StatelessWidget {
       itemBuilder: (context, index) {
         if (posts[index] == null) {
           return Text(
-            'Comment not found',
+            AppLocalizations.of(context).commentNotFound,
             style: Theme.of(context)
                 .textTheme
                 .caption

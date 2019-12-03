@@ -4,6 +4,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/actions.dart';
@@ -83,7 +84,7 @@ class _PostDialogState extends State<PostDialog> {
   Widget _buildContent(Post post) {
     if (post == null) {
       return Text(
-        'Post Not Found',
+        AppLocalizations.of(context).postNotFound,
         style: Theme.of(context)
             .textTheme
             .caption
