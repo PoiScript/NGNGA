@@ -48,18 +48,21 @@ class AppLocalizations {
       Intl.message('Removed from pinned', locale: localeName);
 
   String get copyLinkToClipboard =>
-      Intl.message('Copy Link To Clipboard', locale: localeName);
+      Intl.message('Copy Link to Clipboard', locale: localeName);
   String get copiedLinkToClipboard =>
-      Intl.message('Copied Link To Clipboard', locale: localeName);
+      Intl.message('Copied Link to Clipboard', locale: localeName);
+
+  String get jumpToPage =>
+      Intl.message('Jump to Page', locale: localeName);
 
   String get comment => Intl.message('comment', locale: localeName);
   String get edit => Intl.message('edit', locale: localeName);
   String get reply => Intl.message('reply', locale: localeName);
   String get quote => Intl.message('quote', locale: localeName);
   String get displayInBBCode =>
-      Intl.message('Display In BBCode', locale: localeName);
+      Intl.message('Display in BBCode', locale: localeName);
   String get dispalyInRichText =>
-      Intl.message('Display In RichText', locale: localeName);
+      Intl.message('Display in RichText', locale: localeName);
   String get editedAt => Intl.message('Edited At', locale: localeName);
   String get postedAt => Intl.message('Posted At', locale: localeName);
   String get sentFromAndroid =>
