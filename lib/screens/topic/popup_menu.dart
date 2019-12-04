@@ -68,15 +68,20 @@ class PopupMenu extends StatelessWidget {
         switch (choice) {
           case Choice.removeFromFavorites:
             await removeFromFavorites();
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).removedFromFavorites),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content:
+                    Text(AppLocalizations.of(context).removedFromFavorites),
+              ));
             break;
           case Choice.addToFavorites:
             await addToFavorites();
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).addedToFavorites),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context).addedToFavorites),
+              ));
             break;
           case Choice.copyLinkToClipboard:
             await Clipboard.setData(ClipboardData(
@@ -84,9 +89,12 @@ class PopupMenu extends StatelessWidget {
                 'tid': topicId.toString(),
               }).toString(),
             ));
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).copiedLinkToClipboard),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content:
+                    Text(AppLocalizations.of(context).copiedLinkToClipboard),
+              ));
             break;
           default:
             break;

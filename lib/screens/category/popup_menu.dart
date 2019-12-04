@@ -73,21 +73,28 @@ class PopupMenu extends StatelessWidget {
                 isSubcategory ? 'stid' : 'tid': categoryId.toString()
               }).toString(),
             ));
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).copiedLinkToClipboard),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content:
+                    Text(AppLocalizations.of(context).copiedLinkToClipboard),
+              ));
             break;
           case Choice.addToPinned:
             addToPinned();
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).addedToPinned),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context).addedToPinned),
+              ));
             break;
           case Choice.removeFromPinned:
             removeFromPinned();
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).removedFromPinned),
-            ));
+            Scaffold.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context).removedFromPinned),
+              ));
             break;
         }
       },

@@ -98,10 +98,9 @@ class _TopicPageState extends State<TopicPage>
     if (message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _scaffoldKey.currentState.showSnackBar(SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 3),
-          ));
+          _scaffoldKey.currentState
+            ..removeCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
         }
       });
     }

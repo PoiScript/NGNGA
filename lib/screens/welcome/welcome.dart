@@ -123,9 +123,9 @@ class _WelcomePageState extends State<WelcomePage> {
                         setState(() => _isLogging = true);
                         bool validated = await widget.validate(uid, cid);
                         if (!validated) {
-                          _scaffoldKey.currentState.showSnackBar(SnackBar(
-                            content: Text('invalid'),
-                          ));
+                          _scaffoldKey.currentState
+                            ..removeCurrentSnackBar()
+                            ..showSnackBar(SnackBar(content: Text('invalid')));
                           setState(() => _isLogging = false);
                         } else {
                           await widget.logged(uid, cid);
