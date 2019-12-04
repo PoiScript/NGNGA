@@ -71,9 +71,11 @@ class _PagePickerState extends State<PagePicker> {
             child: NotificationListener<UserScrollNotification>(
               onNotification: (notification) {
                 if (notification.direction == ScrollDirection.idle &&
+                    // ignore: invalid_use_of_visible_for_testing_member,invalid_use_of_protected_member
                     scrollController.position.activity is! HoldScrollActivity) {
                   _animateTo(selectedPage * _itemExtent);
                 }
+                return false;
               },
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(vertical: _itemExtent),
