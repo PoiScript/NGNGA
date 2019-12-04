@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/localizations.dart';
@@ -26,13 +27,15 @@ class PopupMenu extends StatelessWidget {
             style: Theme.of(context).textTheme.body1,
           ),
         ),
-        PopupMenuItem<Choice>(
-          value: Choice.jumpToEditorPage,
-          child: Text(
-            'Editor',
-            style: Theme.of(context).textTheme.body1,
+        // a noop editor, used for debugging only
+        if (kDebugMode)
+          PopupMenuItem<Choice>(
+            value: Choice.jumpToEditorPage,
+            child: Text(
+              'Editor (noop)',
+              style: Theme.of(context).textTheme.body1,
+            ),
           ),
-        ),
       ],
       onSelected: (choice) {
         switch (choice) {
