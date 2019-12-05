@@ -6,7 +6,7 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/requests.dart';
 
 class PrepareEditingAction extends ReduxAction<AppState> {
-  final int action;
+  final EditorAction action;
   final int categoryId;
   final int topicId;
   final int postId;
@@ -20,13 +20,9 @@ class PrepareEditingAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    if (action == actionNoop) {
+    if (action == EditorAction.noop) {
       return state.copy(
-        setEditingEvt: Event(Editing(
-          content: '',
-          subject: '',
-          attachUrl: '',
-        )),
+        editingState: EditingState.empty().copy(perpared: true),
       );
     }
 
@@ -41,11 +37,14 @@ class PrepareEditingAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      setEditingEvt: Event(Editing(
-        content: response.content,
-        subject: response.subject,
-        attachUrl: response.attachUrl,
-      )),
+      editingState: EditingState(
+        perpared: true,
+        uploadUrl: response.uploadUrl,
+        attachs: response.attachs,
+        setContentEvt: Event(response.content),
+        setSubjectEvt: Event(response.subject),
+        uploadAuthCode: response.uploadAuthCode,
+      ),
     );
   }
 }

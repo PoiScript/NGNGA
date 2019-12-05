@@ -317,28 +317,28 @@ class _PostRowState extends State<PostRow> {
         break;
       case Choice.editThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
-          'action': actionModify,
+          'action': EditorAction.modify,
           'topicId': post.topicId,
           'postId': post.id,
         });
         break;
       case Choice.replyToThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
-          'action': actionReply,
+          'action': EditorAction.reply,
           'topicId': post.topicId,
           'postId': post.id,
         });
         break;
       case Choice.quoteFromThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
-          'action': actionQuote,
+          'action': EditorAction.quote,
           'topicId': post.topicId,
           'postId': post.id,
         });
         break;
       case Choice.commentOnThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
-          'action': actionComment,
+          'action': EditorAction.comment,
           'topicId': post.topicId,
           'postId': post.id,
         });

@@ -4,32 +4,55 @@ import 'package:flutter/services.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
-import 'package:ngnga/screens/editor/sticker.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
+import 'attachs.dart';
 import 'sticker.dart';
 import 'styling.dart';
 
-// use int instead of enum to indicate edit action, so it can be passed from routing argument
-const int actionNewTopic = 0;
-const int actionNewPost = 1;
-const int actionQuote = 2;
-const int actionReply = 3;
-const int actionModify = 4;
-const int actionComment = 5;
-const int actionNoop = 6;
+enum EditorAction {
+  newTopic,
+  newPost,
+  quote,
+  reply,
+  modify,
+  comment,
+  noop,
+}
 
 class EditorPage extends StatefulWidget {
-  final Event<Editing> setEditingEvt;
+  final bool perpared;
 
-  final Future<void> Function(String, String) applyEditing;
+  final Event<String> setSubjectEvt;
+  final Event<String> setContentEvt;
+  final List<AttachmentItem> attachments;
+
+  final ValueChanged<LocalAttachment> addAttachment;
+  final ValueChanged<LocalAttachment> removeAttachment;
+  final Future<void> Function(LocalAttachment) uploadAttachment;
+  final Future<void> Function({String subject, String content}) applyEditing;
+  final VoidCallback clearEditing;
 
   EditorPage({
-    @required this.setEditingEvt,
+    @required this.perpared,
+    @required this.setSubjectEvt,
+    @required this.setContentEvt,
+    @required this.attachments,
+    @required this.addAttachment,
+    @required this.removeAttachment,
+    @required this.uploadAttachment,
     @required this.applyEditing,
-  })  : assert(setEditingEvt != null),
-        assert(applyEditing != null);
+    @required this.clearEditing,
+  })  : assert(setSubjectEvt != null),
+        assert(perpared != null),
+        assert(setContentEvt != null),
+        assert(applyEditing != null),
+        assert(attachments != null),
+        assert(addAttachment != null),
+        assert(removeAttachment != null),
+        assert(uploadAttachment != null),
+        assert(clearEditing != null);
 
   @override
   _EditorPageState createState() => _EditorPageState();
@@ -38,6 +61,7 @@ class EditorPage extends StatefulWidget {
 enum DisplayToolbar {
   styling,
   sticker,
+  attachs,
 }
 
 class _EditorPageState extends State<EditorPage> {
@@ -54,9 +78,6 @@ class _EditorPageState extends State<EditorPage> {
 
   bool isPreviewing = false;
   bool isSending = false;
-  bool isLoading = true;
-
-  String attachUrl;
 
   @override
   void initState() {
@@ -80,13 +101,20 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _consumeEvents() {
-    Editing editing = widget.setEditingEvt.consume();
-    if (editing != null) {
+    String subject = widget.setSubjectEvt.consume();
+    if (subject != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          setState(() => isLoading = false);
-          _subjectController.text = editing.subject;
-          _contentController.text = editing.content;
+          _subjectController.text = subject;
+        }
+      });
+    }
+
+    String content = widget.setContentEvt.consume();
+    if (content != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _contentController.text = content;
         }
       });
     }
@@ -94,7 +122,7 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (!widget.perpared) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -104,6 +132,7 @@ class _EditorPageState extends State<EditorPage> {
           setState(() => showToolbar = false);
           return false;
         }
+        widget.clearEditing();
         return true;
       },
       child: Scaffold(
@@ -120,65 +149,61 @@ class _EditorPageState extends State<EditorPage> {
             style: Theme.of(context).textTheme.body2,
           ),
           backgroundColor: Theme.of(context).cardColor,
-          // actions: <Widget>[
-          //   IconButton(
-          //     icon: Icon(Icons.undo, color: Colors.black),
-          //     onPressed: () {},
-          //   ),
-          //   IconButton(
-          //     icon: Icon(Icons.redo, color: Colors.black),
-          //     onPressed: () {},
-          //   ),
-          // ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              TextField(
-                readOnly: isPreviewing,
-                focusNode: _subjectFocusNode,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context).subject,
-                  border: InputBorder.none,
-                ),
-                controller: _subjectController,
-                style: Theme.of(context)
-                    .textTheme
-                    .subhead
-                    .copyWith(fontFamily: 'Noto Sans CJK SC'),
-              ),
-              if (isPreviewing)
-                Container(
-                  padding: EdgeInsets.all(8.0),
-                  alignment: Alignment.centerLeft,
-                  child: BBCodeRender(
-                    raw: _contentController.text,
-                    // TODO
-                    openLink: (x) => {},
-                    openPost: (x, y, z) => {},
-                    openUser: (x) => {},
-                  ),
-                )
-              else
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 8.0,
+              right: 8.0,
+              bottom: 8.0 + MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Column(
+              children: [
                 TextField(
                   readOnly: isPreviewing,
-                  focusNode: _contentFocusNode,
-                  keyboardType: TextInputType.multiline,
+                  focusNode: _subjectFocusNode,
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context).content,
+                    labelText: AppLocalizations.of(context).subject,
                     border: InputBorder.none,
                   ),
-                  controller: _contentController,
-                  maxLines: null,
-                  autofocus: true,
+                  controller: _subjectController,
                   style: Theme.of(context)
                       .textTheme
-                      .body1
+                      .subhead
                       .copyWith(fontFamily: 'Noto Sans CJK SC'),
-                )
-            ],
+                ),
+                if (isPreviewing)
+                  Container(
+                    padding: EdgeInsets.all(8.0),
+                    alignment: Alignment.centerLeft,
+                    child: BBCodeRender(
+                      raw: _contentController.text,
+                      // TODO
+                      openLink: (x) => {},
+                      openPost: (x, y, z) => {},
+                      openUser: (x) => {},
+                    ),
+                  )
+                else
+                  TextField(
+                    readOnly: isPreviewing,
+                    focusNode: _contentFocusNode,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).content,
+                      border: InputBorder.none,
+                    ),
+                    controller: _contentController,
+                    maxLines: null,
+                    autofocus: true,
+                    style: Theme.of(context)
+                        .textTheme
+                        .body1
+                        .copyWith(fontFamily: 'Noto Sans CJK SC'),
+                  )
+              ],
+            ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
@@ -193,20 +218,32 @@ class _EditorPageState extends State<EditorPage> {
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   IconButton(
+                    color:
+                        showToolbar && displayToolbar == DisplayToolbar.styling
+                            ? Theme.of(context).accentColor
+                            : null,
                     icon: Icon(Icons.add_box),
                     onPressed: disableToolbar
                         ? null
                         : () => _toggleToolbar(DisplayToolbar.styling),
                   ),
                   IconButton(
+                    color:
+                        showToolbar && displayToolbar == DisplayToolbar.sticker
+                            ? Theme.of(context).accentColor
+                            : null,
                     icon: Icon(Icons.face),
                     onPressed: disableToolbar
                         ? null
                         : () => _toggleToolbar(DisplayToolbar.sticker),
                   ),
                   IconButton(
+                    color:
+                        showToolbar && displayToolbar == DisplayToolbar.attachs
+                            ? Theme.of(context).accentColor
+                            : null,
                     icon: Icon(Icons.attach_file),
-                    onPressed: () {},
+                    onPressed: () => _toggleToolbar(DisplayToolbar.attachs),
                   ),
                   IconButton(
                     icon: isPreviewing ? Icon(Icons.edit) : Icon(Icons.style),
@@ -221,24 +258,40 @@ class _EditorPageState extends State<EditorPage> {
                 duration: const Duration(milliseconds: 500),
                 height: (!disableToolbar && showToolbar) ? 150.0 : 0.0,
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: displayToolbar == DisplayToolbar.sticker
-                    ? EditorSticker(
-                        insertSticker: (name) => _insertContent('[s:$name]'),
-                      )
-                    : EditorStyling(
-                        insertBold: () => _insertPair('[b]', '[/b]'),
-                        insertItalic: () => _insertPair('[i]', '[/i]'),
-                        insertUnderline: () => _insertPair('[u]', '[/u]'),
-                        insertDelete: () => _insertPair('[del]', '[/del]'),
-                        insertQuote: () => _insertPair('[quote]', '[/quote]'),
-                        insertHeading: () => _insertPair('[h]', '[/h]'),
-                      ),
+                child: _buildToolbarContent(),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildToolbarContent() {
+    switch (displayToolbar) {
+      case DisplayToolbar.sticker:
+        return EditorSticker(
+          insertSticker: (name) => _insertContent('[s:$name]'),
+        );
+      case DisplayToolbar.attachs:
+        return EditorAttachs(
+          attachs: widget.attachments,
+          addAttachment: widget.addAttachment,
+          removeAttachment: widget.removeAttachment,
+          uploadAttachment: widget.uploadAttachment,
+          insertImage: (url) => _insertContent('[img]./$url[/img]'),
+        );
+      case DisplayToolbar.styling:
+        return EditorStyling(
+          insertBold: () => _insertPair('[b]', '[/b]'),
+          insertItalic: () => _insertPair('[i]', '[/i]'),
+          insertUnderline: () => _insertPair('[u]', '[/u]'),
+          insertDelete: () => _insertPair('[del]', '[/del]'),
+          insertQuote: () => _insertPair('[quote]', '[/quote]'),
+          insertHeading: () => _insertPair('[h]', '[/h]'),
+        );
+    }
+    return null;
   }
 
   _toggleToolbar(DisplayToolbar toolbar) {
@@ -257,6 +310,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _insertContent(String content) {
+    setState(() => showToolbar = false);
+
     int baseOffset = _contentController.selection.baseOffset;
     int extentOffset = _contentController.selection.extentOffset;
     String text = _contentController.text;
@@ -269,6 +324,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _insertPair(String start, String end) {
+    setState(() => showToolbar = false);
+
     int baseOffset = _contentController.selection.baseOffset;
     int extentOffset = _contentController.selection.extentOffset;
     String text = _contentController.text;
@@ -295,8 +352,8 @@ class _EditorPageState extends State<EditorPage> {
     setState(() => isSending = true);
 
     await widget.applyEditing(
-      _subjectController.text,
-      _contentController.text,
+      subject: _subjectController.text,
+      content: _contentController.text,
     );
 
     // close editor page
@@ -305,7 +362,7 @@ class _EditorPageState extends State<EditorPage> {
 }
 
 class EditorPageConnector extends StatelessWidget {
-  final int action;
+  final EditorAction action;
   final int categoryId;
   final int topicId;
   final int postId;
@@ -319,18 +376,18 @@ class EditorPageConnector extends StatelessWidget {
         assert(_validateArgs(action, categoryId, topicId, postId));
 
   static bool _validateArgs(
-      int action, int categoryId, int topicId, int postId) {
+      EditorAction action, int categoryId, int topicId, int postId) {
     switch (action) {
-      case actionNewTopic:
+      case EditorAction.newTopic:
         return categoryId != null && topicId == null && postId == null;
-      case actionNewPost:
+      case EditorAction.newPost:
         return categoryId == null && topicId != null && postId == null;
-      case actionQuote:
-      case actionReply:
-      case actionModify:
-      case actionComment:
+      case EditorAction.quote:
+      case EditorAction.reply:
+      case EditorAction.modify:
+      case EditorAction.comment:
         return categoryId == null && topicId != null && postId != null;
-      case actionNoop:
+      case EditorAction.noop:
         return categoryId == null && topicId == null && postId == null;
     }
     return false;
@@ -352,21 +409,37 @@ class EditorPageConnector extends StatelessWidget {
         postId: postId,
       )),
       builder: (context, vm) => EditorPage(
-        setEditingEvt: vm.setEditingEvt,
+        setSubjectEvt: vm.setSubjectEvt,
+        setContentEvt: vm.setContentEvt,
+        attachments: vm.attachs,
+        perpared: vm.perpared,
+        addAttachment: vm.addAttachment,
+        removeAttachment: vm.removeAttachment,
+        uploadAttachment: vm.uploadAttachment,
         applyEditing: vm.applyEditing,
+        clearEditing: vm.clearEditing,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  final int action;
+  final EditorAction action;
   final int categoryId;
   final int topicId;
   final int postId;
 
-  Event<Editing> setEditingEvt;
-  Future<void> Function(String, String) applyEditing;
+  bool perpared;
+  List<AttachmentItem> attachs;
+
+  Event<String> setSubjectEvt;
+  Event<String> setContentEvt;
+
+  ValueChanged<LocalAttachment> addAttachment;
+  ValueChanged<LocalAttachment> removeAttachment;
+  Future<void> Function(LocalAttachment) uploadAttachment;
+  Future<void> Function({String subject, String content}) applyEditing;
+  VoidCallback clearEditing;
 
   ViewModel({
     @required this.action,
@@ -380,9 +453,16 @@ class ViewModel extends BaseModel<AppState> {
     @required this.categoryId,
     @required this.topicId,
     @required this.postId,
-    @required this.setEditingEvt,
+    @required this.perpared,
+    @required this.attachs,
+    @required this.setSubjectEvt,
+    @required this.setContentEvt,
+    @required this.addAttachment,
+    @required this.removeAttachment,
+    @required this.uploadAttachment,
     @required this.applyEditing,
-  }) : super(equals: [setEditingEvt]);
+    @required this.clearEditing,
+  }) : super(equals: [setSubjectEvt, setContentEvt, attachs, perpared]);
 
   @override
   BaseModel fromStore() {
@@ -391,8 +471,11 @@ class ViewModel extends BaseModel<AppState> {
       categoryId: categoryId,
       topicId: topicId,
       postId: postId,
-      setEditingEvt: state.setEditingEvt,
-      applyEditing: (subject, content) => dispatchFuture(ApplyEditingAction(
+      perpared: state.editingState.perpared,
+      attachs: state.editingState.attachs,
+      setSubjectEvt: state.editingState.setSubjectEvt,
+      setContentEvt: state.editingState.setContentEvt,
+      applyEditing: ({subject, content}) => dispatchFuture(ApplyEditingAction(
         action: action,
         categoryId: categoryId,
         topicId: topicId,
@@ -400,6 +483,11 @@ class ViewModel extends BaseModel<AppState> {
         subject: subject,
         content: content,
       )),
+      clearEditing: () => dispatch(ClearEditingAction()),
+      addAttachment: (attach) => dispatch(AddAttachmentAction(attach)),
+      removeAttachment: (attach) => dispatch(RemoveAttachmentAction(attach)),
+      uploadAttachment: (attach) =>
+          dispatchFuture(UploadAttachmentAction(attach, categoryId)),
     );
   }
 }

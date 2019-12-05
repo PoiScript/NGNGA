@@ -128,7 +128,7 @@ class _TopicPageState extends State<TopicPage>
         child: FloatingActionButton(
           onPressed: () {
             Navigator.pushNamed(context, '/e', arguments: {
-              'action': actionNewPost,
+              'action': EditorAction.newPost,
               'topicId': widget.topic.id,
             });
           },

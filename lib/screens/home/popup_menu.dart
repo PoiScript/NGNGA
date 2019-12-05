@@ -44,7 +44,7 @@ class PopupMenu extends StatelessWidget {
             break;
           case Choice.jumpToEditorPage:
             Navigator.pushNamed(context, '/e', arguments: {
-              'action': actionNoop,
+              'action': EditorAction.noop,
             });
             break;
         }

@@ -160,7 +160,7 @@ class _CategoryPageState extends State<CategoryPage>
           child: Icon(Icons.add),
           onPressed: () {
             Navigator.pushNamed(context, '/e', arguments: {
-              'action': actionNewTopic,
+              'action': EditorAction.newTopic,
               'categoryId': widget.category.id,
             });
           },

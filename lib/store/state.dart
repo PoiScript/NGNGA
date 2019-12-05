@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -8,6 +10,182 @@ import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/categories.dart';
 import 'package:ngnga/utils/requests.dart';
+
+class CategoryState {
+  final List<int> topicIds;
+
+  final int topicsCount;
+
+  final int lastPage;
+  final int maxPage;
+
+  CategoryState({
+    @required this.topicIds,
+    @required this.topicsCount,
+    @required this.lastPage,
+    @required this.maxPage,
+  })  : assert(topicIds != null),
+        assert(topicsCount >= 0),
+        assert(maxPage >= lastPage);
+
+  CategoryState copy({
+    List<int> topicIds,
+    int topicsCount,
+    int lastPage,
+    int maxPage,
+  }) =>
+      CategoryState(
+        topicIds: topicIds ?? this.topicIds,
+        topicsCount: topicsCount ?? this.topicsCount,
+        lastPage: lastPage ?? this.lastPage,
+        maxPage: maxPage ?? this.maxPage,
+      );
+
+  CategoryState.empty()
+      : topicIds = [],
+        topicsCount = 0,
+        lastPage = 0,
+        maxPage = 0;
+}
+
+abstract class AttachmentItem {}
+
+class RemoteAttachment extends AttachmentItem {
+  final String url;
+
+  RemoteAttachment(this.url);
+}
+
+class LocalAttachment extends AttachmentItem {
+  final File file;
+
+  LocalAttachment(this.file);
+}
+
+class UploadedAttachment extends AttachmentItem {
+  final String checksum;
+  final String code;
+  final String url;
+  final File file;
+
+  UploadedAttachment({
+    this.checksum,
+    this.code,
+    this.url,
+    this.file,
+  });
+}
+
+class EditingState {
+  final bool perpared;
+  final String uploadAuthCode;
+  final String uploadUrl;
+  final List<AttachmentItem> attachs;
+  final Event<String> setSubjectEvt;
+  final Event<String> setContentEvt;
+
+  EditingState({
+    @required this.perpared,
+    @required this.uploadAuthCode,
+    @required this.uploadUrl,
+    @required this.attachs,
+    @required this.setSubjectEvt,
+    @required this.setContentEvt,
+  })  : assert(perpared != null),
+        assert(uploadAuthCode != null),
+        assert(uploadUrl != null),
+        assert(attachs != null),
+        assert(setSubjectEvt != null),
+        assert(setContentEvt != null);
+
+  EditingState copy({
+    bool perpared,
+    String uploadAuthCode,
+    String uploadUrl,
+    List<AttachmentItem> attachs,
+    Event<String> setSubjectEvt,
+    Event<String> setContentEvt,
+  }) =>
+      EditingState(
+        perpared: perpared ?? this.perpared,
+        uploadAuthCode: uploadAuthCode ?? this.uploadAuthCode,
+        uploadUrl: uploadUrl ?? this.uploadUrl,
+        attachs: attachs ?? this.attachs,
+        setSubjectEvt: setSubjectEvt ?? this.setSubjectEvt,
+        setContentEvt: setContentEvt ?? this.setContentEvt,
+      );
+
+  EditingState.empty()
+      : perpared = false,
+        uploadAuthCode = '',
+        uploadUrl = '',
+        attachs = [],
+        setSubjectEvt = Event.spent(),
+        setContentEvt = Event.spent();
+}
+
+enum AppTheme { white, black, grey, yellow }
+
+enum AppLocale { en, zh }
+
+class SettingsState {
+  final String baseUrl;
+  final AppTheme theme;
+  final AppLocale locale;
+
+  SettingsState({
+    @required this.baseUrl,
+    @required this.theme,
+    @required this.locale,
+  })  : assert(baseUrl != null),
+        assert(locale != null),
+        assert(theme != null);
+
+  SettingsState.empty()
+      : baseUrl = 'ngabbs.com',
+        theme = AppTheme.white,
+        locale = AppLocale.en;
+
+  SettingsState copy({
+    String baseUrl,
+    AppTheme theme,
+    AppLocale locale,
+  }) =>
+      SettingsState(
+        baseUrl: baseUrl ?? this.baseUrl,
+        theme: theme ?? this.theme,
+        locale: locale ?? this.locale,
+      );
+}
+
+class TopicState {
+  final List<int> postIds;
+
+  final int firstPage;
+  final int lastPage;
+  final int maxPage;
+
+  TopicState({
+    @required this.firstPage,
+    @required this.lastPage,
+    @required this.maxPage,
+    @required this.postIds,
+  })  : assert(postIds != null),
+        assert(maxPage >= lastPage && lastPage >= firstPage && firstPage >= 0);
+
+  TopicState copy({
+    int firstPage,
+    int lastPage,
+    int maxPage,
+    List<int> postIds,
+  }) =>
+      TopicState(
+        firstPage: firstPage ?? this.firstPage,
+        lastPage: lastPage ?? this.lastPage,
+        maxPage: maxPage ?? this.maxPage,
+        postIds: postIds ?? this.postIds,
+      );
+}
 
 abstract class UserState {
   bool isLogged;
@@ -58,114 +236,6 @@ class Guest extends UserState {
   Guest.fromJson(Map<String, dynamic> json) : uid = json['uid'];
 }
 
-enum AppTheme { white, black, grey, yellow }
-
-enum AppLocale { en, zh }
-
-class SettingsState {
-  final String baseUrl;
-  final AppTheme theme;
-  final AppLocale locale;
-
-  SettingsState({
-    @required this.baseUrl,
-    @required this.theme,
-    @required this.locale,
-  })  : assert(baseUrl != null),
-        assert(locale != null),
-        assert(theme != null);
-
-  SettingsState.empty()
-      : this(
-          baseUrl: 'ngabbs.com',
-          theme: AppTheme.white,
-          locale: AppLocale.en,
-        );
-
-  SettingsState copy({
-    String baseUrl,
-    AppTheme theme,
-    AppLocale locale,
-  }) =>
-      SettingsState(
-        baseUrl: baseUrl ?? this.baseUrl,
-        theme: theme ?? this.theme,
-        locale: locale ?? this.locale,
-      );
-}
-
-class CategoryState {
-  final List<int> topicIds;
-
-  final int topicsCount;
-
-  final int lastPage;
-  final int maxPage;
-
-  CategoryState({
-    @required this.topicIds,
-    @required this.topicsCount,
-    @required this.lastPage,
-    @required this.maxPage,
-  })  : assert(topicIds != null),
-        assert(topicsCount >= 0),
-        assert(maxPage >= lastPage);
-
-  CategoryState copy({
-    List<int> topicIds,
-    int topicsCount,
-    int lastPage,
-    int maxPage,
-  }) =>
-      CategoryState(
-        topicIds: topicIds ?? this.topicIds,
-        topicsCount: topicsCount ?? this.topicsCount,
-        lastPage: lastPage ?? this.lastPage,
-        maxPage: maxPage ?? this.maxPage,
-      );
-}
-
-class TopicState {
-  final List<int> postIds;
-
-  final int firstPage;
-  final int lastPage;
-  final int maxPage;
-
-  TopicState({
-    @required this.firstPage,
-    @required this.lastPage,
-    @required this.maxPage,
-    @required this.postIds,
-  })  : assert(postIds != null),
-        assert(maxPage >= lastPage && lastPage >= firstPage && firstPage >= 0);
-
-  TopicState copy({
-    int firstPage,
-    int lastPage,
-    int maxPage,
-    List<int> postIds,
-  }) =>
-      TopicState(
-        firstPage: firstPage ?? this.firstPage,
-        lastPage: lastPage ?? this.lastPage,
-        maxPage: maxPage ?? this.maxPage,
-        postIds: postIds ?? this.postIds,
-      );
-}
-
-class Editing {
-  final String subject;
-  final String content;
-  final String attachUrl;
-
-  Editing({
-    @required this.subject,
-    @required this.content,
-    @required this.attachUrl,
-  });
-}
-
 class AppState {
   final SettingsState settings;
   final UserState userState;
@@ -182,8 +252,8 @@ class AppState {
   final Map<int, CategoryState> categoryStates;
   final Map<int, TopicState> topicStates;
   final CategoryState favoriteState;
+  final EditingState editingState;
 
-  final Event<Editing> setEditingEvt;
   final Event<String> topicSnackBarEvt;
 
   final Client client;
@@ -196,7 +266,7 @@ class AppState {
     @required this.notifications,
     @required this.pinned,
     @required this.posts,
-    @required this.setEditingEvt,
+    @required this.editingState,
     @required this.settings,
     @required this.topics,
     @required this.topicSnackBarEvt,
@@ -209,7 +279,7 @@ class AppState {
         assert(notifications != null),
         assert(pinned != null),
         assert(posts != null),
-        assert(setEditingEvt != null),
+        // assert(editingState != null),
         assert(settings != null),
         assert(topics != null),
         assert(topicSnackBarEvt != null),
@@ -221,6 +291,7 @@ class AppState {
     UserState userState,
     SettingsState settings,
     CategoryState favoriteState,
+    EditingState editingState,
     List<int> pinned,
     List<UserNotification> notifications,
     Map<int, PostItem> posts,
@@ -229,7 +300,6 @@ class AppState {
     Map<int, Category> categories,
     Map<int, CategoryState> categoryStates,
     Map<int, TopicState> topicStates,
-    Event<Editing> setEditingEvt,
     Event<String> topicSnackBarEvt,
   }) =>
       AppState._(
@@ -245,7 +315,7 @@ class AppState {
         topics: topics ?? this.topics,
         users: users ?? this.users,
         posts: posts ?? this.posts,
-        setEditingEvt: setEditingEvt ?? this.setEditingEvt,
+        editingState: editingState ?? this.editingState,
         topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
       );
 
@@ -269,13 +339,8 @@ class AppState {
       pinned: [],
       categoryStates: {},
       topicStates: {},
-      favoriteState: CategoryState(
-        lastPage: 0,
-        topicsCount: 0,
-        maxPage: 0,
-        topicIds: const [],
-      ),
-      setEditingEvt: Event.spent(),
+      favoriteState: CategoryState.empty(),
+      editingState: EditingState.empty(),
       topicSnackBarEvt: Event.spent(),
     );
   }
