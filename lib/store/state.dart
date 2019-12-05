@@ -166,11 +166,6 @@ class Editing {
   });
 }
 
-class Option<T> {
-  final T item;
-  Option(this.item);
-}
-
 class AppState {
   final SettingsState settings;
   final UserState userState;
@@ -188,7 +183,6 @@ class AppState {
   final Map<int, TopicState> topicStates;
   final CategoryState favoriteState;
 
-  final Event<Option<Post>> fetchReplyEvt;
   final Event<Editing> setEditingEvt;
   final Event<String> topicSnackBarEvt;
 
@@ -199,7 +193,6 @@ class AppState {
     @required this.categories,
     @required this.categoryStates,
     @required this.favoriteState,
-    @required this.fetchReplyEvt,
     @required this.notifications,
     @required this.pinned,
     @required this.posts,
@@ -213,7 +206,6 @@ class AppState {
   })  : assert(categoryStates != null),
         assert(client != null),
         assert(favoriteState != null),
-        assert(fetchReplyEvt != null),
         assert(notifications != null),
         assert(pinned != null),
         assert(posts != null),
@@ -237,7 +229,6 @@ class AppState {
     Map<int, Category> categories,
     Map<int, CategoryState> categoryStates,
     Map<int, TopicState> topicStates,
-    Event<Option<Post>> fetchReplyEvt,
     Event<Editing> setEditingEvt,
     Event<String> topicSnackBarEvt,
   }) =>
@@ -254,7 +245,6 @@ class AppState {
         topics: topics ?? this.topics,
         users: users ?? this.users,
         posts: posts ?? this.posts,
-        fetchReplyEvt: fetchReplyEvt ?? this.fetchReplyEvt,
         setEditingEvt: setEditingEvt ?? this.setEditingEvt,
         topicSnackBarEvt: topicSnackBarEvt ?? this.topicSnackBarEvt,
       );
@@ -285,7 +275,6 @@ class AppState {
         maxPage: 0,
         topicIds: const [],
       ),
-      fetchReplyEvt: Event.spent(),
       setEditingEvt: Event.spent(),
       topicSnackBarEvt: Event.spent(),
     );

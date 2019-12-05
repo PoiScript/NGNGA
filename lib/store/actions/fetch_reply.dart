@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ngnga/models/post.dart';
 import 'package:ngnga/utils/requests.dart';
 
 import '../state.dart';
@@ -18,16 +19,10 @@ class FetchReplyAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    if (postId == 0 && state.posts.containsKey(2 ^ 32 - topicId)) {
-      return state.copy(
-        fetchReplyEvt: Event(Option(state.posts[2 ^ 32 - topicId])),
-      );
-    }
+    int postId = this.postId == 0 ? 2 ^ 32 - topicId : this.postId;
 
-    if (state.posts.containsKey(postId)) {
-      return state.copy(
-        fetchReplyEvt: Event(Option(state.posts[postId].inner)),
-      );
+    if (state.posts.containsKey(postId) && state.posts[postId] is! Deleted) {
+      return null;
     }
 
     final res = await fetchReply(
@@ -38,21 +33,12 @@ class FetchReplyAction extends ReduxAction<AppState> {
       baseUrl: state.settings.baseUrl,
     );
 
-    if (res.posts.isEmpty) {
-      return state.copy(
-        topics: state.topics..update(topicId, (_) => res.topic),
-        fetchReplyEvt: Event(Option(null)),
-        users: state.users..addAll(res.users),
-      );
-    } else {
-      return state.copy(
-        topics: state.topics..update(topicId, (_) => res.topic),
-        fetchReplyEvt: Event(Option(res.posts.first.inner)),
-        users: state.users..addAll(res.users),
-        posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
-          ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
-      );
-    }
+    return state.copy(
+      topics: Map.of(state.topics)..update(topicId, (_) => res.topic),
+      users: Map.of(state.users)..addAll(res.users),
+      posts: Map.of(state.posts)
+        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
+        ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
+    );
   }
 }

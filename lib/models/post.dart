@@ -16,6 +16,22 @@ abstract class PostItem {
   String get subject;
 }
 
+class Deleted extends PostItem {
+  final int id;
+
+  Deleted(this.id);
+
+  Post get inner {
+    assert(false, 'inner called on Deleted post');
+    return null;
+  }
+
+  String get subject {
+    assert(false, 'inner called on Deleted post');
+    return null;
+  }
+}
+
 class Post extends PostItem {
   final int id;
   final int index;

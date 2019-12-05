@@ -15,74 +15,71 @@ import 'package:ngnga/widgets/user_dialog.dart';
 import 'link_dialog.dart';
 
 class PostDialog extends StatefulWidget {
-  final Map<int, User> users;
+  final Map<int, User> userMap;
+  final Map<int, PostItem> postMap;
+  final int initialPostId;
 
-  final Event<Option<Post>> fetchReplyEvt;
-  final Function(int, int) fetchReply;
+  final Future<void> Function(int, int) fetchReply;
 
   PostDialog({
-    @required this.users,
+    @required this.userMap,
+    @required this.postMap,
+    @required this.initialPostId,
     @required this.fetchReply,
-    @required this.fetchReplyEvt,
-  })  : assert(users != null),
-        assert(fetchReply != null),
-        assert(fetchReplyEvt != null);
+  })  : assert(userMap != null),
+        assert(postMap != null),
+        assert(initialPostId != null),
+        assert(fetchReply != null);
 
   @override
   _PostDialogState createState() => _PostDialogState();
 }
 
 class _PostDialogState extends State<PostDialog> {
-  final List<Post> posts = [];
-
-  bool isLoading = true;
+  List<int> postIds;
 
   @override
-  void didUpdateWidget(PostDialog oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _consumeEvents();
-  }
-
-  _consumeEvents() {
-    Option option = widget.fetchReplyEvt.consume();
-    if (option != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            posts.add(option.item);
-            isLoading = false;
-          });
-        }
-      });
-    }
+  void initState() {
+    super.initState();
+    postIds = [widget.initialPostId];
   }
 
   @override
   Widget build(BuildContext context) {
+    List<PostItem> posts = [];
+    List<User> users = [];
+
+    for (int id in postIds.reversed) {
+      PostItem postItem = widget.postMap[id];
+      posts.add(postItem);
+      if (postItem == null || postItem is Deleted) {
+        users.add(null);
+      } else {
+        users.add(widget.userMap[postItem.inner.userId]);
+      }
+    }
+
     List<Widget> children = [];
 
-    if (isLoading) {
-      children.add(Center(child: CircularProgressIndicator()));
+    for (int i = 0; i < posts.length; i++) {
+      children.add(_buildContent(posts[i], users[i]));
       children.add(Divider());
-    }
-
-    for (var post in posts.reversed) {
-      children.add(_buildContent(post));
-      children.add(Divider());
-    }
-
-    if (children.isNotEmpty) {
-      children.removeLast();
     }
 
     return SimpleDialog(
       contentPadding: EdgeInsets.all(16.0),
-      children: children,
+      children: children..removeLast(),
     );
   }
 
-  Widget _buildContent(Post post) {
-    if (post == null) {
+  Widget _buildContent(PostItem postItem, User user) {
+    if (postItem == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (postItem is Deleted) {
       return Text(
         AppLocalizations.of(context).postNotFound,
         style: Theme.of(context)
@@ -101,7 +98,7 @@ class _PostDialogState extends State<PostDialog> {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  widget.users[post.userId]?.username ?? '#ANONYMOUS#',
+                  user?.username ?? '#ANONYMOUS#',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.caption,
@@ -110,7 +107,7 @@ class _PostDialogState extends State<PostDialog> {
               StreamBuilder<DateTime>(
                 stream: Stream.periodic(const Duration(minutes: 1)),
                 builder: (context, snapshot) => Text(
-                  duration(DateTime.now(), post.createdAt),
+                  duration(DateTime.now(), postItem.inner.createdAt),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -118,7 +115,7 @@ class _PostDialogState extends State<PostDialog> {
           ),
         ),
         BBCodeRender(
-          raw: post.content,
+          raw: postItem.inner.content,
           openLink: (url) {
             showDialog(
               context: context,
@@ -131,10 +128,11 @@ class _PostDialogState extends State<PostDialog> {
               builder: (context) => UserDialog(userId),
             );
           },
-          openPost: (int topicId, int page, int postId) {
-            if (!isLoading && posts.where((p) => p.id == postId).isEmpty) {
-              widget.fetchReply(topicId, postId);
-              setState(() => isLoading = true);
+          openPost: (int topicId, int page, int postId) async {
+            if (!postIds.contains(postId)) {
+              setState(() => postIds.add(postId));
+              await widget.fetchReply(topicId, postId);
+              setState(() {});
             }
           },
         ),
@@ -161,37 +159,38 @@ class PostDialogConnector extends StatelessWidget {
         postId: postId,
       )),
       builder: (context, vm) => PostDialog(
-        users: vm.users,
+        userMap: vm.userMap,
+        postMap: vm.postMap,
         fetchReply: vm.fetchReply,
-        fetchReplyEvt: vm.fetchReplyEvt,
+        initialPostId: postId,
       ),
     );
   }
 }
 
 class ViewModel extends BaseModel<AppState> {
-  Map<int, User> users;
+  Map<int, User> userMap;
+  Map<int, PostItem> postMap;
 
-  Function(int, int) fetchReply;
-  Event<Option<Post>> fetchReplyEvt;
+  Future<void> Function(int, int) fetchReply;
 
   ViewModel();
 
   ViewModel.build({
-    @required this.users,
+    @required this.userMap,
+    @required this.postMap,
     @required this.fetchReply,
-    @required this.fetchReplyEvt,
-  }) : super(equals: [users, fetchReplyEvt]);
+  }) : super(equals: [userMap, postMap]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      users: state.users,
-      fetchReply: (topicId, postId) => dispatch(FetchReplyAction(
+      userMap: state.users,
+      postMap: state.posts,
+      fetchReply: (topicId, postId) => dispatchFuture(FetchReplyAction(
         topicId: topicId,
         postId: postId,
       )),
-      fetchReplyEvt: state.fetchReplyEvt,
     );
   }
 }
