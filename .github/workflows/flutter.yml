@@ -21,8 +21,9 @@ jobs:
           args: -O fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: "1.9.1+hotfix.4"
+          flutter-version: 1.9.1+hotfix.4
       - run: flutter pub get
+      - run: flutter format --set-exit-if-changed lib/ test/
       - run: flutter analyze
       - run: flutter test
       - run: flutter build apk
