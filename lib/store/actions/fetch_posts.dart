@@ -35,7 +35,7 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
               postId: post.commentTo,
             ));
           }
-          res.posts[i] = post.addPost(state.posts[post.id]);
+          res.posts[i] = post.addPost(state.posts[post.id].inner);
         }
       } else if (post is TopicPost) {
         for (int postId in post.topReplyIds) {
