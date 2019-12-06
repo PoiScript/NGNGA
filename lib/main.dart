@@ -1,15 +1,15 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ngnga/localizations.dart';
 
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/screens/category/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/screens/home/home.dart';
-import 'package:ngnga/screens/welcome/welcome.dart';
 import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
+import 'package:ngnga/screens/welcome/welcome.dart';
 import 'package:ngnga/store/actions/state_persist.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
@@ -33,7 +33,7 @@ final Map<AppTheme, ThemeData> themeDataMap = {
   AppTheme.yellow: yellowTheme,
 };
 
-final Map<AppLocale, Locale> localeMap = {
+const Map<AppLocale, Locale> localeMap = {
   AppLocale.en: Locale('en', ''),
   AppLocale.zh: Locale('zh', ''),
 };
@@ -54,7 +54,6 @@ class MyApp extends StatelessWidget {
       child: StoreConnector<AppState, ViewModel>(
         model: ViewModel(),
         builder: (context, vm) => MaterialApp(
-          debugShowCheckedModeBanner: false,
           onGenerateRoute: _routes,
           navigatorKey: _navigatorKey,
           theme: themeDataMap[vm.theme],
@@ -78,7 +77,7 @@ class MyApp extends StatelessWidget {
   }
 
   Route<dynamic> _routes(RouteSettings settings) {
-    final Map<String, int> arguments = settings.arguments;
+    Map<String, dynamic> arguments = settings.arguments;
     Widget screen;
     switch (settings.name) {
       case '/':
