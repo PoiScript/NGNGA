@@ -39,16 +39,16 @@ flutter:
   fonts:
     - family:  VendorIcon
       fonts:
-        - asset: fonts/VendorIcon.ttf
+        - asset: assets/fonts/VendorIcon.ttf
     - family: "Roboto"
       fonts:
-        - asset: fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Regular.ttf
           weight: 400
-        - asset: fonts/Roboto-Medium.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
           weight: 500
     - family: "Noto Sans CJK SC"
       fonts:
-        - asset: fonts/NotoSansCJKsc-Regular.otf
+        - asset: assets/fonts/NotoSansCJKsc-Regular.otf
           weight: 400
-        - asset: fonts/NotoSansCJKsc-Medium.otf
+        - asset: assets/fonts/NotoSansCJKsc-Medium.otf
           weight: 500

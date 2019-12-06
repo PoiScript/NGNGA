@@ -73,5 +73,7 @@
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
 # fonts files, download at build time
-fonts/*.otf
-fonts/*.ttf
+assets/fonts/NotoSansCJKsc-Medium.otf
+assets/fonts/NotoSansCJKsc-Regular.otf
+assets/fonts/Roboto-Medium.ttf
+assets/fonts/Roboto-Regular.ttf

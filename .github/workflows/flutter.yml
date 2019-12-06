@@ -9,16 +9,16 @@ jobs:
       - uses: actions/checkout@v1
       - uses: wei/wget@v1
         with:
-          args: -O fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
+          args: -O assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
       - uses: wei/wget@v1
         with:
-          args: -O fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
+          args: -O assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
       - uses: wei/wget@v1
         with:
-          args: -O fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+          args: -O assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
       - uses: wei/wget@v1
         with:
-          args: -O fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
+          args: -O assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
       - uses: subosito/flutter-action@v1
         with:
           flutter-version: 1.9.1+hotfix.4
