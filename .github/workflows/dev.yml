@@ -1,0 +1,27 @@
+name: Dev
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+
+      - name: Download fonts
+        run: |
+          wget -O assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
+          wget -O assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
+          wget -O assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+          wget -O assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
+
+      - name: Install flutter
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: 1.9.1+hotfix.4
+
+      - run: flutter pub get
+      - run: flutter format --set-exit-if-changed lib/ test/
+      - run: flutter analyze
+      - run: flutter test

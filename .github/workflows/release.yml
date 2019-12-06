@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+
+      - name: Download fonts
+        run: |
+          wget -O assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
+          wget -O assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
+          wget -O assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+          wget -O assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
+
+      - name: Install flutter
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: 1.9.1+hotfix.4
+
+      - name: Build project
+        run: |
+          flutter pub get
+          flutter format --set-exit-if-changed lib/ test/
+          flutter analyze
+          flutter test
+          flutter build apk --target-platform android-arm,android-arm64 --split-per-abi
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload armeabi-v7a apk
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/app/outputs/apk/release/app-armeabi-v7a-release.apk
+          asset_name: NGNGA-${{ github.ref }}-armeabi-v7a.apk
+          asset_content_type: application/zip
+
+      - name: Upload arm64-v8a apk
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/app/outputs/apk/release/app-arm64-v8a-release.apk
+          asset_name: NGNGA-${{ github.ref }}-arm64-v8a.apk
+          asset_content_type: application/zip
