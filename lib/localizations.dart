@@ -52,8 +52,7 @@ class AppLocalizations {
   String get copiedLinkToClipboard =>
       Intl.message('Copied Link to Clipboard', locale: localeName);
 
-  String get jumpToPage =>
-      Intl.message('Jump to Page', locale: localeName);
+  String get jumpToPage => Intl.message('Jump to Page', locale: localeName);
 
   String get comment => Intl.message('comment', locale: localeName);
   String get edit => Intl.message('edit', locale: localeName);
