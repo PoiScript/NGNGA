@@ -32,9 +32,10 @@ class DownvotePostAction extends ReduxAction<AppState> {
           postId,
           (item) {
             if (item is TopicPost) {
-              return TopicPost(item.post.copy(
-                vote: item.post.vote + res.value,
-              ));
+              return TopicPost(
+                item.post.copy(vote: item.post.vote + res.value),
+                item.topReplyIds,
+              );
             }
 
             if (item is Comment) {

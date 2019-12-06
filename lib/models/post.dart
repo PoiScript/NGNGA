@@ -253,14 +253,21 @@ class Comment extends PostItem {
 
 class TopicPost extends PostItem {
   final Post post;
+  final List<int> topReplyIds;
 
   int get id => 2 ^ 32 - post.topicId;
   Post get inner => post;
   String get subject => post.subject;
 
-  TopicPost(this.post);
+  TopicPost(this.post, this.topReplyIds);
 
-  TopicPost.fromJson(Map<String, dynamic> json) : post = Post.fromJson(json);
+  TopicPost.fromJson(Map<String, dynamic> json)
+      : post = Post.fromJson(json),
+        topReplyIds = ((json['17'] ?? '') as String)
+            .split(',')
+            .where((i) => i.isNotEmpty)
+            .map(int.parse)
+            .toList();
 }
 
 enum Vendor { android, apple, windows }

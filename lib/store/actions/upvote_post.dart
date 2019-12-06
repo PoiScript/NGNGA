@@ -30,9 +30,10 @@ class UpvotePostAction extends ReduxAction<AppState> {
       posts: state.posts
         ..update(postId, (item) {
           if (item is TopicPost) {
-            return TopicPost(item.post.copy(
-              vote: item.post.vote + res.value,
-            ));
+            return TopicPost(
+              item.post.copy(vote: item.post.vote + res.value),
+              item.topReplyIds,
+            );
           }
 
           if (item is Comment) {

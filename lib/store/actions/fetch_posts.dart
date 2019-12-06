@@ -37,6 +37,17 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
           }
           res.posts[i] = post.addPost(state.posts[post.id]);
         }
+      } else if (post is TopicPost) {
+        for (int postId in post.topReplyIds) {
+          if (res.posts.indexWhere((p) => p.id == postId) == -1 &&
+              res.comments.indexWhere((p) => p.id == postId) == -1 &&
+              !state.posts.containsKey(postId)) {
+            await dispatchFuture(FetchReplyAction(
+              topicId: topicId,
+              postId: postId,
+            ));
+          }
+        }
       }
     }
 
@@ -52,8 +63,6 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
   @override
   Future<AppState> reduce() async {
     int firstPage = state.topicStates[topicId].firstPage;
-
-    assert(firstPage != 0);
 
     final res = await fetch(topicId: topicId, page: firstPage - 1);
 

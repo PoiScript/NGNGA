@@ -446,6 +446,32 @@ class _PostRowState extends State<PostRow> {
             '${post.commentIds.length}',
             style: Theme.of(context).textTheme.caption,
           ),
+        if (widget.post is TopicPost &&
+            (widget.post as TopicPost).topReplyIds.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: InkResponse(
+              child: Icon(
+                Icons.whatshot,
+                size: 16,
+                color: Color.fromARGB(255, 144, 144, 144),
+              ),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => CommentSheetConnector(
+                    postIds: (widget.post as TopicPost).topReplyIds,
+                  ),
+                );
+              },
+            ),
+          ),
+        if (widget.post is TopicPost &&
+            (widget.post as TopicPost).topReplyIds.length > 1)
+          Text(
+            '${(widget.post as TopicPost).topReplyIds.length}',
+            style: Theme.of(context).textTheme.caption,
+          ),
         const Spacer(),
         Padding(
           padding: EdgeInsets.all(8.0),
