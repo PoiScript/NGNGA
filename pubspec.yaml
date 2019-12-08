@@ -1,7 +1,7 @@
 name: ngnga
 description: Next Generation Mobile Client for NGA Forum.
 
-version: 1.0.0+1
+version: 0.0.1
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
