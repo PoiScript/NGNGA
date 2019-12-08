@@ -2,12 +2,12 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 import 'attachs.dart';
+import 'preview_dialog.dart';
 import 'sticker.dart';
 import 'styling.dart';
 
@@ -76,7 +76,6 @@ class _EditorPageState extends State<EditorPage> {
 
   DisplayToolbar displayToolbar;
 
-  bool isPreviewing = false;
   bool isSending = false;
 
   @override
@@ -160,7 +159,6 @@ class _EditorPageState extends State<EditorPage> {
             child: Column(
               children: [
                 TextField(
-                  readOnly: isPreviewing,
                   focusNode: _subjectFocusNode,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
@@ -173,35 +171,21 @@ class _EditorPageState extends State<EditorPage> {
                       .subhead
                       .copyWith(fontFamily: 'Noto Sans CJK SC'),
                 ),
-                if (isPreviewing)
-                  Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.centerLeft,
-                    child: BBCodeRender(
-                      raw: _contentController.text,
-                      // TODO
-                      openLink: (x) => {},
-                      openPost: (x, y, z) => {},
-                      openUser: (x) => {},
-                    ),
-                  )
-                else
-                  TextField(
-                    readOnly: isPreviewing,
-                    focusNode: _contentFocusNode,
-                    keyboardType: TextInputType.multiline,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context).content,
-                      border: InputBorder.none,
-                    ),
-                    controller: _contentController,
-                    maxLines: null,
-                    autofocus: true,
-                    style: Theme.of(context)
-                        .textTheme
-                        .body1
-                        .copyWith(fontFamily: 'Noto Sans CJK SC'),
-                  )
+                TextField(
+                  focusNode: _contentFocusNode,
+                  keyboardType: TextInputType.multiline,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).content,
+                    border: InputBorder.none,
+                  ),
+                  controller: _contentController,
+                  maxLines: null,
+                  autofocus: true,
+                  style: Theme.of(context)
+                      .textTheme
+                      .body1
+                      .copyWith(fontFamily: 'Noto Sans CJK SC'),
+                )
               ],
             ),
           ),
@@ -243,13 +227,13 @@ class _EditorPageState extends State<EditorPage> {
                             ? Theme.of(context).accentColor
                             : null,
                     icon: Icon(Icons.attach_file),
-                    onPressed: () => _toggleToolbar(DisplayToolbar.attachs),
+                    onPressed: disableToolbar
+                        ? null
+                        : () => _toggleToolbar(DisplayToolbar.attachs),
                   ),
                   IconButton(
-                    icon: isPreviewing ? Icon(Icons.edit) : Icon(Icons.style),
-                    onPressed: () {
-                      setState(() => isPreviewing = !isPreviewing);
-                    },
+                    icon: Icon(Icons.style),
+                    onPressed: () => _openPreviewDailog(context),
                   ),
                 ],
               ),
@@ -346,6 +330,15 @@ class _EditorPageState extends State<EditorPage> {
         selection: TextSelection.collapsed(offset: baseOffset + start.length),
       );
     }
+  }
+
+  _openPreviewDailog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => PreviewDialog(
+        content: _contentController.text,
+      ),
+    );
   }
 
   Future<void> _submit() async {
