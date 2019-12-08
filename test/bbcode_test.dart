@@ -5,9 +5,9 @@ import 'package:ngnga/bbcode/parser.dart';
 import 'package:ngnga/bbcode/tag.dart';
 
 void main() {
-  test('BBCode parser', () {
+  test('BBCode parsing', () {
     assert(listEquals(
-      parseBBCode('foo,bar,baz'),
+      parseBBCode('foo,bar,baz').toList(),
       [
         ParagraphStartTag(),
         TextTag('foo,bar,baz'),
@@ -16,7 +16,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[b]bold[/b]'),
+      parseBBCode('[b]bold[/b]').toList(),
       [
         ParagraphStartTag(),
         BoldStartTag(),
@@ -27,7 +27,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[b]bold[b]'),
+      parseBBCode('[b]bold[b]').toList(),
       [
         ParagraphStartTag(),
         TextTag('[b]bold[b]'),
@@ -36,7 +36,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('A[b][quote]content[/quote]B[/b]'),
+      parseBBCode('A[b][quote]content[/quote]B[/b]').toList(),
       [
         ParagraphStartTag(),
         TextTag('A'),
@@ -55,7 +55,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('A[b][quote]content[/quote]B[/b]'),
+      parseBBCode('A[b][quote]content[/quote]B[/b]').toList(),
       [
         ParagraphStartTag(),
         TextTag('A'),
@@ -74,7 +74,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]'),
+      parseBBCode('[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]').toList(),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
@@ -101,7 +101,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse][quote]AB[/quote][/collapse]'),
+      parseBBCode('[collapse][quote]AB[/quote][/collapse]').toList(),
       [
         CollapseStartTag(null),
         QuoteStartTag(),
@@ -114,7 +114,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse][quote][/collapse][/quote]'),
+      parseBBCode('[collapse][quote][/collapse][/quote]').toList(),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
@@ -128,7 +128,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]'),
+      parseBBCode('[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]').toList(),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
@@ -142,7 +142,7 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[quote][collapse][url]example.com[/url][/collapse][/quote]'),
+      parseBBCode('[quote][collapse][url]example.com[/url][/collapse][/quote]').toList(),
       [
         QuoteStartTag(),
         CollapseStartTag(null),

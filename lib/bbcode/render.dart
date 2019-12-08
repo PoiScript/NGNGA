@@ -37,8 +37,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
   @override
   Widget build(BuildContext context) {
-    var tags = parseBBCode(widget.data);
-    var iter = tags.iterator;
+    Iterator<Tag> iter = parseBBCode(widget.data).iterator;
     style = Theme.of(context)
         .textTheme
         .body1
@@ -59,7 +58,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is ReplyTag) {
         children.add(_buildReply(context, iter.current, true));
       } else if (iter.current is CollapseStartTag) {
-        children.add(_buildCollapse(context, iter));
+        children.add(_buildCollapse(context, iter.current, iter));
       } else if (iter.current is QuoteStartTag) {
         children.add(_buildQuote(context, iter));
       } else if (iter.current is TableStartTag) {
@@ -69,9 +68,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is RuleTag) {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
-        children.add(_buildHeading(context, iter));
-        // TODO:
-        iter.moveNext();
+        children.add(_buildAlign(context, iter.current, iter));
       } else {
         throw 'Unexcepted element: ${iter.current}';
       }
@@ -104,7 +101,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is ImageTag) {
         spans.add(_buildImage(context, iter.current));
       } else if (iter.current is LinkStartTag) {
-        spans.add(_buildLink(context, iter));
+        spans.add(_buildLink(context, iter.current, iter));
       } else if (iter.current is StickerTag) {
         spans.add(_buildSticker(context, iter.current));
       } else if (iter.current is MetionsTag) {
@@ -118,25 +115,21 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       }
     }
 
-    if (spans.length == 1) {
-      return Container(
-        padding: EdgeInsets.only(bottom: 6.0),
-        child: RichText(text: spans[0]),
-      );
-    }
-
     return Container(
       padding: EdgeInsets.only(bottom: 6.0),
-      child: RichText(
-        text: TextSpan(children: spans),
-      ),
+      child: spans.length == 1
+          ? RichText(text: spans[0])
+          : RichText(
+              text: TextSpan(children: spans),
+            ),
     );
   }
 
-  Widget _buildCollapse(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current is CollapseStartTag);
-
-    String description = (iter.current as CollapseStartTag).description;
+  Widget _buildCollapse(
+    BuildContext context,
+    CollapseStartTag tag,
+    Iterator<Tag> iter,
+  ) {
     List<Widget> children = [];
 
     while (iter.moveNext()) {
@@ -159,26 +152,20 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is RuleTag) {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
-        // TODO:
+        children.add(_buildAlign(context, iter.current, iter));
       } else {
         throw 'Unexpected element: ${iter.current}.';
       }
     }
 
-    if (children.length == 1) {
-      return Collapse(
-        description: description,
-        child: children[0],
-      );
-    }
-
     return Collapse(
-      description: description,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: children,
-      ),
+      description: tag.description,
+      child: children.length == 1
+          ? children[0]
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
     );
   }
 
@@ -199,7 +186,7 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is ParagraphStartTag) {
         children.add(_buildParagraph(context, iter));
       } else if (iter.current is CollapseStartTag) {
-        children.add(_buildCollapse(context, iter));
+        children.add(_buildCollapse(context, iter.current, iter));
       } else if (iter.current is TableStartTag) {
         children.add(_buildTable(context, iter));
       } else if (iter.current is HeadingStartTag) {
@@ -207,35 +194,14 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       } else if (iter.current is RuleTag) {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
-        // TODO: Handle this case.
+        children.add(_buildAlign(context, iter.current, iter));
       } else {
         throw 'Unexpected element: ${iter.current}.';
       }
     }
 
-    if (children.length == 1) {
-      return Container(
-        constraints: const BoxConstraints(minWidth: double.infinity),
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: 5.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 0x31, 0x31, 0x31)
-                  : Color.fromARGB(255, 0xe9, 0xe9, 0xe9),
-            ),
-          ),
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Color.fromARGB(255, 0x3c, 0x3c, 0x3c)
-              : Color.fromARGB(255, 0xf4, 0xf4, 0xf4),
-        ),
-        padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
-        margin: EdgeInsets.only(bottom: 8.0),
-        child: children[0],
-      );
-    }
-
     return Container(
+      constraints: const BoxConstraints(minWidth: double.infinity),
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
@@ -251,17 +217,68 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       ),
       padding: EdgeInsets.only(left: 4.0 + 5.0, top: 6.0, right: 6.0),
       margin: EdgeInsets.only(bottom: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
-      ),
+      child: children.length == 1
+          ? children[0]
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
     );
   }
 
-  // TODO:
-  // Widget _buildAlign(BuildContext context, Iterator<Tag> iter) {
-  //   return null;
-  // }
+  Widget _buildAlign(
+    BuildContext context,
+    AlignStartTag tag,
+    Iterator<Tag> iter,
+  ) {
+    List<Widget> children = [];
+
+    while (iter.moveNext()) {
+      if (iter.current is AlignStartTag) {
+        children.add(_buildAlign(context, iter.current, iter));
+      } else if (iter.current is AlignEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ReplyTag) {
+        children.add(_buildReply(context, iter.current, false));
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else if (iter.current is CollapseStartTag) {
+        children.add(_buildCollapse(context, iter.current, iter));
+      } else if (iter.current is TableStartTag) {
+        children.add(_buildTable(context, iter));
+      } else if (iter.current is HeadingStartTag) {
+        children.add(_buildHeading(context, iter));
+      } else if (iter.current is RuleTag) {
+        children.add(_buildRule(context));
+      } else if (iter.current is QuoteStartTag) {
+        children.add(_buildQuote(context, iter));
+      } else {
+        throw 'Unexpected element: ${iter.current}.';
+      }
+    }
+
+    if (children.length == 1) {
+      return Align(
+        alignment: tag.value == 'center'
+            ? Alignment.center
+            : tag.value == 'left'
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+        child: children[0],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: tag.value == 'center'
+            ? CrossAxisAlignment.end
+            : tag.value == 'left'
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+        children: children,
+      );
+    }
+  }
 
   Widget _buildTable(BuildContext context, Iterator<Tag> iter) {
     assert(iter.current is TableStartTag);
@@ -298,9 +315,12 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 
     return Container(
       padding: EdgeInsets.only(bottom: 6.0),
-      child: Column(
-        children: children,
-      ),
+      child: children.length == 1
+          ? children[0]
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
     );
   }
 
@@ -308,7 +328,11 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     return Divider();
   }
 
-  Widget _buildReply(BuildContext context, ReplyTag reply, bool wrapQuote) {
+  Widget _buildReply(
+    BuildContext context,
+    ReplyTag reply,
+    bool wrapQuote,
+  ) {
     var row = InkWell(
       onTap: () => widget.openPost(
         reply.topicId,
@@ -364,13 +388,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
     }
   }
 
-  InlineSpan _buildLink(BuildContext context, Iterator<Tag> iter) {
-    assert(iter.current is LinkStartTag);
-
-    final url = (iter.current as LinkStartTag).url;
-
+  InlineSpan _buildLink(
+    BuildContext context,
+    LinkStartTag tag,
+    Iterator<Tag> iter,
+  ) {
     final recognizer = TapGestureRecognizer()
-      ..onTap = () => widget.openLink(url);
+      ..onTap = () => widget.openLink(tag.url);
 
     List<InlineSpan> spans = [];
 

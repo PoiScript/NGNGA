@@ -43,7 +43,13 @@ abstract class Tag extends LinkedListEntry<Tag> {
 
 class AlignEndTag extends Tag {}
 
-class AlignStartTag extends Tag {}
+// enum Align { }
+
+class AlignStartTag extends Tag {
+  final String value;
+
+  AlignStartTag(this.value) : super(props: [value]);
+}
 
 class BoldEndTag extends Tag {}
 
