@@ -130,22 +130,12 @@ class _CategoryPageState extends State<CategoryPage>
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index.isOdd) {
-                      return TopicRowConnector(widget.topics[index ~/ 2]);
-                    }
-                    return Divider(
-                      height: 1.0,
-                    );
-                  },
-                  semanticIndexCallback: (widget, localIndex) {
-                    if (localIndex.isOdd) {
-                      return localIndex ~/ 2;
-                    }
-                    // ignore: avoid_returning_null
-                    return null;
-                  },
+                  (context, index) => index.isOdd
+                      ? TopicRowConnector(widget.topics[index ~/ 2])
+                      : Divider(height: 0),
                   childCount: widget.topics.length * 2 + 1,
+                  semanticIndexCallback: (widget, localIndex) =>
+                      localIndex.isOdd ? localIndex ~/ 2 : null,
                 ),
               ),
               if (widget.topics.length ~/ 35 != widget.topicsCount ~/ 35)
