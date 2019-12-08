@@ -134,14 +134,15 @@ class _WelcomePageState extends State<WelcomePage> {
                       }
                     },
             ),
-            Divider(),
-            FlatButton(
-              child: Text('Login As Guest'),
-              onPressed: () async {
-                await widget.loginAsGuest();
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
+            // TODO: guest login
+            // Divider(),
+            // FlatButton(
+            //   child: Text('Login As Guest'),
+            //   onPressed: () async {
+            //     await widget.loginAsGuest();
+            //     Navigator.pushReplacementNamed(context, '/');
+            //   },
+            // ),
           ],
         ),
       ),
