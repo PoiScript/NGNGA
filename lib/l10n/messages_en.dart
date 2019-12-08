@@ -26,15 +26,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m2(dateTime, seconds) => "Last Updated: ${dateTime} (${seconds}s ago)";
 
-  static m3(username) => "${username} metioned you at";
+  static m3(page) => "Loading page ${page}";
 
   static m4(username) => "${username} metioned you at";
 
-  static m5(username) => "${username} replied your post at";
+  static m5(username) => "${username} metioned you at";
 
-  static m6(username) => "${username} replied your topic at";
+  static m6(page) => "Pull to load page ${page}";
 
-  static m7(interval) => "Update Interval: ${interval}s";
+  static m7(page) => "Release to load page ${page}";
+
+  static m8(username) => "${username} replied your post at";
+
+  static m9(username) => "${username} replied your topic at";
+
+  static m10(interval) => "Update Interval: ${interval}s";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function>{
@@ -54,22 +60,25 @@ class MessageLookup extends MessageLookupByLibrary {
         "Comment Not Found":
             MessageLookupByLibrary.simpleMessage("Comment Not Found"),
         "Content": MessageLookupByLibrary.simpleMessage("Content"),
-        "Copied Link To Clipboard":
-            MessageLookupByLibrary.simpleMessage("Copied Link To Clipboard"),
-        "Copy Link To Clipboard":
-            MessageLookupByLibrary.simpleMessage("Copy Link To Clipboard"),
+        "Copied Link to Clipboard":
+            MessageLookupByLibrary.simpleMessage("Copied Link to Clipboard"),
+        "Copy Link to Clipboard":
+            MessageLookupByLibrary.simpleMessage("Copy Link to Clipboard"),
         "Created At": MessageLookupByLibrary.simpleMessage("Created At"),
-        "Display In BBCode":
-            MessageLookupByLibrary.simpleMessage("Display In BBCode"),
-        "Display In RichText":
-            MessageLookupByLibrary.simpleMessage("Display In RichText"),
+        "Display in BBCode":
+            MessageLookupByLibrary.simpleMessage("Display in BBCode"),
+        "Display in RichText":
+            MessageLookupByLibrary.simpleMessage("Display in RichText"),
         "Edit Cookies": MessageLookupByLibrary.simpleMessage("Edit Cookies"),
         "Edited At": MessageLookupByLibrary.simpleMessage("Edited At"),
         "Explore": MessageLookupByLibrary.simpleMessage("Explore"),
         "Favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
         "Inbox": MessageLookupByLibrary.simpleMessage("Inbox"),
+        "Jump to Page": MessageLookupByLibrary.simpleMessage("Jump to Page"),
         "Language": MessageLookupByLibrary.simpleMessage("Language"),
         "Last Visited": MessageLookupByLibrary.simpleMessage("Last Visited"),
+        "Load completed":
+            MessageLookupByLibrary.simpleMessage("Load completed"),
         "Loading...": MessageLookupByLibrary.simpleMessage("Loading..."),
         "No Signature": MessageLookupByLibrary.simpleMessage("No Signature"),
         "Pinned": MessageLookupByLibrary.simpleMessage("Pinned"),
@@ -77,6 +86,16 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Post Not Found"),
         "Posted At": MessageLookupByLibrary.simpleMessage("Posted At"),
         "Posts Count": MessageLookupByLibrary.simpleMessage("Posts Count"),
+        "Pull to refresh":
+            MessageLookupByLibrary.simpleMessage("Pull to refresh"),
+        "Push to load": MessageLookupByLibrary.simpleMessage("Push to load"),
+        "Refresh completed":
+            MessageLookupByLibrary.simpleMessage("Refresh completed"),
+        "Refreshing...": MessageLookupByLibrary.simpleMessage("Refreshing..."),
+        "Release to Load":
+            MessageLookupByLibrary.simpleMessage("Release to Load"),
+        "Release to refresh":
+            MessageLookupByLibrary.simpleMessage("Release to refresh"),
         "Remove from Favorites":
             MessageLookupByLibrary.simpleMessage("Remove from Favorites"),
         "Remove from pinned":
@@ -101,12 +120,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "commentYourTopic": m1,
         "edit": MessageLookupByLibrary.simpleMessage("edit"),
         "lastUpdated": m2,
-        "metionYouOnReply": m3,
-        "metionYouOnTopic": m4,
+        "loadingNPage": m3,
+        "metionYouOnReply": m4,
+        "metionYouOnTopic": m5,
+        "pullToLoadNPage": m6,
         "quote": MessageLookupByLibrary.simpleMessage("quote"),
+        "releaseToLoadNPage": m7,
         "reply": MessageLookupByLibrary.simpleMessage("reply"),
-        "replyYourPost": m5,
-        "replyYourTopic": m6,
-        "updateInterval": m7
+        "replyYourPost": m8,
+        "replyYourTopic": m9,
+        "updateInterval": m10
       };
 }

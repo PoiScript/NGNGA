@@ -12,6 +12,7 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
 import 'popup_menu.dart';
@@ -25,6 +26,7 @@ class TopicPage extends StatefulWidget {
   final List<PostItem> posts;
   final List<User> users;
   final bool reachMaxPage;
+  final int firstPage;
 
   final Event<String> snackBarEvt;
 
@@ -35,6 +37,7 @@ class TopicPage extends StatefulWidget {
     @required this.topic,
     @required this.posts,
     @required this.users,
+    @required this.firstPage,
     @required this.reachMaxPage,
     @required this.snackBarEvt,
     @required this.onRefresh,
@@ -42,6 +45,7 @@ class TopicPage extends StatefulWidget {
   })  : assert(topic != null),
         assert(posts != null),
         assert(users != null),
+        assert(firstPage != null),
         assert(reachMaxPage != null),
         assert(snackBarEvt != null),
         assert(onRefresh != null),
@@ -116,8 +120,8 @@ class _TopicPageState extends State<TopicPage>
       key: _scaffoldKey,
       body: Scrollbar(
         child: EasyRefresh.builder(
-          header: ClassicalHeader(),
-          footer: ClassicalFooter(),
+          header: PreviousPageHeader(context, widget.firstPage),
+          footer: NextPageHeader(context),
           onRefresh: widget.onRefresh,
           onLoad: widget.onLoad,
           builder: _buildContent,
@@ -225,6 +229,7 @@ class TopicPageConnector extends StatelessWidget {
         topic: vm.topic,
         posts: vm.posts,
         users: vm.users,
+        firstPage: vm.firstPage,
         reachMaxPage: vm.reachMaxPage,
         snackBarEvt: vm.snackBarEvt,
         onRefresh: vm.onRefresh,
@@ -241,6 +246,7 @@ class ViewModel extends BaseModel<AppState> {
   List<PostItem> posts;
   List<User> users;
   bool reachMaxPage;
+  int firstPage;
 
   Event<String> snackBarEvt;
 
@@ -251,6 +257,7 @@ class ViewModel extends BaseModel<AppState> {
 
   ViewModel.build({
     @required this.topicId,
+    @required this.firstPage,
     @required this.topic,
     @required this.posts,
     @required this.users,
@@ -258,7 +265,14 @@ class ViewModel extends BaseModel<AppState> {
     @required this.snackBarEvt,
     @required this.onRefresh,
     @required this.onLoad,
-  }) : super(equals: [snackBarEvt, reachMaxPage, posts, users, topic]);
+  }) : super(equals: [
+          firstPage,
+          snackBarEvt,
+          reachMaxPage,
+          posts,
+          users,
+          topic
+        ]);
 
   @override
   ViewModel fromStore() {
@@ -275,6 +289,7 @@ class ViewModel extends BaseModel<AppState> {
 
     return ViewModel.build(
       topicId: topicId,
+      firstPage: topicState.firstPage,
       posts: posts,
       users: users,
       reachMaxPage: topicState.lastPage == topicState.maxPage,

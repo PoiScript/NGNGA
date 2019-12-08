@@ -11,6 +11,7 @@ import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 
 import 'popup_menu.dart';
@@ -81,8 +82,8 @@ class _CategoryPageState extends State<CategoryPage>
     return Scaffold(
       body: Scrollbar(
         child: EasyRefresh.builder(
-          header: ClassicalHeader(),
-          footer: ClassicalFooter(),
+          header: RefreshHeader(context),
+          footer: NextPageHeader(context),
           onRefresh: widget.onRefresh,
           onLoad: widget.onLoad,
           builder: (context, physics, header, footer) => CustomScrollView(

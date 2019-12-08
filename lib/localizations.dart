@@ -145,6 +145,39 @@ class AppLocalizations {
         args: [username],
         locale: localeName,
       );
+
+  String get pullToRefresh =>
+      Intl.message('Pull to refresh', locale: localeName);
+  String get releaseToRefresh =>
+      Intl.message('Release to refresh', locale: localeName);
+  String get refreshing => Intl.message('Refreshing...', locale: localeName);
+  String get refreshCompleted =>
+      Intl.message('Refresh completed', locale: localeName);
+
+  String pullToLoadNPage(int page) => Intl.message(
+        'Pull to load page $page',
+        name: 'pullToLoadNPage',
+        args: [page],
+        locale: localeName,
+      );
+  String releaseToLoadNPage(int page) => Intl.message(
+        'Release to load page $page',
+        name: 'releaseToLoadNPage',
+        args: [page],
+        locale: localeName,
+      );
+  String loadingNPage(int page) => Intl.message(
+        'Loading page $page',
+        name: 'loadingNPage',
+        args: [page],
+        locale: localeName,
+      );
+
+  String get pushToLoad => Intl.message('Push to load', locale: localeName);
+  String get releaseToLoad =>
+      Intl.message('Release to Load', locale: localeName);
+  String get loadCompleted =>
+      Intl.message('Load completed', locale: localeName);
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

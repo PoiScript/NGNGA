@@ -5,6 +5,7 @@ import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 
 class Favorites extends StatelessWidget {
@@ -35,7 +36,7 @@ class Favorites extends StatelessWidget {
   Widget _favoritesList(BuildContext context) {
     return EasyRefresh(
       firstRefresh: topics.isEmpty,
-      header: ClassicalHeader(),
+      header: RefreshHeader(context),
       onRefresh: onRefresh,
       child: ListView.separated(
         itemBuilder: (context, index) => TopicRowConnector(

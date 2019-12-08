@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "@@last_modified": "2019-12-03T14:05:57.889150",
+  "@@last_modified": "2019-12-08T22:05:57.889150",
   "Favorites": "收藏",
   "@Favorites": {
     "type": "text",
@@ -66,13 +66,18 @@
     "type": "text",
     "placeholders": {}
   },
-  "Copy Link To Clipboard": "复制链接",
-  "@Copy Link To Clipboard": {
+  "Copy Link to Clipboard": "复制链接",
+  "@Copy Link to Clipboard": {
     "type": "text",
     "placeholders": {}
   },
-  "Copied Link To Clipboard": "已复制链接",
-  "@Copied Link To Clipboard": {
+  "Copied Link to Clipboard": "已复制链接",
+  "@Copied Link to Clipboard": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Jump to Page": "跳转页面",
+  "@Jump to Page": {
     "type": "text",
     "placeholders": {}
   },
@@ -96,13 +101,13 @@
     "type": "text",
     "placeholders": {}
   },
-  "Display In BBCode": "显示源码",
-  "@Display In BBCode": {
+  "Display in BBCode": "显示源码",
+  "@Display in BBCode": {
     "type": "text",
     "placeholders": {}
   },
-  "Display In RichText": "隐藏源码",
-  "@Display In RichText": {
+  "Display in RichText": "隐藏源码",
+  "@Display in RichText": {
     "type": "text",
     "placeholders": {}
   },
@@ -277,5 +282,61 @@
     "placeholders": {
       "username": {}
     }
+  },
+  "Pull to refresh": "下拉刷新",
+  "@Pull to refresh": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Release to refresh": "释放刷新",
+  "@Release to refresh": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Refreshing...": "刷新中...",
+  "@Refreshing...": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Refresh completed": "刷新完毕",
+  "@Refresh completed": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "pullToLoadNPage": "下拉加载第 {page} 页",
+  "@pullToLoadNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "releaseToLoadNPage": "释放加载第 {page} 页",
+  "@releaseToLoadNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "loadingNPage": "加载第 {page} 中",
+  "@loadingNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "Push to load": "上拉加载",
+  "@Push to load": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Release to Load": "释放加载",
+  "@Release to Load": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Load completed": "加载完毕",
+  "@Load completed": {
+    "type": "text",
+    "placeholders": {}
   }
 }

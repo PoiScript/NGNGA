@@ -26,15 +26,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m2(dateTime, seconds) => "上次更新：${dateTime}（${seconds} 秒前）";
 
-  static m3(username) => "${username} 在回复中 @ le你";
+  static m3(page) => "加载第 ${page} 中";
 
-  static m4(username) => "${username} 在主题中 @ 了你";
+  static m4(username) => "${username} 在回复中 @ le你";
 
-  static m5(username) => "${username} 回复了你的回复";
+  static m5(username) => "${username} 在主题中 @ 了你";
 
-  static m6(username) => "${username} 回复了你的帖子";
+  static m6(page) => "下拉加载第 ${page} 页";
 
-  static m7(interval) => "更新间隔：${interval} 秒";
+  static m7(page) => "释放加载第 ${page} 页";
+
+  static m8(username) => "${username} 回复了你的回复";
+
+  static m9(username) => "${username} 回复了你的帖子";
+
+  static m10(interval) => "更新间隔：${interval} 秒";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function>{
@@ -48,25 +54,33 @@ class MessageLookup extends MessageLookupByLibrary {
         "Change Domain": MessageLookupByLibrary.simpleMessage("更换域名"),
         "Comment Not Found": MessageLookupByLibrary.simpleMessage("未找到评论"),
         "Content": MessageLookupByLibrary.simpleMessage("内容"),
-        "Copied Link To Clipboard":
+        "Copied Link to Clipboard":
             MessageLookupByLibrary.simpleMessage("已复制链接"),
-        "Copy Link To Clipboard": MessageLookupByLibrary.simpleMessage("复制链接"),
+        "Copy Link to Clipboard": MessageLookupByLibrary.simpleMessage("复制链接"),
         "Created At": MessageLookupByLibrary.simpleMessage("创建时间"),
-        "Display In BBCode": MessageLookupByLibrary.simpleMessage("显示源码"),
-        "Display In RichText": MessageLookupByLibrary.simpleMessage("隐藏源码"),
+        "Display in BBCode": MessageLookupByLibrary.simpleMessage("显示源码"),
+        "Display in RichText": MessageLookupByLibrary.simpleMessage("隐藏源码"),
         "Edit Cookies": MessageLookupByLibrary.simpleMessage("编辑 Cookies"),
         "Edited At": MessageLookupByLibrary.simpleMessage("编辑时间"),
         "Explore": MessageLookupByLibrary.simpleMessage("探索"),
         "Favorites": MessageLookupByLibrary.simpleMessage("收藏"),
         "Inbox": MessageLookupByLibrary.simpleMessage("信息"),
+        "Jump to Page": MessageLookupByLibrary.simpleMessage("跳转页面"),
         "Language": MessageLookupByLibrary.simpleMessage("语言"),
         "Last Visited": MessageLookupByLibrary.simpleMessage("上次访问"),
+        "Load completed": MessageLookupByLibrary.simpleMessage("加载完毕"),
         "Loading...": MessageLookupByLibrary.simpleMessage("加载中..."),
         "No Signature": MessageLookupByLibrary.simpleMessage("无签名"),
         "Pinned": MessageLookupByLibrary.simpleMessage("顶置"),
         "Post Not Found": MessageLookupByLibrary.simpleMessage("未找到回复"),
         "Posted At": MessageLookupByLibrary.simpleMessage("发送时间"),
         "Posts Count": MessageLookupByLibrary.simpleMessage("发帖数目"),
+        "Pull to refresh": MessageLookupByLibrary.simpleMessage("下拉刷新"),
+        "Push to load": MessageLookupByLibrary.simpleMessage("上拉加载"),
+        "Refresh completed": MessageLookupByLibrary.simpleMessage("刷新完毕"),
+        "Refreshing...": MessageLookupByLibrary.simpleMessage("刷新中..."),
+        "Release to Load": MessageLookupByLibrary.simpleMessage("释放加载"),
+        "Release to refresh": MessageLookupByLibrary.simpleMessage("释放刷新"),
         "Remove from Favorites": MessageLookupByLibrary.simpleMessage("移出收藏"),
         "Remove from pinned": MessageLookupByLibrary.simpleMessage("移出顶置"),
         "Removed from Favorites": MessageLookupByLibrary.simpleMessage("已移出收藏"),
@@ -86,12 +100,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "commentYourTopic": m1,
         "edit": MessageLookupByLibrary.simpleMessage("编辑"),
         "lastUpdated": m2,
-        "metionYouOnReply": m3,
-        "metionYouOnTopic": m4,
+        "loadingNPage": m3,
+        "metionYouOnReply": m4,
+        "metionYouOnTopic": m5,
+        "pullToLoadNPage": m6,
         "quote": MessageLookupByLibrary.simpleMessage("引用"),
+        "releaseToLoadNPage": m7,
         "reply": MessageLookupByLibrary.simpleMessage("回复"),
-        "replyYourPost": m5,
-        "replyYourTopic": m6,
-        "updateInterval": m7
+        "replyYourPost": m8,
+        "replyYourTopic": m9,
+        "updateInterval": m10
       };
 }

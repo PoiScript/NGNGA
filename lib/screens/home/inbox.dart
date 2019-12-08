@@ -7,6 +7,7 @@ import 'package:ngnga/store/actions/fetch_notifications.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/requests.dart';
+import 'package:ngnga/widgets/refresh.dart';
 
 class Inbox extends StatelessWidget {
   final Future<void> Function() fetch;
@@ -23,7 +24,7 @@ class Inbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyRefresh(
-      header: ClassicalHeader(),
+      header: RefreshHeader(context),
       onRefresh: fetch,
       child: ListView.separated(
         separatorBuilder: (context, inex) => Divider(),

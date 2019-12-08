@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "@@last_modified": "2019-12-03T14:05:57.889150",
+  "@@last_modified": "2019-12-08T22:59:42.009074",
   "Favorites": "Favorites",
   "@Favorites": {
     "type": "text",
@@ -66,13 +66,18 @@
     "type": "text",
     "placeholders": {}
   },
-  "Copy Link To Clipboard": "Copy Link To Clipboard",
-  "@Copy Link To Clipboard": {
+  "Copy Link to Clipboard": "Copy Link to Clipboard",
+  "@Copy Link to Clipboard": {
     "type": "text",
     "placeholders": {}
   },
-  "Copied Link To Clipboard": "Copied Link To Clipboard",
-  "@Copied Link To Clipboard": {
+  "Copied Link to Clipboard": "Copied Link to Clipboard",
+  "@Copied Link to Clipboard": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Jump to Page": "Jump to Page",
+  "@Jump to Page": {
     "type": "text",
     "placeholders": {}
   },
@@ -96,13 +101,13 @@
     "type": "text",
     "placeholders": {}
   },
-  "Display In BBCode": "Display In BBCode",
-  "@Display In BBCode": {
+  "Display in BBCode": "Display in BBCode",
+  "@Display in BBCode": {
     "type": "text",
     "placeholders": {}
   },
-  "Display In RichText": "Display In RichText",
-  "@Display In RichText": {
+  "Display in RichText": "Display in RichText",
+  "@Display in RichText": {
     "type": "text",
     "placeholders": {}
   },
@@ -277,5 +282,61 @@
     "placeholders": {
       "username": {}
     }
+  },
+  "Pull to refresh": "Pull to refresh",
+  "@Pull to refresh": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Release to refresh": "Release to refresh",
+  "@Release to refresh": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Refreshing...": "Refreshing...",
+  "@Refreshing...": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Refresh completed": "Refresh completed",
+  "@Refresh completed": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "pullToLoadNPage": "Pull to load page {page}",
+  "@pullToLoadNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "releaseToLoadNPage": "Release to load page {page}",
+  "@releaseToLoadNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "loadingNPage": "Loading page {page}",
+  "@loadingNPage": {
+    "type": "text",
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "Push to load": "Push to load",
+  "@Push to load": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Release to Load": "Release to Load",
+  "@Release to Load": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Load completed": "Load completed",
+  "@Load completed": {
+    "type": "text",
+    "placeholders": {}
   }
 }
