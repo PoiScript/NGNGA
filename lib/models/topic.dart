@@ -96,7 +96,9 @@ class Topic extends TopicItem {
 
     Map<String, int> topicMisc =
         _decodeTopicMiscString(json['topic_misc'] ?? '')
-          ..addAll(Map<String, int>.from(json['topic_misc_var'] ?? {}));
+          ..addAll(json['topic_misc_var'] is Map
+              ? Map<String, int>.from(json['topic_misc_var'])
+              : {});
 
     if (topicMisc.containsKey('1')) {
       int bits = topicMisc['1'];
