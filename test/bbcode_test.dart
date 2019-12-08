@@ -74,7 +74,8 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]').toList(),
+      parseBBCode('[collapse]A[quote]B[quote]C[/quote]D[/quote]E[/collapse]')
+          .toList(),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
@@ -128,7 +129,8 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]').toList(),
+      parseBBCode('[collapse]A[quote]B[quote]C[/collapse]D[/quote]E[/quote]')
+          .toList(),
       [
         CollapseStartTag(null),
         ParagraphStartTag(),
@@ -142,7 +144,8 @@ void main() {
     ));
 
     assert(listEquals(
-      parseBBCode('[quote][collapse][url]example.com[/url][/collapse][/quote]').toList(),
+      parseBBCode('[quote][collapse][url]example.com[/url][/collapse][/quote]')
+          .toList(),
       [
         QuoteStartTag(),
         CollapseStartTag(null),
