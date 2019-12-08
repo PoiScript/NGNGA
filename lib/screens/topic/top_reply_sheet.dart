@@ -9,11 +9,11 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 
-class CommentSheet extends StatelessWidget {
+class TopReplySheet extends StatelessWidget {
   final List<PostItem> posts;
   final List<User> users;
 
-  const CommentSheet({
+  const TopReplySheet({
     Key key,
     @required this.posts,
     @required this.users,
@@ -31,10 +31,10 @@ class CommentSheet extends StatelessWidget {
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.all(16.0),
-                  child: Icon(Icons.comment),
+                  child: Icon(Icons.whatshot),
                 ),
                 Text(
-                  'Comment',
+                  'Top Reply',
                   style: Theme.of(context).textTheme.subhead,
                 ),
               ],
@@ -51,7 +51,7 @@ class CommentSheet extends StatelessWidget {
 
                 if (posts[itemIndex] == null) {
                   return Text(
-                    AppLocalizations.of(context).commentNotFound,
+                    AppLocalizations.of(context).postNotFound,
                     style: Theme.of(context)
                         .textTheme
                         .caption
@@ -110,10 +110,10 @@ class CommentSheet extends StatelessWidget {
   }
 }
 
-class CommentSheetConnector extends StatelessWidget {
+class TopReplySheetConnector extends StatelessWidget {
   final List<int> postIds;
 
-  const CommentSheetConnector({
+  const TopReplySheetConnector({
     Key key,
     @required this.postIds,
   }) : super(key: key);
@@ -122,7 +122,7 @@ class CommentSheetConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(postIds: postIds),
-      builder: (context, vm) => CommentSheet(
+      builder: (context, vm) => TopReplySheet(
         posts: vm.posts,
         users: vm.users,
       ),
@@ -134,6 +134,7 @@ class ViewModel extends BaseModel<AppState> {
   final List<int> postIds;
 
   List<PostItem> posts;
+
   List<User> users;
 
   ViewModel({this.postIds});
@@ -150,7 +151,7 @@ class ViewModel extends BaseModel<AppState> {
     return ViewModel.build(
       postIds: postIds,
       posts: posts,
-      users: posts.map((p) => state.users[p?.inner?.userId]).toList(),
+      users: posts.map((p) => state.users[p.inner.userId]).toList(),
     );
   }
 }

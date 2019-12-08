@@ -15,10 +15,10 @@ import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
 import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
-import 'package:ngnga/widgets/user_dialog.dart';
 
-import 'attach_viewer.dart';
+import 'attachment_sheet.dart';
 import 'comment_sheet.dart';
+import 'top_reply_sheet.dart';
 
 final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -368,12 +368,7 @@ class _PostRowState extends State<PostRow> {
       case DisplayMode.richText:
         return BBCodeRender(
           raw: post.content,
-          openUser: (userId) {
-            showDialog(
-              context: context,
-              builder: (context) => UserDialog(userId),
-            );
-          },
+          openUser: (userId) {},
           openLink: (url) {
             showDialog(
               context: context,
@@ -408,10 +403,10 @@ class _PostRowState extends State<PostRow> {
                 color: Color.fromARGB(255, 144, 144, 144),
               ),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AttachViewer(post.attachments),
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => AttachmentSheet(
+                    attachments: post.attachments,
                   ),
                 );
               },
@@ -459,7 +454,7 @@ class _PostRowState extends State<PostRow> {
               onTap: () {
                 showModalBottomSheet(
                   context: context,
-                  builder: (context) => CommentSheetConnector(
+                  builder: (context) => TopReplySheetConnector(
                     postIds: (widget.post as TopicPost).topReplyIds,
                   ),
                 );
