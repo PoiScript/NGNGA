@@ -43,8 +43,6 @@ abstract class Tag extends LinkedListEntry<Tag> {
 
 class AlignEndTag extends Tag {}
 
-// enum Align { }
-
 class AlignStartTag extends Tag {
   final String value;
 
@@ -68,11 +66,11 @@ class CollapseStartTag extends Tag {
 class ColorEndTag extends Tag {}
 
 class ColorStartTag extends Tag {
-  final String color;
+  final String value;
 
-  ColorStartTag(this.color)
-      : assert(color != null),
-        super(props: [color]);
+  ColorStartTag(this.value)
+      : assert(value != null),
+        super(props: [value]);
 }
 
 class DeleteEndTag extends Tag {}
@@ -81,7 +79,13 @@ class DeleteStartTag extends Tag {}
 
 class FontEndTag extends Tag {}
 
-class FontStartTag extends Tag {}
+class FontStartTag extends Tag {
+  final String value;
+
+  FontStartTag(this.value)
+      : assert(value != null),
+        super(props: [value]);
+}
 
 class HeadingEndTag extends Tag {}
 
@@ -143,7 +147,13 @@ class RuleTag extends Tag {}
 
 class SizeEndTag extends Tag {}
 
-class SizeStartTag extends Tag {}
+class SizeStartTag extends Tag {
+  final String value;
+
+  SizeStartTag(this.value)
+      : assert(value != null),
+        super(props: [value]);
+}
 
 class StickerTag extends Tag {
   final String name;
@@ -218,18 +228,6 @@ class ReplyTag extends Tag {
         ]);
 }
 
-// class ListStart extends Tag {
-//   ListStart() : super(TagType.ListStart);
-// }
+class ListItemStartTag extends Tag {}
 
-// class ListEnd extends Tag {
-//   ListEnd() : super(TagType.ListEnd);
-// }
-
-// class ListItemStart extends Tag {
-//   ListItemStart() : super(TagType.ListItemStart);
-// }
-
-// class ListItemEnd extends Tag {
-//   ListItemEnd() : super(TagType.ListItemEnd);
-// }
+class ListItemEndTag extends Tag {}

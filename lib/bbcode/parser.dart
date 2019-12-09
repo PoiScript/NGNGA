@@ -3,7 +3,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'sticker.dart';
 import 'tag.dart';
 
-final _bbcodeTagRegExp = RegExp(r'\[([^\[\]]*?)\]');
+final _bbcodeTagRegExp = RegExp(r'\[([^=\s\[\]]*?)(=[^\]]*?)?\]');
 
 final _ruleRegExp = RegExp(r'^\s*={5,}\s*$', multiLine: true);
 final _headingRegExp = RegExp(r'^\s*={3,}(.*?)={3,}\s*$', multiLine: true);
@@ -52,14 +52,15 @@ Iterable<Tag> parseBBCode(String raw) sync* {
       .replaceAll(_ruleRegExp, '[hr]')
       .replaceAllMapped(_headingRegExp, (Match m) => '[h]${m[1]}[/h]');
 
-  for (Tag tag in parseTags(content)) {
+  for (Tag tag in _parseTags(content)) {
     if (tag is HeadingStartTag ||
         tag is ReplyTag ||
         tag is RuleTag ||
         tag is CollapseStartTag ||
         tag is AlignStartTag ||
         tag is TableStartTag ||
-        tag is QuoteStartTag) {
+        tag is QuoteStartTag ||
+        tag is ListItemStartTag) {
       if (openingParagraph) {
         yield ParagraphEndTag();
         openingParagraph = false;
@@ -70,7 +71,8 @@ Iterable<Tag> parseBBCode(String raw) sync* {
         tag is CollapseEndTag ||
         tag is AlignEndTag ||
         tag is TableEndTag ||
-        tag is QuoteEndTag) {
+        tag is QuoteEndTag ||
+        tag is ListItemEndTag) {
       if (openingParagraph) {
         yield ParagraphEndTag();
         openingParagraph = false;
@@ -87,13 +89,13 @@ Iterable<Tag> parseBBCode(String raw) sync* {
   }
 }
 
-Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
+Iterable<Tag> _parseTags(String content, {bool linkContent = false}) sync* {
   String tail = content;
 
   outerloop:
   while (true) {
     for (Match match in _bbcodeTagRegExp.allMatches(tail)) {
-      if (match[1] == 'b') {
+      if (match[0] == '[b]') {
         RegExpMatch regexMatch =
             _replyRegExp0.firstMatch(tail.substring(match.start));
 
@@ -138,7 +140,7 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
         }
       }
 
-      if (match[1].startsWith('pid=')) {
+      if (match[1] == 'pid' && match[2] != null) {
         RegExpMatch regexMatch =
             _replyRegExp3.firstMatch(tail.substring(match.start));
 
@@ -183,7 +185,7 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
         }
       }
 
-      if (match[1].startsWith('tid=')) {
+      if (match[1] == 'tid' && match[2] != null) {
         RegExpMatch regexMatch =
             _replyRegExp6.firstMatch(tail.substring(match.start));
 
@@ -201,131 +203,172 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
       }
 
       int end;
-      if (match[1] == 'b' &&
-          (end = _findEndTag(tail, match.end, '[b]', '[/b]')) != -1) {
+      if (match[0] == '[b]' &&
+          (end = _findEndTag(tail, match.end, 'b')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
         yield BoldStartTag();
-        yield* parseTags(tail.substring(match.end, end));
+        yield* _parseTags(tail.substring(match.end, end));
         yield BoldEndTag();
         tail = tail.substring(end + 4);
         continue outerloop;
       }
 
-      if (match[1] == 'i' &&
-          (end = _findEndTag(tail, match.end, '[i]', '[/i]')) != -1) {
+      if (match[0] == '[i]' &&
+          (end = _findEndTag(tail, match.end, 'i')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
         yield ItalicStartTag();
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield ItalicEndTag();
         tail = tail.substring(end + 4);
         continue outerloop;
       }
 
-      if (match[1] == 'u' &&
-          (end = _findEndTag(tail, match.end, '[u]', '[/u]')) != -1) {
+      if (match[0] == '[u]' &&
+          (end = _findEndTag(tail, match.end, 'u')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
         yield UnderlineStartTag();
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield UnderlineEndTag();
         tail = tail.substring(end + 4);
         continue outerloop;
       }
 
-      if (match[1] == 'del' &&
-          (end = _findEndTag(tail, match.end, '[del]', '[/del]')) != -1) {
+      if (match[0] == '[del]' &&
+          (end = _findEndTag(tail, match.end, 'del')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
         yield DeleteStartTag();
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield DeleteEndTag();
         tail = tail.substring(end + 6);
         continue outerloop;
       }
 
-      if (match[1].startsWith('size=') &&
-          (end = _findEndTag(tail, match.end, '[size]', '[/size]')) != -1) {
+      if (match[1] == 'size' &&
+          match[2] != null &&
+          (end = _findEndTag(tail, match.end, 'size')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
-        yield SizeStartTag();
-        yield* parseTags(tail.substring(match.end, end));
+        yield SizeStartTag(match[2].substring(1));
+        yield* _parseTags(tail.substring(match.end, end));
         yield SizeEndTag();
         tail = tail.substring(end + 7);
         continue outerloop;
       }
 
-      if (match[1].startsWith('color=') &&
-          (end = _findEndTag(tail, match.end, '[color]', '[/color]')) != -1) {
+      if (match[1] == 'color' &&
+          match[2] != null &&
+          (end = _findEndTag(tail, match.end, 'color')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start));
         }
-        yield ColorStartTag(match[1].substring(6));
-        yield* parseTags(tail.substring(match.end, end));
+        yield ColorStartTag(match[2].substring(1));
+        yield* _parseTags(tail.substring(match.end, end));
         yield ColorEndTag();
         tail = tail.substring(end + 8);
         continue outerloop;
       }
 
+      if (match[1] == 'font' &&
+          match[2] != null &&
+          (end = _findEndTag(tail, match.end, 'font')) != -1) {
+        if (match.start > 0) {
+          yield* _parseTags(tail.substring(0, match.start));
+        }
+        yield FontStartTag(match[2].substring(1));
+        yield* _parseTags(tail.substring(match.end, end));
+        yield FontEndTag();
+        tail = tail.substring(end + 8);
+        continue outerloop;
+      }
+
       if (!linkContent &&
-          (match[1] == 'collapse' || match[1].startsWith('collapse=')) &&
+          match[1] == 'collapse' &&
           (end = tail.indexOf('[/collapse]', match.end)) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
         }
-        yield CollapseStartTag(
-          match[1] == 'collapse' ? null : match[1].substring(9),
-        );
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield CollapseStartTag(match[2]?.substring(1));
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield CollapseEndTag();
         tail = tail.substring(end + 11).trimLeft();
         continue outerloop;
       }
 
       if (!linkContent &&
-          match[1] == 'quote' &&
-          (end = _findEndTag(tail, match.end, '[quote]', '[/quote]')) != -1) {
+          match[0] == '[quote]' &&
+          (end = _findEndTag(tail, match.end, 'quote')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
         }
         yield QuoteStartTag();
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield QuoteEndTag();
         tail = tail.substring(end + 8).trimLeft();
         continue outerloop;
       }
 
       if (!linkContent &&
-          (match[1] == 'align=center' ||
-              match[1] == 'align=left' ||
-              match[1] == 'align=right') &&
-          (end = _findEndTag(tail, match.end, '[align]', '[/align]')) != -1) {
+          match[0] == '[list]' &&
+          (end = _findEndTag(tail, match.end, 'list')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
         }
-        yield AlignStartTag(match[1].substring(6));
-        yield* parseTags(tail.substring(match.end, end).trim());
+        for (String item in tail
+            .substring(match.end, end)
+            .split('[*]')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)) {
+          yield ListItemStartTag();
+          yield* _parseTags(item);
+          yield ListItemEndTag();
+        }
+        tail = tail.substring(end + 7).trimLeft();
+        continue outerloop;
+      }
+
+      if (!linkContent &&
+          (match[0] == '[align=center]' ||
+              match[0] == '[align=left]' ||
+              match[0] == '[align=right]') &&
+          (end = _findEndTag(tail, match.end, 'align')) != -1) {
+        if (match.start > 0) {
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
+        }
+        yield AlignStartTag(match[1].substring(1));
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield AlignEndTag();
         tail = tail.substring(end + 8).trimLeft();
         continue outerloop;
       }
 
       if (!linkContent &&
-          match[1] == 'h' &&
-          (end = _findEndTag(tail, match.end, '[h]', '[/h]')) != -1) {
+          match[0] == '[h]' &&
+          (end = _findEndTag(tail, match.end, 'h')) != -1) {
         if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
         }
         yield HeadingStartTag();
-        yield* parseTags(tail.substring(match.end, end).trim());
+        yield* _parseTags(tail.substring(match.end, end).trim());
         yield HeadingEndTag();
         tail = tail.substring(end + 4).trimLeft();
+        continue outerloop;
+      }
+
+      if (match[0] == '[hr]') {
+        if (match.start > 0) {
+          yield* _parseTags(tail.substring(0, match.start));
+        }
+        yield RuleTag();
+        tail = tail.substring(match.end).trimLeft();
         continue outerloop;
       }
 
@@ -334,26 +377,21 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
         if (match.start > 0) {
           yield TextTag(tail.substring(0, match.start));
         }
-        yield LinkStartTag(tail.substring(match.end, end));
-        yield TextTag(tail.substring(match.end, end));
-        yield LinkEndTag();
-        tail = tail.substring(end + 6);
-        continue outerloop;
-      }
-
-      if (match[1].startsWith('url=') &&
-          (end = tail.indexOf('[/url]', match.end)) != -1) {
-        if (match.start > 0) {
-          yield TextTag(tail.substring(0, match.start));
+        if (match[2] != null) {
+          yield LinkStartTag(match[2].trim());
+          yield* _parseTags(tail.substring(match.end, end), linkContent: true);
+          yield LinkEndTag();
+          tail = tail.substring(end + 6);
+        } else {
+          yield LinkStartTag(tail.substring(match.end, end));
+          yield TextTag(tail.substring(match.end, end));
+          yield LinkEndTag();
+          tail = tail.substring(end + 6);
         }
-        yield LinkStartTag(match[1].substring(4).trim());
-        yield* parseTags(tail.substring(match.end, end), linkContent: true);
-        yield LinkEndTag();
-        tail = tail.substring(end + 6);
         continue outerloop;
       }
 
-      if (match[1] == 'img' &&
+      if (match[0] == '[img]' &&
           (end = tail.indexOf('[/img]', match.end)) != -1) {
         if (match.start > 0) {
           yield TextTag(tail.substring(0, match.start));
@@ -386,15 +424,6 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
         tail = tail.substring(match.end);
         continue outerloop;
       }
-
-      if (match[1] == 'hr') {
-        if (match.start > 0) {
-          yield* parseTags(tail.substring(0, match.start));
-        }
-        yield RuleTag();
-        tail = tail.substring(match.end).trimLeft();
-        continue outerloop;
-      }
     }
     break;
   }
@@ -404,17 +433,14 @@ Iterable<Tag> parseTags(String content, {bool linkContent = false}) sync* {
   }
 }
 
-int _findEndTag(
-  String content,
-  int start,
-  String startTag,
-  String endTag,
-) {
+int _findEndTag(String content, int start, String tag) {
   int depth = 1;
   for (Match match in _bbcodeTagRegExp.allMatches(content, start)) {
-    if (match[0] == startTag) {
+    if (match[1] == tag) {
       depth += 1;
-    } else if (match[0] == endTag) {
+    } else if (match[2] == null &&
+        match[1].startsWith('/') &&
+        match[1].substring(1) == tag) {
       if (depth == 1) return match.start;
       depth -= 1;
     }

@@ -158,5 +158,42 @@ void main() {
         QuoteEndTag(),
       ],
     ));
+
+    assert(listEquals(
+      parseBBCode('[color=red]Red[color=blue]Blue[/color]Red[/color]').toList(),
+      [
+        ParagraphStartTag(),
+        ColorStartTag('red'),
+        TextTag('Red'),
+        ColorStartTag('blue'),
+        TextTag('Blue'),
+        ColorEndTag(),
+        TextTag('Red'),
+        ColorEndTag(),
+        ParagraphEndTag(),
+      ],
+    ));
+
+    assert(listEquals(
+      parseBBCode('[list] item 1 [*]item 2  [*] [*] [*]  item 3[/list]')
+          .toList(),
+      [
+        ListItemStartTag(),
+        ParagraphStartTag(),
+        TextTag('item 1'),
+        ParagraphEndTag(),
+        ListItemEndTag(),
+        ListItemStartTag(),
+        ParagraphStartTag(),
+        TextTag('item 2'),
+        ParagraphEndTag(),
+        ListItemEndTag(),
+        ListItemStartTag(),
+        ParagraphStartTag(),
+        TextTag('item 3'),
+        ParagraphEndTag(),
+        ListItemEndTag(),
+      ],
+    ));
   });
 }

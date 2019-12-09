@@ -69,6 +69,8 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
         children.add(_buildAlign(context, iter.current, iter));
+      } else if (iter.current is ListItemStartTag) {
+        children.add(_buildListItem(context, iter));
       } else {
         throw 'Unexcepted element: ${iter.current}';
       }
@@ -153,6 +155,8 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
         children.add(_buildAlign(context, iter.current, iter));
+      } else if (iter.current is ListItemStartTag) {
+        children.add(_buildListItem(context, iter));
       } else {
         throw 'Unexpected element: ${iter.current}.';
       }
@@ -195,6 +199,8 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         children.add(_buildRule(context));
       } else if (iter.current is AlignStartTag) {
         children.add(_buildAlign(context, iter.current, iter));
+      } else if (iter.current is ListItemStartTag) {
+        children.add(_buildListItem(context, iter));
       } else {
         throw 'Unexpected element: ${iter.current}.';
       }
@@ -254,6 +260,8 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         children.add(_buildRule(context));
       } else if (iter.current is QuoteStartTag) {
         children.add(_buildQuote(context, iter));
+      } else if (iter.current is ListItemStartTag) {
+        children.add(_buildListItem(context, iter));
       } else {
         throw 'Unexpected element: ${iter.current}.';
       }
@@ -278,6 +286,62 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         children: children,
       );
     }
+  }
+
+  Widget _buildListItem(BuildContext context, Iterator<Tag> iter) {
+    assert(iter.current is ListItemStartTag);
+
+    List<Widget> children = [];
+
+    while (iter.moveNext()) {
+      if (iter.current is ListItemStartTag) {
+        children.add(_buildListItem(context, iter));
+      } else if (iter.current is ListItemEndTag) {
+        break;
+      } else if (_isStyle(iter.current)) {
+        _applyStyle(context, iter.current);
+      } else if (iter.current is ReplyTag) {
+        children.add(_buildReply(context, iter.current, false));
+      } else if (iter.current is ParagraphStartTag) {
+        children.add(_buildParagraph(context, iter));
+      } else if (iter.current is CollapseStartTag) {
+        children.add(_buildCollapse(context, iter.current, iter));
+      } else if (iter.current is TableStartTag) {
+        children.add(_buildTable(context, iter));
+      } else if (iter.current is HeadingStartTag) {
+        children.add(_buildHeading(context, iter));
+      } else if (iter.current is RuleTag) {
+        children.add(_buildRule(context));
+      } else if (iter.current is QuoteStartTag) {
+        children.add(_buildQuote(context, iter));
+      } else if (iter.current is AlignStartTag) {
+        children.add(_buildAlign(context, iter.current, iter));
+      } else {
+        throw 'Unexpected element: ${iter.current}.';
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          width: 24.0,
+          child: Text(
+            '•',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
+        Expanded(
+          child: children.length == 1
+              ? children[0]
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: children,
+                ),
+        ),
+      ],
+    );
   }
 
   Widget _buildTable(BuildContext context, Iterator<Tag> iter) {
