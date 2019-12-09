@@ -178,6 +178,11 @@ class AppLocalizations {
       Intl.message('Release to Load', locale: localeName);
   String get loadCompleted =>
       Intl.message('Load completed', locale: localeName);
+
+  String get addImage => Intl.message('Add image', locale: localeName);
+  String get upload => Intl.message('Upload', locale: localeName);
+  String get uploading => Intl.message('Uploading ...', locale: localeName);
+  String get insert => Intl.message('Insert', locale: localeName);
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

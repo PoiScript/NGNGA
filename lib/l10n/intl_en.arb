@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "@@last_modified": "2019-12-08T22:59:42.009074",
+  "@@last_modified": "2019-12-09T19:19:56.533497",
   "Favorites": "Favorites",
   "@Favorites": {
     "type": "text",
@@ -336,6 +336,26 @@
   },
   "Load completed": "Load completed",
   "@Load completed": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Add image": "Add image",
+  "@Add image": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Upload": "Upload",
+  "@Upload": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Uploading ...": "Uploading ...",
+  "@Uploading ...": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Insert": "Insert",
+  "@Insert": {
     "type": "text",
     "placeholders": {}
   }

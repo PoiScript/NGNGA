@@ -45,6 +45,7 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function>{
         "About": MessageLookupByLibrary.simpleMessage("关于"),
+        "Add image": MessageLookupByLibrary.simpleMessage("添加图片"),
         "Add to Favorites": MessageLookupByLibrary.simpleMessage("添加进收藏"),
         "Add to pinned": MessageLookupByLibrary.simpleMessage("添加进顶置"),
         "Added to Favorites": MessageLookupByLibrary.simpleMessage("已添加进收藏"),
@@ -65,6 +66,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Explore": MessageLookupByLibrary.simpleMessage("探索"),
         "Favorites": MessageLookupByLibrary.simpleMessage("收藏"),
         "Inbox": MessageLookupByLibrary.simpleMessage("信息"),
+        "Insert": MessageLookupByLibrary.simpleMessage("插入"),
         "Jump to Page": MessageLookupByLibrary.simpleMessage("跳转页面"),
         "Language": MessageLookupByLibrary.simpleMessage("语言"),
         "Last Visited": MessageLookupByLibrary.simpleMessage("上次访问"),
@@ -94,6 +96,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "Signature": MessageLookupByLibrary.simpleMessage("签名"),
         "Subject": MessageLookupByLibrary.simpleMessage("主题"),
         "Theme": MessageLookupByLibrary.simpleMessage("主题"),
+        "Upload": MessageLookupByLibrary.simpleMessage("上传"),
+        "Uploading ...": MessageLookupByLibrary.simpleMessage("上传中..."),
         "User": MessageLookupByLibrary.simpleMessage("用户"),
         "comment": MessageLookupByLibrary.simpleMessage("评论"),
         "commentYourPost": m0,

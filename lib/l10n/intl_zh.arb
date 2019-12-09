@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "@@last_modified": "2019-12-08T22:05:57.889150",
+  "@@last_modified": "2019-12-09T19:19:56.533497",
   "Favorites": "收藏",
   "@Favorites": {
     "type": "text",
@@ -336,6 +336,26 @@
   },
   "Load completed": "加载完毕",
   "@Load completed": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Add image": "添加图片",
+  "@Add image": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Upload": "上传",
+  "@Upload": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Uploading ...": "上传中...",
+  "@Uploading ...": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Insert": "插入",
+  "@Insert": {
     "type": "text",
     "placeholders": {}
   }

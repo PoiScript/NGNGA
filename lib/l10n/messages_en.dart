@@ -45,6 +45,7 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function>{
         "About": MessageLookupByLibrary.simpleMessage("About"),
+        "Add image": MessageLookupByLibrary.simpleMessage("Add image"),
         "Add to Favorites":
             MessageLookupByLibrary.simpleMessage("Add to Favorites"),
         "Add to pinned": MessageLookupByLibrary.simpleMessage("Add to pinned"),
@@ -74,6 +75,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "Explore": MessageLookupByLibrary.simpleMessage("Explore"),
         "Favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
         "Inbox": MessageLookupByLibrary.simpleMessage("Inbox"),
+        "Insert": MessageLookupByLibrary.simpleMessage("Insert"),
         "Jump to Page": MessageLookupByLibrary.simpleMessage("Jump to Page"),
         "Language": MessageLookupByLibrary.simpleMessage("Language"),
         "Last Visited": MessageLookupByLibrary.simpleMessage("Last Visited"),
@@ -114,6 +116,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "Signature": MessageLookupByLibrary.simpleMessage("Signature"),
         "Subject": MessageLookupByLibrary.simpleMessage("Subject"),
         "Theme": MessageLookupByLibrary.simpleMessage("Theme"),
+        "Upload": MessageLookupByLibrary.simpleMessage("Upload"),
+        "Uploading ...": MessageLookupByLibrary.simpleMessage("Uploading ..."),
         "User": MessageLookupByLibrary.simpleMessage("User"),
         "comment": MessageLookupByLibrary.simpleMessage("comment"),
         "commentYourPost": m0,

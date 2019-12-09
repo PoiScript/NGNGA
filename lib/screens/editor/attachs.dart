@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:ngnga/bbcode/render.dart';
+import 'package:ngnga/localizations.dart';
 import 'package:ngnga/store/state.dart';
 
 class EditorAttachs extends StatelessWidget {
@@ -34,7 +35,7 @@ class EditorAttachs extends StatelessWidget {
       return Center(
         child: FlatButton.icon(
           icon: Icon(Icons.add_photo_alternate),
-          label: Text('Add image'),
+          label: Text(AppLocalizations.of(context).addImage),
           onPressed: _pickImage,
         ),
       );
@@ -98,6 +99,7 @@ class RemoteAttachmentGridTile extends StatelessWidget {
     return GridTile(
       child: _networkImageRect(attach.url),
       footer: _insertImageFooter(
+        context,
         () => insertImage(attach.url),
       ),
     );
@@ -130,7 +132,11 @@ class _LocalAttachmentGridTileState extends State<LocalAttachmentGridTile> {
         child: GridTileBar(
           backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
           leading: isUploading ? null : Icon(Icons.file_upload),
-          title: Text(isUploading ? 'Uploading...' : 'Upload'),
+          title: Text(
+            isUploading
+                ? AppLocalizations.of(context).uploading
+                : AppLocalizations.of(context).upload,
+          ),
         ),
         onTap: isUploading
             ? null
@@ -158,6 +164,7 @@ class UploadedAttachmentGridTile extends StatelessWidget {
     return GridTile(
       child: _fileImageRect(context, attach.file),
       footer: _insertImageFooter(
+        context,
         () => insertImage(attach.url),
       ),
     );
@@ -218,12 +225,12 @@ Widget _fileImageRect(BuildContext context, File file) {
   );
 }
 
-Widget _insertImageFooter(VoidCallback insertImage) {
+Widget _insertImageFooter(BuildContext context, VoidCallback insertImage) {
   return GestureDetector(
     child: GridTileBar(
       backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
       leading: Icon(Icons.insert_photo),
-      title: Text('Insert'),
+      title: Text(AppLocalizations.of(context).insert),
     ),
     onTap: insertImage,
   );
