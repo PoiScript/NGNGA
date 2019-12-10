@@ -24,16 +24,15 @@ jobs:
         with:
           flutter-version: 1.9.1+hotfix.4
 
-      - name: Decode key store
-        run: echo ${{ secrets.ANDROID_SIGN_STORE_BASE64 }} | base64 -d > key.jks
-
       - name: Build project
         env:
           NGNGA_SIGN_KEY_PASSWORD: ${{ secrets.ANDROID_SIGN_KEY_PASSWORD }}
           # relative to android/app/build.gradle
           NGNGA_SIGN_STORE_FILE: ../../key.jks
           NGNGA_SIGN_STORE_PASSWORD: ${{ secrets.ANDROID_SIGN_STORE_PASSWORD }}
+          NGNGA_SIGN_STORE_BASE64: ${{ secrets.ANDROID_SIGN_STORE_BASE64 }}
         run: |
+          echo $NGNGA_SIGN_STORE_BASE64 | base64 -d > key.jks
           flutter pub get
           flutter format --set-exit-if-changed lib/ test/
           flutter analyze
