@@ -6,6 +6,8 @@ import 'package:async_redux/async_redux.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/requests/login_as_guest.dart';
 
+import 'state_persist.dart';
+
 class LoggedAction extends ReduxAction<AppState> {
   final int uid;
   final String cid;
@@ -21,6 +23,8 @@ class LoggedAction extends ReduxAction<AppState> {
       userState: Logged(uid, cid),
     );
   }
+
+  void after() => dispatch(SaveState());
 }
 
 class LoginAsGuestAction extends ReduxAction<AppState> {
@@ -35,4 +39,6 @@ class LoginAsGuestAction extends ReduxAction<AppState> {
       userState: Guest(uid),
     );
   }
+
+  void after() => dispatch(SaveState());
 }
