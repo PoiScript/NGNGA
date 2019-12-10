@@ -365,7 +365,7 @@ Iterable<Tag> _parseTags(String content, {bool linkContent = false}) sync* {
 
       if (match[0] == '[hr]') {
         if (match.start > 0) {
-          yield* _parseTags(tail.substring(0, match.start));
+          yield* _parseTags(tail.substring(0, match.start).trimRight());
         }
         yield RuleTag();
         tail = tail.substring(match.end).trimLeft();
