@@ -21,6 +21,10 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def keyPassword = System.getenv('NGNGA_SIGN_KEY_PASSWORD')
+def storeFile = System.getenv('NGNGA_SIGN_STORE_FILE')
+def storePassword = System.getenv('NGNGA_SIGN_STORE_PASSWORD')
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
@@ -47,10 +51,12 @@ android {
 
     signingConfigs {
         release {
-            keyAlias 'key'
-            keyPassword System.getenv('NGNGA_SIGN_KEY_PASSWORD')
-            storeFile file(System.getenv('NGNGA_SIGN_STORE_FILE'))
-            storePassword System.getenv('NGNGA_SIGN_STORE_PASSWORD')
+            if (keyPassword != null && storeFile != null && storePassword != null) {
+                keyAlias 'key'
+                keyPassword keyPassword
+                storeFile file(storeFile)
+                storePassword storePassword
+            }
         }
     }
 
@@ -60,7 +66,11 @@ android {
         }
 
         release {
-            signingConfig signingConfigs.release
+            if (keyPassword != null && storeFile != null && storePassword != null) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
         }
     }
 }
