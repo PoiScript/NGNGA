@@ -25,6 +25,7 @@ class Inbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return EasyRefresh(
       header: RefreshHeader(context),
+      firstRefresh: true,
       onRefresh: fetch,
       child: ListView.separated(
         separatorBuilder: (context, inex) => Divider(),
