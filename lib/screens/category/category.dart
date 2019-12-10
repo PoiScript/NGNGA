@@ -16,9 +16,7 @@ import 'package:ngnga/widgets/topic_row.dart';
 
 import 'popup_menu.dart';
 
-const kExpandedHeight = 150.0;
-
-final NumberFormat numberFormatter = NumberFormat('#,###,###,###');
+final _numberFormatter = NumberFormat('#,###,###,###');
 
 class CategoryPage extends StatefulWidget {
   final Category category;
@@ -80,6 +78,34 @@ class _CategoryPageState extends State<CategoryPage>
     }
 
     return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        actions: <Widget>[
+          PopupMenuConnector(categoryId: widget.category.id),
+        ],
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              widget.category.title,
+              style: Theme.of(context).textTheme.subhead,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '${_numberFormatter.format(widget.topicsCount)} topics',
+              style: Theme.of(context).textTheme.caption,
+            ),
+          ],
+        ),
+        titleSpacing: 0,
+      ),
       body: Scrollbar(
         child: EasyRefresh.builder(
           header: RefreshHeader(context),
@@ -90,45 +116,7 @@ class _CategoryPageState extends State<CategoryPage>
             controller: _scrollController,
             physics: physics,
             slivers: <Widget>[
-              SliverAppBar(
-                expandedHeight: kExpandedHeight,
-                floating: false,
-                pinned: true,
-                leading: BackButton(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
-                ),
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                actions: <Widget>[
-                  PopupMenuConnector(categoryId: widget.category.id),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Container(
-                    alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.symmetric(horizontal: 58.0),
-                    height: kToolbarHeight,
-                    child: Text(
-                      widget.category.title,
-                      style: Theme.of(context).textTheme.subhead,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  titlePadding: EdgeInsets.all(0.0),
-                ),
-              ),
               header,
-              SliverToBoxAdapter(
-                child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    '${numberFormatter.format(widget.topicsCount)} topics',
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ),
-              ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => index.isOdd
