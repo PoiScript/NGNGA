@@ -113,7 +113,35 @@ class _TopicPageState extends State<TopicPage>
   @override
   Widget build(BuildContext context) {
     if (widget.posts.isEmpty) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        key: _scaffoldKey,
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              backgroundColor: Theme.of(context).cardColor,
+              title: TitleColorize(
+                widget.topic,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                displayLabel: false,
+              ),
+              floating: true,
+              titleSpacing: 0.0,
+              leading: BackButton(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              actions: <Widget>[
+                PopupMenuConnector(topicId: widget.topic.id),
+              ],
+            ),
+            SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          ],
+        ),
+      );
     }
 
     return Scaffold(
