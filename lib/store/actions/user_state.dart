@@ -8,11 +8,11 @@ import 'package:ngnga/utils/requests/login_as_guest.dart';
 
 import 'state_persist.dart';
 
-class LoggedAction extends ReduxAction<AppState> {
+class LoginAction extends ReduxAction<AppState> {
   final int uid;
   final String cid;
 
-  LoggedAction({
+  LoginAction({
     @required this.uid,
     @required this.cid,
   });
@@ -22,6 +22,17 @@ class LoggedAction extends ReduxAction<AppState> {
     return state.copy(
       userState: Logged(uid, cid),
     );
+  }
+
+  void after() => dispatch(SaveState());
+}
+
+class LogoutAction extends ReduxAction<AppState> {
+  LogoutAction();
+
+  @override
+  AppState reduce() {
+    return state.copy(userState: null);
   }
 
   void after() => dispatch(SaveState());

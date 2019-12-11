@@ -39,7 +39,7 @@ class SaveState extends ReduxAction<AppState> {
     File file = File('${directory.path}/state.json');
 
     String json = jsonEncode({
-      'user': state.userState.toJson(),
+      'user': state.userState?.toJson(),
       'baseUrl': state.settings.baseUrl,
       'locale': _localeToString[state.settings.locale],
       'theme': _themeToString[state.settings.theme],

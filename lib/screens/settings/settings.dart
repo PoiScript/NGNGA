@@ -2,12 +2,9 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/localizations.dart';
-import 'package:ngnga/store/actions/change_theme.dart';
-import 'package:ngnga/store/actions/settings.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
-
-import 'cookies_editor.dart';
 
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
@@ -15,17 +12,17 @@ class SettingsPage extends StatelessWidget {
   final AppTheme currentTheme;
   final AppLocale currentLocale;
 
-  final Function(String) changeBaseUrl;
-  final Function({int uid, String cid}) changeCookies;
-  final Function(AppTheme) changeTheme;
-  final Function(AppLocale) changeLocale;
+  final VoidCallback logout;
+  final ValueChanged<String> changeBaseUrl;
+  final ValueChanged<AppTheme> changeTheme;
+  final ValueChanged<AppLocale> changeLocale;
 
   SettingsPage({
     @required this.baseUrl,
     @required this.user,
     @required this.currentTheme,
     @required this.currentLocale,
-    @required this.changeCookies,
+    @required this.logout,
     @required this.changeBaseUrl,
     @required this.changeTheme,
     @required this.changeLocale,
@@ -33,7 +30,7 @@ class SettingsPage extends StatelessWidget {
         assert(user != null),
         assert(currentTheme != null),
         assert(currentLocale != null),
-        assert(changeCookies != null),
+        assert(logout != null),
         assert(changeBaseUrl != null),
         assert(changeLocale != null),
         assert(changeTheme != null);
@@ -73,15 +70,12 @@ class SettingsPage extends StatelessWidget {
           ListTile(
             title: Text(AppLocalizations.of(context).changeDomain),
             subtitle: Text(baseUrl),
-            trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayDomainDialog(context),
           ),
           if (user is Logged)
             ListTile(
               title: Text(AppLocalizations.of(context).editCookies),
-              subtitle: Text('Logged as user ${(user as Logged).uid}'),
-              trailing: Icon(Icons.keyboard_arrow_right),
-              onTap: () => _displayCookiesDialog(context),
+              onTap: () => logout,
             ),
           ListTile(
             title: Text(AppLocalizations.of(context).language),
@@ -91,7 +85,6 @@ class SettingsPage extends StatelessWidget {
                 AppLocale.zh: '中文'
               }[currentLocale],
             ),
-            trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _displayLanguageDialog(context),
           ),
           // ListTile(
@@ -106,11 +99,11 @@ class SettingsPage extends StatelessWidget {
           //     ),
           //   },
           // ),
-          ListTile(
-            title: Text(AppLocalizations.of(context).about),
-            trailing: Icon(Icons.keyboard_arrow_right),
-            onTap: () => {},
-          ),
+          // ListTile(
+          //   title: Text(AppLocalizations.of(context).about),
+          //   trailing: Icon(Icons.keyboard_arrow_right),
+          //   onTap: () => {},
+          // ),
         ],
       ),
     );
@@ -211,16 +204,6 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  _displayCookiesDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => CookiesEditor(
-        user: user,
-        submitChanges: changeCookies,
-      ),
-    );
-  }
-
   _displayLanguageDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -292,8 +275,8 @@ class SettingsPageConnector extends StatelessWidget {
         user: vm.user,
         currentLocale: vm.currentLocale,
         currentTheme: vm.currentTheme,
-        changeCookies: vm.changeCookies,
-        changeBaseUrl: vm.changeDomain,
+        logout: vm.logout,
+        changeBaseUrl: vm.changeBaseUrl,
         changeTheme: vm.changeTheme,
         changeLocale: vm.changeLocale,
       ),
@@ -307,10 +290,10 @@ class ViewModel extends BaseModel<AppState> {
   AppTheme currentTheme;
   AppLocale currentLocale;
 
-  Function(String) changeDomain;
-  Function({int uid, String cid}) changeCookies;
-  Function(AppTheme) changeTheme;
-  Function(AppLocale) changeLocale;
+  ValueChanged<String> changeBaseUrl;
+  VoidCallback logout;
+  ValueChanged<AppTheme> changeTheme;
+  ValueChanged<AppLocale> changeLocale;
 
   ViewModel();
 
@@ -319,8 +302,8 @@ class ViewModel extends BaseModel<AppState> {
     @required this.user,
     @required this.currentTheme,
     @required this.currentLocale,
-    @required this.changeCookies,
-    @required this.changeDomain,
+    @required this.logout,
+    @required this.changeBaseUrl,
     @required this.changeTheme,
     @required this.changeLocale,
   }) : super(equals: [currentTheme, currentLocale, baseUrl, user]);
@@ -332,9 +315,8 @@ class ViewModel extends BaseModel<AppState> {
       user: state.userState,
       currentTheme: state.settings.theme,
       currentLocale: state.settings.locale,
-      changeDomain: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
-      changeCookies: ({int uid, String cid}) =>
-          store.dispatch(ChangeCookiesAction(uid: uid, cid: cid)),
+      changeBaseUrl: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
+      logout: () => store.dispatch(LogoutAction()),
       changeTheme: (theme) => store.dispatch(ChangeThemeAction(theme)),
       changeLocale: (locale) => store.dispatch(ChangeLocaleAction(locale)),
     );

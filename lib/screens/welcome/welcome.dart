@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ngnga/store/actions/user_state.dart';
+import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -159,7 +159,7 @@ class WelcomePageConnector extends StatelessWidget {
       model: ViewModel(),
       builder: (context, vm) => WelcomePage(
         loginAsGuest: vm.loginAsGuest,
-        logged: vm.logged,
+        logged: vm.login,
         validate: vm.validate,
       ),
     );
@@ -168,14 +168,14 @@ class WelcomePageConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   Future<void> Function() loginAsGuest;
-  Future<void> Function(int, String) logged;
+  Future<void> Function(int, String) login;
   Future<bool> Function(int, String) validate;
 
   ViewModel();
 
   ViewModel.build({
     @required this.loginAsGuest,
-    @required this.logged,
+    @required this.login,
     @required this.validate,
   });
 
@@ -183,8 +183,8 @@ class ViewModel extends BaseModel<AppState> {
   ViewModel fromStore() {
     return ViewModel.build(
       loginAsGuest: () => dispatchFuture(LoginAsGuestAction()),
-      logged: (int uid, String cid) =>
-          dispatchFuture(LoggedAction(uid: uid, cid: cid)),
+      login: (int uid, String cid) =>
+          dispatchFuture(LoginAction(uid: uid, cid: cid)),
       validate: (int uid, String cid) async {
         final res = await state.client.get(
           'https://ngabbs.com/nuke.php?__lib=noti&__act=if&__output=11',

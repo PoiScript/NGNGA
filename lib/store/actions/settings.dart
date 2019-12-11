@@ -19,25 +19,6 @@ class ChangeBaseUrlAction extends ReduxAction<AppState> {
   void after() => dispatch(SaveState());
 }
 
-class ChangeCookiesAction extends ReduxAction<AppState> {
-  final int uid;
-  final String cid;
-
-  ChangeCookiesAction({
-    this.uid,
-    this.cid,
-  });
-
-  @override
-  AppState reduce() {
-    return state.copy(
-      userState: Logged(uid, cid),
-    );
-  }
-
-  void after() => dispatch(SaveState());
-}
-
 class ChangeLocaleAction extends ReduxAction<AppState> {
   final AppLocale locale;
 
@@ -47,6 +28,21 @@ class ChangeLocaleAction extends ReduxAction<AppState> {
   AppState reduce() {
     return state.copy(
       settings: state.settings.copy(locale: locale),
+    );
+  }
+
+  void after() => dispatch(SaveState());
+}
+
+class ChangeThemeAction extends ReduxAction<AppState> {
+  final AppTheme theme;
+
+  ChangeThemeAction(this.theme);
+
+  @override
+  AppState reduce() {
+    return state.copy(
+      settings: state.settings.copy(theme: theme),
     );
   }
 
