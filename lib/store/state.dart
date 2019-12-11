@@ -188,7 +188,7 @@ class TopicState {
 }
 
 abstract class UserState {
-  bool isLogged;
+  bool get isLogged;
   String get cookie;
 
   bool isMe(int userId);
@@ -196,12 +196,23 @@ abstract class UserState {
   Map<String, dynamic> toJson();
 
   static UserState fromJson(Map<String, dynamic> json) {
-    if (json['isLogged']) {
+    if (json == null) {
+      return Unlogged();
+    } else if (json['isLogged']) {
       return Logged.fromJson(json);
     } else {
       return Guest.fromJson(json);
     }
   }
+}
+
+class Unlogged extends UserState {
+  String cookie = '';
+  bool get isLogged => false;
+
+  bool isMe(int userId) => false;
+
+  Map<String, dynamic> toJson() => null;
 }
 
 class Logged extends UserState {
@@ -284,7 +295,8 @@ class AppState {
         assert(topics != null),
         assert(topicSnackBarEvt != null),
         assert(topicStates != null),
-        assert(users != null);
+        assert(users != null),
+        assert(userState != null);
 
   AppState copy({
     Client client,
@@ -329,7 +341,7 @@ class AppState {
 
     return AppState._(
       client: Client(),
-      userState: null,
+      userState: Unlogged(),
       users: {},
       posts: {},
       topics: {},

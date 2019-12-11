@@ -72,11 +72,6 @@ class SettingsPage extends StatelessWidget {
             subtitle: Text(baseUrl),
             onTap: () => _displayDomainDialog(context),
           ),
-          if (user is Logged)
-            ListTile(
-              title: Text(AppLocalizations.of(context).editCookies),
-              onTap: () => logout,
-            ),
           ListTile(
             title: Text(AppLocalizations.of(context).language),
             subtitle: Text(
@@ -87,6 +82,18 @@ class SettingsPage extends StatelessWidget {
             ),
             onTap: () => _displayLanguageDialog(context),
           ),
+          if (user is Logged)
+            ListTile(
+              title: Text(AppLocalizations.of(context).logout),
+              onTap: () {
+                logout();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  'welcome',
+                  (route) => false,
+                );
+              },
+            ),
           // ListTile(
           //   title: Text('Device Info'),
           //   trailing: Icon(Icons.keyboard_arrow_right),

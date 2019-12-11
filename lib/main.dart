@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           onGenerateRoute: _routes,
           navigatorKey: _navigatorKey,
           theme: themeDataMap[vm.theme],
-          initialRoute: store.state.userState == null ? 'welcome' : '/',
+          initialRoute: store.state.userState is Unlogged ? 'welcome' : '/',
           locale: localeMap[vm.locale],
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,

@@ -86,8 +86,7 @@ class LoadState extends ReduxAction<AppState> {
       );
 
       return state.copy(
-        userState:
-            json['user'] != null ? UserState.fromJson(json['user']) : null,
+        userState: UserState.fromJson(json['user']),
         settings: state.settings.copy(
           baseUrl: json['baseUrl'],
           theme: _stringToTheme[json['theme']],

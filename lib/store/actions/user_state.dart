@@ -32,7 +32,7 @@ class LogoutAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(userState: null);
+    return state.copy(userState: Unlogged());
   }
 
   void after() => dispatch(SaveState());

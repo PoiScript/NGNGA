@@ -75,7 +75,8 @@ class AppLocalizations {
   String get language => Intl.message('Language', locale: localeName);
   String get about => Intl.message('About', locale: localeName);
   String get changeDomain => Intl.message('Change Domain', locale: localeName);
-  String get editCookies => Intl.message('Edit Cookies', locale: localeName);
+
+  String get logout => Intl.message('Log out', locale: localeName);
 
   String get autoUpdateEnabled =>
       Intl.message('Auto-update Enabled', locale: localeName);
