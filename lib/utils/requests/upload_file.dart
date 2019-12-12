@@ -45,7 +45,7 @@ Future<UploadFileResponse> uploadFile({
   request.fields['origin_domain'] = originDomain;
   request.fields['__output'] = '11';
   request.fields['auth'] = auth;
-  request.fields['fid'] = (categoryId ?? -60204499).toString();
+  request.fields['fid'] = categoryId.toString();
   request.fields['attachment_file1_watermark'] = '';
   request.fields['attachment_file1_dscp'] = '';
   request.fields['attachment_file1_img'] = '1';
