@@ -378,7 +378,7 @@ Iterable<Tag> _parseTags(String content, {bool linkContent = false}) sync* {
           yield TextTag(tail.substring(0, match.start));
         }
         if (match[2] != null) {
-          yield LinkStartTag(match[2].trim());
+          yield LinkStartTag(match[2].substring(1).trim());
           yield* _parseTags(tail.substring(match.end, end), linkContent: true);
           yield LinkEndTag();
           tail = tail.substring(end + 6);
