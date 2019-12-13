@@ -1,20 +1,27 @@
+import 'dart:io';
+
 import 'package:async_redux/async_redux.dart';
+import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/localizations.dart';
+import 'package:ngnga/main.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/style.dart';
 
 import 'about.dart';
+
+final _deviceInfo = DeviceInfoPlugin();
 
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
   final UserState user;
-  final AppTheme currentTheme;
-  final AppLocale currentLocale;
+  final AppTheme theme;
+  final AppLocale locale;
+  final UserAgent userAgent;
 
   final VoidCallback logout;
+  final ValueChanged<UserAgent> changeUserAgent;
   final ValueChanged<String> changeBaseUrl;
   final ValueChanged<AppTheme> changeTheme;
   final ValueChanged<AppLocale> changeLocale;
@@ -22,20 +29,24 @@ class SettingsPage extends StatelessWidget {
   SettingsPage({
     @required this.baseUrl,
     @required this.user,
-    @required this.currentTheme,
-    @required this.currentLocale,
+    @required this.theme,
+    @required this.locale,
     @required this.logout,
     @required this.changeBaseUrl,
     @required this.changeTheme,
     @required this.changeLocale,
+    @required this.userAgent,
+    @required this.changeUserAgent,
   })  : assert(baseUrl != null),
         assert(user != null),
-        assert(currentTheme != null),
-        assert(currentLocale != null),
+        assert(theme != null),
+        assert(locale != null),
         assert(logout != null),
+        assert(userAgent != null),
         assert(changeBaseUrl != null),
         assert(changeLocale != null),
-        assert(changeTheme != null);
+        assert(changeTheme != null),
+        assert(changeUserAgent != null);
 
   @override
   Widget build(BuildContext context) {
@@ -72,42 +83,25 @@ class SettingsPage extends StatelessWidget {
           ListTile(
             title: Text(AppLocalizations.of(context).changeDomain),
             subtitle: Text(baseUrl),
-            onTap: () => _displayDomainDialog(context),
+            onTap: () => _changeDomain(context),
           ),
           ListTile(
             title: Text(AppLocalizations.of(context).language),
             subtitle: Text(
-              const {
-                AppLocale.en: 'English',
-                AppLocale.zh: '中文'
-              }[currentLocale],
+              const {AppLocale.en: 'English', AppLocale.zh: '中文'}[locale],
             ),
-            onTap: () => _displayLanguageDialog(context),
+            onTap: () => _changeLocale(context),
+          ),
+          ListTile(
+            title: Text('Device Info'),
+            trailing: Icon(Icons.keyboard_arrow_right),
+            onTap: () => _changeUserAgent(context),
           ),
           if (user is Logged)
             ListTile(
               title: Text(AppLocalizations.of(context).logout),
-              onTap: () {
-                logout();
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  'welcome',
-                  (route) => false,
-                );
-              },
+              onTap: () => _logout(context),
             ),
-          // ListTile(
-          //   title: Text('Device Info'),
-          //   trailing: Icon(Icons.keyboard_arrow_right),
-          //   onTap: () => {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => EditCookiesPageConnector(),
-          //       ),
-          //     ),
-          //   },
-          // ),
           ListTile(
             title: Text(AppLocalizations.of(context).about),
             trailing: Icon(Icons.keyboard_arrow_right),
@@ -123,23 +117,55 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  _logout(BuildContext context) async {
+    bool confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Logout?'),
+        content: Text('All your data will be permanently erased.'),
+        actions: [
+          FlatButton(
+            child: Text(
+              'CANCEL',
+            ),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          FlatButton(
+            child: Text(
+              'OK',
+              style: Theme.of(context)
+                  .textTheme
+                  .button
+                  .copyWith(color: Theme.of(context).errorColor),
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) {
+      logout();
+      Navigator.pushNamedAndRemoveUntil(context, 'welcome', (route) => false);
+    }
+  }
+
   Widget _themeButton(BuildContext context, AppTheme appTheme) {
-    ThemeData theme = _mapToThemeData(appTheme);
+    ThemeData themeData = themeDataMap[appTheme];
     return Card(
-      color: currentTheme == appTheme
+      color: theme == appTheme
           ? Color.alphaBlend(
               Color.fromRGBO(0, 0, 0, 0.2),
-              theme.cardColor,
+              themeData.cardColor,
             )
-          : theme.cardColor,
+          : themeData.cardColor,
       child: CustomPaint(
-        painter: CirclePainter(theme),
+        painter: CirclePainter(themeData),
         child: InkWell(
           child: Container(
             height: 100,
             width: 100,
             alignment: Alignment.center,
-            child: currentTheme == appTheme
+            child: theme == appTheme
                 ? Icon(
                     Icons.check,
                     size: 50,
@@ -147,33 +173,66 @@ class SettingsPage extends StatelessWidget {
                   )
                 : null,
           ),
-          onTap: currentTheme == appTheme ? null : () => changeTheme(appTheme),
+          onTap: theme == appTheme ? null : () => changeTheme(appTheme),
         ),
       ),
     );
   }
 
-  ThemeData _mapToThemeData(AppTheme theme) {
-    ThemeData themeData;
-    switch (theme) {
-      case AppTheme.white:
-        themeData = whiteTheme;
-        break;
-      case AppTheme.black:
-        themeData = blackTheme;
-        break;
-      case AppTheme.grey:
-        themeData = greyTheme;
-        break;
-      case AppTheme.yellow:
-        themeData = yellowTheme;
-        break;
+  _changeUserAgent(BuildContext context) async {
+    String fullUserAgent = '';
+    String shortUserAgent = '';
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await _deviceInfo.androidInfo;
+      shortUserAgent = '仅显示 "Android${androidInfo.version.release}"';
+      fullUserAgent =
+          '显示 "${androidInfo.model} (Android${androidInfo.version.release})"';
     }
-    return themeData;
+    UserAgent selectedUserAgent = await showDialog<UserAgent>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Device Info',
+            style: Theme.of(context).textTheme.body2,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RadioListTile<UserAgent>(
+                title: Text('隐藏'),
+                subtitle: Text('隐藏客户端'),
+                groupValue: userAgent,
+                value: UserAgent.none,
+                onChanged: (_) => Navigator.of(context).pop(UserAgent.none),
+              ),
+              RadioListTile<UserAgent>(
+                title: Text('只显示系统'),
+                subtitle: Text(shortUserAgent),
+                groupValue: userAgent,
+                value: UserAgent.osOnly,
+                onChanged: (_) => Navigator.of(context).pop(UserAgent.osOnly),
+              ),
+              RadioListTile<UserAgent>(
+                title: Text('完整显示'),
+                subtitle: Text(fullUserAgent),
+                groupValue: userAgent,
+                value: UserAgent.full,
+                onChanged: (_) => Navigator.of(context).pop(UserAgent.full),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (selectedUserAgent != null) {
+      changeUserAgent(selectedUserAgent);
+    }
   }
 
-  _displayDomainDialog(BuildContext context) {
-    showDialog(
+  _changeDomain(BuildContext context) async {
+    String domain = await showDialog<String>(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -181,45 +240,40 @@ class SettingsPage extends StatelessWidget {
             AppLocalizations.of(context).changeDomain,
             style: Theme.of(context).textTheme.body2,
           ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               RadioListTile<String>(
-                title: Text('bbs.nga.cn'),
+                title: const Text('bbs.nga.cn'),
                 groupValue: baseUrl,
                 value: 'bbs.nga.cn',
-                onChanged: (domain) {
-                  changeBaseUrl(domain);
-                  Navigator.of(context).pop();
-                },
+                onChanged: (_) => Navigator.of(context).pop('bbs.nga.cn'),
               ),
               RadioListTile<String>(
-                title: Text('nga.178.com'),
+                title: const Text('nga.178.com'),
                 groupValue: baseUrl,
                 value: 'nga.178.com',
-                onChanged: (domain) {
-                  changeBaseUrl(domain);
-                  Navigator.of(context).pop();
-                },
+                onChanged: (_) => Navigator.of(context).pop('nga.178.com'),
               ),
               RadioListTile<String>(
-                title: Text('ngabbs.com'),
+                title: const Text('ngabbs.com'),
                 groupValue: baseUrl,
                 value: 'ngabbs.com',
-                onChanged: (domain) {
-                  changeBaseUrl(domain);
-                  Navigator.of(context).pop();
-                },
+                onChanged: (_) => Navigator.of(context).pop('ngabbs.com'),
               ),
             ],
           ),
         );
       },
     );
+    if (domain != null) {
+      changeBaseUrl(domain);
+    }
   }
 
-  _displayLanguageDialog(BuildContext context) {
-    showDialog(
+  _changeLocale(BuildContext context) async {
+    AppLocale selectedLocale = await showDialog<AppLocale>(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -227,32 +281,30 @@ class SettingsPage extends StatelessWidget {
             AppLocalizations.of(context).language,
             style: Theme.of(context).textTheme.body2,
           ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               RadioListTile<AppLocale>(
-                title: Text('English'),
-                groupValue: currentLocale,
+                title: const Text('English'),
+                groupValue: locale,
                 value: AppLocale.en,
-                onChanged: (locale) {
-                  changeLocale(locale);
-                  Navigator.of(context).pop();
-                },
+                onChanged: (_) => Navigator.of(context).pop(AppLocale.en),
               ),
               RadioListTile<AppLocale>(
-                title: Text('中文'),
-                groupValue: currentLocale,
+                title: const Text('中文'),
+                groupValue: locale,
                 value: AppLocale.zh,
-                onChanged: (locale) {
-                  changeLocale(locale);
-                  Navigator.of(context).pop();
-                },
+                onChanged: (_) => Navigator.of(context).pop(AppLocale.zh),
               ),
             ],
           ),
         );
       },
     );
+    if (selectedLocale != null) {
+      changeLocale(selectedLocale);
+    }
   }
 }
 
@@ -287,12 +339,14 @@ class SettingsPageConnector extends StatelessWidget {
       builder: (context, vm) => SettingsPage(
         baseUrl: vm.baseUrl,
         user: vm.user,
-        currentLocale: vm.currentLocale,
-        currentTheme: vm.currentTheme,
+        locale: vm.locale,
+        theme: vm.theme,
         logout: vm.logout,
+        userAgent: vm.userAgent,
         changeBaseUrl: vm.changeBaseUrl,
         changeTheme: vm.changeTheme,
         changeLocale: vm.changeLocale,
+        changeUserAgent: vm.changeUserAgent,
       ),
     );
   }
@@ -301,11 +355,13 @@ class SettingsPageConnector extends StatelessWidget {
 class ViewModel extends BaseModel<AppState> {
   String baseUrl;
   UserState user;
-  AppTheme currentTheme;
-  AppLocale currentLocale;
+  AppTheme theme;
+  AppLocale locale;
+  UserAgent userAgent;
 
-  ValueChanged<String> changeBaseUrl;
   VoidCallback logout;
+  ValueChanged<UserAgent> changeUserAgent;
+  ValueChanged<String> changeBaseUrl;
   ValueChanged<AppTheme> changeTheme;
   ValueChanged<AppLocale> changeLocale;
 
@@ -314,23 +370,28 @@ class ViewModel extends BaseModel<AppState> {
   ViewModel.build({
     @required this.baseUrl,
     @required this.user,
-    @required this.currentTheme,
-    @required this.currentLocale,
+    @required this.theme,
+    @required this.locale,
     @required this.logout,
+    @required this.userAgent,
     @required this.changeBaseUrl,
     @required this.changeTheme,
     @required this.changeLocale,
-  }) : super(equals: [currentTheme, currentLocale, baseUrl, user]);
+    @required this.changeUserAgent,
+  }) : super(equals: [theme, locale, baseUrl, user, userAgent]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
       baseUrl: state.settings.baseUrl,
       user: state.userState,
-      currentTheme: state.settings.theme,
-      currentLocale: state.settings.locale,
+      theme: state.settings.theme,
+      locale: state.settings.locale,
+      userAgent: state.settings.userAgent,
       changeBaseUrl: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
       logout: () => store.dispatch(LogoutAction()),
+      changeUserAgent: (userAgent) =>
+          store.dispatch(ChangeUserAgentAction(userAgent)),
       changeTheme: (theme) => store.dispatch(ChangeThemeAction(theme)),
       changeLocale: (locale) => store.dispatch(ChangeLocaleAction(locale)),
     );

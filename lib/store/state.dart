@@ -128,33 +128,41 @@ enum AppTheme { white, black, grey, yellow }
 
 enum AppLocale { en, zh }
 
+enum UserAgent { none, osOnly, full }
+
 class SettingsState {
   final String baseUrl;
   final AppTheme theme;
   final AppLocale locale;
+  final UserAgent userAgent;
 
   SettingsState({
     @required this.baseUrl,
     @required this.theme,
     @required this.locale,
+    @required this.userAgent,
   })  : assert(baseUrl != null),
+        assert(theme != null),
         assert(locale != null),
-        assert(theme != null);
+        assert(userAgent != null);
 
   SettingsState.empty()
       : baseUrl = 'ngabbs.com',
         theme = AppTheme.white,
-        locale = AppLocale.en;
+        locale = AppLocale.en,
+        userAgent = UserAgent.osOnly;
 
   SettingsState copy({
     String baseUrl,
     AppTheme theme,
     AppLocale locale,
+    UserAgent userAgent,
   }) =>
       SettingsState(
         baseUrl: baseUrl ?? this.baseUrl,
         theme: theme ?? this.theme,
         locale: locale ?? this.locale,
+        userAgent: userAgent ?? this.userAgent,
       );
 }
 
