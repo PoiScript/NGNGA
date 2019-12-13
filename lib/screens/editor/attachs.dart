@@ -172,6 +172,9 @@ class UploadedAttachmentGridTile extends StatelessWidget {
 }
 
 Widget _networkImageRect(String url) {
+  // FIXME: better way to create unique tag
+  String tag = 'tag${DateTime.now().toString()}';
+
   return ClipRRect(
     child: CachedNetworkImage(
       imageUrl: 'https://img.nga.178.com/attachments/$url',
@@ -181,6 +184,7 @@ Widget _networkImageRect(String url) {
             context,
             MaterialPageRoute(
               builder: (context) => HeroPhotoViewWrapper(
+                tag: tag,
                 imageProvider: CachedNetworkImageProvider(
                   'https://img.nga.178.com/attachments/$url',
                 ),
@@ -189,8 +193,7 @@ Widget _networkImageRect(String url) {
           );
         },
         child: Hero(
-          // FIXME: better way to create unique tag
-          tag: 'tag${DateTime.now().toString()}',
+          tag: tag,
           child: Image(
             image: imageProvider,
             fit: BoxFit.cover,
@@ -203,6 +206,9 @@ Widget _networkImageRect(String url) {
 }
 
 Widget _fileImageRect(BuildContext context, File file) {
+  // FIXME: better way to create unique tag
+  String tag = 'tag${DateTime.now().toString()}';
+
   return ClipRRect(
     child: GestureDetector(
       onTap: () {
@@ -210,14 +216,14 @@ Widget _fileImageRect(BuildContext context, File file) {
           context,
           MaterialPageRoute(
             builder: (context) => HeroPhotoViewWrapper(
+              tag: tag,
               imageProvider: FileImage(file),
             ),
           ),
         );
       },
       child: Hero(
-        // FIXME: better way to create unique tag
-        tag: 'tag${DateTime.now().toString()}',
+        tag: tag,
         child: Image.file(file, fit: BoxFit.cover),
       ),
     ),
