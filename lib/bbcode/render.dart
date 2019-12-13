@@ -492,14 +492,23 @@ class _BBCodeRenderState extends State<BBCodeRender> {
   }
 
   InlineSpan _buildImage(BuildContext context, ImageTag image) {
-    var url;
+    String url, originalUrl;
 
     if (image.url.startsWith('./')) {
       url = 'https://img.nga.178.com/attachments${image.url.substring(1)}';
-    } else if (image.url.startsWith('/')) {
-      url = 'https://nga.178.com${image.url}';
+      if (url.endsWith('.thumb_ss.jpg')) {
+        originalUrl = url.substring(0, url.length - 13);
+      } else if (url.endsWith('.thumb_s.jpg')) {
+        originalUrl = url.substring(0, url.length - 12);
+      } else if (url.endsWith('.thumb.jpg')) {
+        originalUrl = url.substring(0, url.length - 10);
+      } else if (url.endsWith('.medium.jpg')) {
+        originalUrl = url.substring(0, url.length - 11);
+      } else {
+        originalUrl = url;
+      }
     } else {
-      url = image.url;
+      url = originalUrl = image.url;
     }
 
     return WidgetSpan(
@@ -510,16 +519,18 @@ class _BBCodeRenderState extends State<BBCodeRender> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HeroPhotoViewWrapper(
-                  imageProvider: CachedNetworkImageProvider(url),
-                ),
+                builder: (context) => originalUrl == url
+                    ? HeroPhotoViewWrapper(imageProvider: imageProvider)
+                    : HeroPhotoViewWrapper(
+                        imageProvider: CachedNetworkImageProvider(originalUrl),
+                      ),
               ),
             );
           },
           child: Hero(
             // FIXME: better way to create unique tag
             tag: 'tag${DateTime.now().toString()}',
-            child: Image.network(url),
+            child: Image(image: imageProvider),
           ),
         ),
         placeholder: (context, url) => Center(
@@ -527,6 +538,10 @@ class _BBCodeRenderState extends State<BBCodeRender> {
         ),
         errorWidget: (context, url, error) => Text(
           'fialed to load image $url',
+          style: Theme.of(context)
+              .textTheme
+              .body1
+              .copyWith(color: Theme.of(context).errorColor),
         ),
       ),
     );

@@ -1,5 +1,3 @@
-import 'package:flutter/widgets.dart';
-
 abstract class PostItem {
   static PostItem fromJson(Map<String, dynamic> json) {
     if (json['comment_to_id'] != null) {
@@ -276,13 +274,13 @@ class Attachment {
   final String url;
   final String name;
 
-  Attachment({
-    @required this.url,
-    @required this.name,
+  Attachment._({
+    this.url,
+    this.name,
   });
 
   factory Attachment.fromJson(Map<String, dynamic> json) {
-    return Attachment(
+    return Attachment._(
       name: json['url_utf8_org_name'],
       url: json['attachurl'],
     );
