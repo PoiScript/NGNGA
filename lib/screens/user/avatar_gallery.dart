@@ -16,26 +16,25 @@ class AvatarsGallery extends StatelessWidget {
         constraints: BoxConstraints.expand(
           height: MediaQuery.of(context).size.height,
         ),
-        child: Stack(
-          alignment: Alignment.bottomRight,
-          children: <Widget>[
-            PhotoViewGallery.builder(
-              scrollPhysics: const BouncingScrollPhysics(),
-              itemCount: avatars.length,
-              builder: (context, index) => PhotoViewGalleryPageOptions(
-                imageProvider: CachedNetworkImageProvider(avatars[index]),
-                initialScale: PhotoViewComputedScale.contained,
-                minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),
-                maxScale: PhotoViewComputedScale.covered * 1.1,
-                heroAttributes: PhotoViewHeroAttributes(tag: avatars[index]),
-              ),
-              // loadingChild: widget.loadingChild,
-              // backgroundDecoration: widget.backgroundDecoration,
-              // pageController: widget.pageController,
-              // onPageChanged: onPageChanged,
-              // scrollDirection: widget.scrollDirection,
+        child: PhotoViewGallery.builder(
+          scrollPhysics: const BouncingScrollPhysics(),
+          itemCount: avatars.length,
+          builder: (context, index) => PhotoViewGalleryPageOptions(
+            imageProvider: CachedNetworkImageProvider(avatars[index]),
+            initialScale: PhotoViewComputedScale.contained,
+            minScale: PhotoViewComputedScale.contained * 0.5,
+            maxScale: PhotoViewComputedScale.covered * 1.1,
+            heroAttributes: PhotoViewHeroAttributes(tag: avatars[index]),
+          ),
+          backgroundDecoration: BoxDecoration(
+            color: Colors.black,
+          ),
+          loadingChild: Container(
+            color: Colors.black,
+            child: Center(
+              child: CircularProgressIndicator(),
             ),
-          ],
+          ),
         ),
       ),
     );

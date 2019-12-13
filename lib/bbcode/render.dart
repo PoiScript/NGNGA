@@ -511,6 +511,9 @@ class _BBCodeRenderState extends State<BBCodeRender> {
       url = originalUrl = image.url;
     }
 
+    // FIXME: better way to create unique tag
+    String tag = 'tag${DateTime.now().toString()}';
+
     return WidgetSpan(
       child: CachedNetworkImage(
         imageUrl: url,
@@ -520,16 +523,19 @@ class _BBCodeRenderState extends State<BBCodeRender> {
               context,
               MaterialPageRoute(
                 builder: (context) => originalUrl == url
-                    ? HeroPhotoViewWrapper(imageProvider: imageProvider)
+                    ? HeroPhotoViewWrapper(
+                        tag: tag,
+                        imageProvider: imageProvider,
+                      )
                     : HeroPhotoViewWrapper(
+                        tag: tag,
                         imageProvider: CachedNetworkImageProvider(originalUrl),
                       ),
               ),
             );
           },
           child: Hero(
-            // FIXME: better way to create unique tag
-            tag: 'tag${DateTime.now().toString()}',
+            tag: tag,
             child: Image(image: imageProvider),
           ),
         ),
@@ -680,9 +686,13 @@ class _BBCodeRenderState extends State<BBCodeRender> {
 }
 
 class HeroPhotoViewWrapper extends StatelessWidget {
-  const HeroPhotoViewWrapper({@required this.imageProvider});
-
   final ImageProvider imageProvider;
+  final String tag;
+
+  const HeroPhotoViewWrapper({
+    @required this.imageProvider,
+    @required this.tag,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -692,7 +702,16 @@ class HeroPhotoViewWrapper extends StatelessWidget {
       ),
       child: PhotoView(
         imageProvider: imageProvider,
-        heroAttributes: const PhotoViewHeroAttributes(tag: 'someTag'),
+        heroAttributes: PhotoViewHeroAttributes(tag: tag),
+        initialScale: PhotoViewComputedScale.contained,
+        minScale: PhotoViewComputedScale.contained * 0.5,
+        maxScale: PhotoViewComputedScale.covered * 1.1,
+        backgroundDecoration: BoxDecoration(
+          color: Colors.black,
+        ),
+        loadingChild: Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
     );
   }

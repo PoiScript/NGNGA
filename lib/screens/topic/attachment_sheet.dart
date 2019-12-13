@@ -2,8 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
-import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/models/post.dart';
+
+import 'attach_viewer.dart';
 
 class AttachmentSheet extends StatelessWidget {
   final List<Attachment> attachments;
@@ -36,14 +37,17 @@ class AttachmentSheet extends StatelessWidget {
           ),
           sliver: SliverGrid.count(
             crossAxisCount: 3,
-            children: attachments.map(_buildAttachmentRect).toList(),
+            children: [
+              for (int index = 0; index < attachments.length; index++)
+                _buildAttachmentRect(attachments[index], index)
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAttachmentRect(Attachment attachment) {
+  Widget _buildAttachmentRect(Attachment attachment, int index) {
     return Container(
       padding: EdgeInsets.all(8.0),
       child: ClipRRect(
@@ -54,10 +58,9 @@ class AttachmentSheet extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => HeroPhotoViewWrapper(
-                    imageProvider: CachedNetworkImageProvider(
-                      'https://img.nga.178.com/attachments/${attachment.url}',
-                    ),
+                  builder: (context) => AttachViewer(
+                    attachs: attachments,
+                    initialPage: index,
                   ),
                 ),
               );
