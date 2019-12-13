@@ -15,6 +15,8 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final store = Store<AppState>(
     initialState: AppState.empty(),
     // actionObservers: [Log<AppState>.printer()],
