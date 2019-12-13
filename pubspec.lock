@@ -124,7 +124,7 @@ packages:
       name: flutter_easyrefresh
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.6"
+    version: "2.0.7"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -328,7 +328,7 @@ packages:
       name: photo_view
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.2"
+    version: "0.9.0"
   platform:
     dependency: transitive
     description:
