@@ -6,6 +6,8 @@ import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
+import 'about.dart';
+
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
   final UserState user;
@@ -106,11 +108,16 @@ class SettingsPage extends StatelessWidget {
           //     ),
           //   },
           // ),
-          // ListTile(
-          //   title: Text(AppLocalizations.of(context).about),
-          //   trailing: Icon(Icons.keyboard_arrow_right),
-          //   onTap: () => {},
-          // ),
+          ListTile(
+            title: Text(AppLocalizations.of(context).about),
+            trailing: Icon(Icons.keyboard_arrow_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
         ],
       ),
     );
