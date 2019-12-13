@@ -40,7 +40,6 @@ class FetchFavorTopicsResponse {
 Future<FetchFavorTopicsResponse> fetchFavorTopics({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int page,
 }) async {
   final uri = Uri.https(baseUrl, 'nuke.php', {
@@ -53,7 +52,7 @@ Future<FetchFavorTopicsResponse> fetchFavorTopics({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {'cookie': cookie});
+  final res = await client.get(uri);
 
   final json = jsonDecode(res.body);
 

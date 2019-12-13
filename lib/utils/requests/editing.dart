@@ -38,7 +38,6 @@ class PrepareEditingResponse {
 Future<PrepareEditingResponse> prepareEditing({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required EditorAction action,
   @required int categoryId,
   @required int topicId,
@@ -55,7 +54,7 @@ Future<PrepareEditingResponse> prepareEditing({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {'cookie': cookie});
+  final res = await client.get(uri);
 
   final json = jsonDecode(res.body);
 
@@ -82,7 +81,6 @@ class ApplyEditingResponse {
 Future<ApplyEditingResponse> applyEditing({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required EditorAction action,
   @required int categoryId,
   @required int topicId,
@@ -120,7 +118,7 @@ Future<ApplyEditingResponse> applyEditing({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {'cookie': cookie});
+  final res = await client.post(uri);
 
   final json = jsonDecode(res.body);
 

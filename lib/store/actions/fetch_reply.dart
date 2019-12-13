@@ -29,7 +29,6 @@ class FetchReplyAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       postId: postId,
-      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

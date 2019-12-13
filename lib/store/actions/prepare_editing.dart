@@ -32,7 +32,6 @@ class PrepareEditingAction extends ReduxAction<AppState> {
       categoryId: categoryId,
       topicId: topicId,
       postId: postId,
-      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

@@ -49,7 +49,6 @@ class FetchCategoryTopicsResponse {
 Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int categoryId,
   @required int page,
   @required bool isSubcategory,
@@ -62,7 +61,7 @@ Future<FetchCategoryTopicsResponse> fetchCategoryTopics({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {'cookie': cookie});
+  final res = await client.get(uri);
 
   final json = jsonDecode(res.body);
 

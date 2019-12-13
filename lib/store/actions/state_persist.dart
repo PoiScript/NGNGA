@@ -39,7 +39,7 @@ class SaveState extends ReduxAction<AppState> {
     File file = File('${directory.path}/state.json');
 
     String json = jsonEncode({
-      'user': state.userState?.toJson(),
+      'user': _userStateToJson(state.userState),
       'baseUrl': state.settings.baseUrl,
       'locale': _localeToString[state.settings.locale],
       'theme': _themeToString[state.settings.theme],
@@ -85,8 +85,24 @@ class LoadState extends ReduxAction<AppState> {
         ),
       );
 
+      UserState userState;
+
+      if (json['user'] == null) {
+        userState = Unlogged();
+      } else if (json['user']['isLogged']) {
+        userState = Logged(
+          json['user']['uid'],
+          json['user']['cid'],
+        );
+      } else {
+        userState = Guest(
+          json['user']['uid'],
+        );
+      }
+
       return state.copy(
-        userState: UserState.fromJson(json['user']),
+        userState: userState,
+        client: state.client..updateCookie(userState),
         settings: state.settings.copy(
           baseUrl: json['baseUrl'],
           theme: _stringToTheme[json['theme']],
@@ -105,4 +121,13 @@ class LoadState extends ReduxAction<AppState> {
       return null;
     }
   }
+}
+
+Map<String, dynamic> _userStateToJson(UserState userState) {
+  if (userState is Logged) {
+    return {'isLogged': true, 'uid': userState.uid, 'cid': userState.cid};
+  } else if (userState is Guest) {
+    return {'isLogged': false, 'uid': userState.uid};
+  }
+  return null;
 }

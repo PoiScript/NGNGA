@@ -18,7 +18,6 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
       client: state.client,
       topicId: topicId,
       page: page,
-      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

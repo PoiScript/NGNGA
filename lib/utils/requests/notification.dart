@@ -114,7 +114,6 @@ class NotificationResponse {
 Future<NotificationResponse> fetchNotifications({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
 }) async {
   final uri = Uri.https(baseUrl, 'nuke.php', {
     '__lib': 'noti',
@@ -124,7 +123,7 @@ Future<NotificationResponse> fetchNotifications({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {'cookie': cookie});
+  final res = await client.post(uri);
 
   final json = jsonDecode(res.body);
 

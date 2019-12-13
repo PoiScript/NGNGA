@@ -30,7 +30,6 @@ class VoteResponse {
 Future<VoteResponse> votePost({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int topicId,
   @required int postId,
   @required int value,
@@ -47,7 +46,7 @@ Future<VoteResponse> votePost({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {'cookie': cookie});
+  final res = await client.post(uri);
 
   final json = jsonDecode(res.body);
 

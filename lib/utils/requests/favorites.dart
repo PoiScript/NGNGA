@@ -18,7 +18,6 @@ class FavoritesResponse {
 Future<FavoritesResponse> addToFavorites({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int topicId,
 }) async {
   final uri = Uri.https(baseUrl, 'nuke.php', {
@@ -31,7 +30,7 @@ Future<FavoritesResponse> addToFavorites({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {'cookie': cookie});
+  final res = await client.post(uri);
 
   final json = jsonDecode(res.body);
 
@@ -41,7 +40,6 @@ Future<FavoritesResponse> addToFavorites({
 Future<FavoritesResponse> removeFromFavorites({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int topicId,
 }) async {
   final uri = Uri.https(baseUrl, 'nuke.php', {
@@ -56,7 +54,7 @@ Future<FavoritesResponse> removeFromFavorites({
 
   print(uri);
 
-  final res = await client.post(uri, headers: {'cookie': cookie});
+  final res = await client.post(uri);
 
   final json = jsonDecode(res.body);
 

@@ -16,7 +16,6 @@ class UploadAttachmentAction extends ReduxAction<AppState> {
     final res = await uploadFile(
       originDomain: state.settings.baseUrl,
       client: state.client,
-      cookie: state.userState.cookie,
       file: attach.file,
       uploadUrl: state.editingState.uploadUrl,
       auth: state.editingState.uploadAuthCode,

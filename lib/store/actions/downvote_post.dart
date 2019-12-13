@@ -21,7 +21,6 @@ class DownvotePostAction extends ReduxAction<AppState> {
       value: -1,
       topicId: topicId,
       postId: postId,
-      cookie: state.userState.cookie,
       baseUrl: state.settings.baseUrl,
     );
 

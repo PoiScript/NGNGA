@@ -59,7 +59,6 @@ class FetchTopicPostsResponse {
 Future<FetchTopicPostsResponse> fetchTopicPosts({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int topicId,
   @required int page,
 }) async {
@@ -71,7 +70,7 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
 
   print(uri);
 
-  var response = await client.get(uri, headers: {'cookie': cookie});
+  var response = await client.get(uri);
 
   final json = jsonDecode(response.body);
 
@@ -81,7 +80,6 @@ Future<FetchTopicPostsResponse> fetchTopicPosts({
 Future<FetchTopicPostsResponse> fetchReply({
   @required Client client,
   @required String baseUrl,
-  @required String cookie,
   @required int topicId,
   @required int postId,
 }) async {
@@ -93,7 +91,7 @@ Future<FetchTopicPostsResponse> fetchReply({
 
   print(uri);
 
-  final res = await client.get(uri, headers: {'cookie': cookie});
+  final res = await client.get(uri);
 
   final json = jsonDecode(res.body);
 

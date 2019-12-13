@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/categories.dart';
+import 'package:ngnga/utils/client.dart';
 import 'package:ngnga/utils/requests.dart';
 
 class CategoryState {
@@ -187,64 +187,30 @@ class TopicState {
       );
 }
 
+// ignore:one_member_abstracts
 abstract class UserState {
-  bool get isLogged;
-  String get cookie;
-
   bool isMe(int userId);
-
-  Map<String, dynamic> toJson();
-
-  static UserState fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return Unlogged();
-    } else if (json['isLogged']) {
-      return Logged.fromJson(json);
-    } else {
-      return Guest.fromJson(json);
-    }
-  }
 }
 
 class Unlogged extends UserState {
-  String cookie = '';
-  bool get isLogged => false;
-
   bool isMe(int userId) => false;
-
-  Map<String, dynamic> toJson() => null;
 }
 
 class Logged extends UserState {
   final int uid;
   final String cid;
-  final bool isLogged = true;
-  final String cookie;
 
-  Logged(this.uid, this.cid)
-      : cookie = 'ngaPassportUid=$uid;ngaPassportCid=$cid;';
+  Logged(this.uid, this.cid);
 
   bool isMe(int userId) => userId == uid;
-
-  Map<String, dynamic> toJson() => {'isLogged': true, 'uid': uid, 'cid': cid};
-
-  Logged.fromJson(Map<String, dynamic> json) : this(json['uid'], json['cid']);
 }
 
 class Guest extends UserState {
   final String uid;
-  final bool isLogged = false;
 
   Guest(this.uid);
 
-  String get cookie =>
-      'ngaPassportUid=$uid;guestJs=${DateTime.now().millisecondsSinceEpoch ~/ 1000};';
-
   bool isMe(int userId) => false;
-
-  Map<String, dynamic> toJson() => {'isLogged': false, 'uid': uid};
-
-  Guest.fromJson(Map<String, dynamic> json) : uid = json['uid'];
 }
 
 class AppState {
@@ -267,7 +233,7 @@ class AppState {
 
   final Event<String> topicSnackBarEvt;
 
-  final Client client;
+  final MyClient client;
 
   AppState._({
     @required this.client,
@@ -285,12 +251,13 @@ class AppState {
     @required this.users,
     @required this.userState,
   })  : assert(categoryStates != null),
+        assert(categories != null),
         assert(client != null),
         assert(favoriteState != null),
         assert(notifications != null),
         assert(pinned != null),
         assert(posts != null),
-        // assert(editingState != null),
+        assert(editingState != null),
         assert(settings != null),
         assert(topics != null),
         assert(topicSnackBarEvt != null),
@@ -299,7 +266,7 @@ class AppState {
         assert(userState != null);
 
   AppState copy({
-    Client client,
+    MyClient client,
     UserState userState,
     SettingsState settings,
     CategoryState favoriteState,
@@ -340,7 +307,7 @@ class AppState {
         .map((category) => MapEntry(category.id, category))));
 
     return AppState._(
-      client: Client(),
+      client: MyClient(),
       userState: Unlogged(),
       users: {},
       posts: {},

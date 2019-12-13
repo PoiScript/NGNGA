@@ -20,6 +20,7 @@ class LoginAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
+      client: state.client..updateCookie(Logged(uid, cid)),
       userState: Logged(uid, cid),
     );
   }
@@ -32,7 +33,11 @@ class LogoutAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(userState: Unlogged());
+    return state.copy(
+      client: state.client..updateCookie(Unlogged()),
+      userState: Unlogged(),
+      pinned: [],
+    );
   }
 
   void after() => dispatch(SaveState());
@@ -47,6 +52,7 @@ class LoginAsGuestAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
+      client: state.client..updateCookie(Guest(uid)),
       userState: Guest(uid),
     );
   }

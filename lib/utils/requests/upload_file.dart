@@ -32,14 +32,12 @@ Future<UploadFileResponse> uploadFile({
   @required Client client,
   @required String originDomain,
   @required String uploadUrl,
-  @required String cookie,
   @required int categoryId,
   @required String auth,
   @required File file,
 }) async {
   print(uploadUrl);
   MultipartRequest request = MultipartRequest('POST', Uri.parse(uploadUrl));
-  request.headers['cookie'] = cookie;
   request.fields['func'] = 'upload';
   request.fields['v2'] = '1';
   request.fields['origin_domain'] = originDomain;
