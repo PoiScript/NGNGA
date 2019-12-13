@@ -22,7 +22,7 @@ jobs:
       - name: Install flutter
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: 1.9.1+hotfix.4
+          flutter-version: 1.12.13+hotfix.5
 
       - name: Build project
         env:

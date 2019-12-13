@@ -19,7 +19,7 @@ jobs:
       - name: Install flutter
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: 1.9.1+hotfix.4
+          flutter-version: 1.12.13+hotfix.5
 
       - run: flutter pub get
       - run: flutter format --set-exit-if-changed lib/ test/
