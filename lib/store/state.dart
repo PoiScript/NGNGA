@@ -4,12 +4,12 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/category.dart';
+import 'package:ngnga/models/notification.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/categories.dart';
-import 'package:ngnga/utils/client.dart';
-import 'package:ngnga/utils/requests.dart';
+import 'package:ngnga/utils/repository.dart';
 
 class CategoryState {
   final List<int> topicIds;
@@ -241,10 +241,10 @@ class AppState {
 
   final Event<String> topicSnackBarEvt;
 
-  final MyClient client;
+  final Repository repository;
 
   AppState._({
-    @required this.client,
+    @required this.repository,
     @required this.categories,
     @required this.categoryStates,
     @required this.favoriteState,
@@ -260,7 +260,7 @@ class AppState {
     @required this.userState,
   })  : assert(categoryStates != null),
         assert(categories != null),
-        assert(client != null),
+        assert(repository != null),
         assert(favoriteState != null),
         assert(notifications != null),
         assert(pinned != null),
@@ -274,7 +274,7 @@ class AppState {
         assert(userState != null);
 
   AppState copy({
-    MyClient client,
+    Repository repository,
     UserState userState,
     SettingsState settings,
     CategoryState favoriteState,
@@ -290,7 +290,7 @@ class AppState {
     Event<String> topicSnackBarEvt,
   }) =>
       AppState._(
-        client: client ?? this.client,
+        repository: repository ?? this.repository,
         userState: userState ?? this.userState,
         settings: settings ?? this.settings,
         pinned: pinned ?? this.pinned,
@@ -315,7 +315,7 @@ class AppState {
         .map((category) => MapEntry(category.id, category))));
 
     return AppState._(
-      client: MyClient(),
+      repository: Repository(),
       userState: Unlogged(),
       users: {},
       posts: {},

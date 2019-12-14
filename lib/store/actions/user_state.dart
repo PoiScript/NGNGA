@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests/login_as_guest.dart';
 
 import 'state_persist.dart';
 
@@ -20,7 +19,7 @@ class LoginAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      client: state.client..updateCookie(Logged(uid, cid)),
+      repository: state.repository..updateCookie(Logged(uid, cid)),
       userState: Logged(uid, cid),
     );
   }
@@ -34,7 +33,7 @@ class LogoutAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      client: state.client..updateCookie(Unlogged()),
+      repository: state.repository..updateCookie(Unlogged()),
       userState: Unlogged(),
       pinned: [],
     );
@@ -46,15 +45,19 @@ class LogoutAction extends ReduxAction<AppState> {
 class LoginAsGuestAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    String uid = await loginAsGuest(
-      client: state.client,
-      baseUrl: state.settings.baseUrl,
-    );
+    // TODO: guest login
 
-    return state.copy(
-      client: state.client..updateCookie(Guest(uid)),
-      userState: Guest(uid),
-    );
+    // String uid = await loginAsGuest(
+    //   client: state.client,
+    //   baseUrl: state.settings.baseUrl,
+    // );
+
+    // return state.copy(
+    //   repository: state.repository..updateCookie(Guest(uid)),
+    //   userState: Guest(uid),
+    // );
+
+    return null;
   }
 
   void after() => dispatch(SaveState());

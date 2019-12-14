@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
@@ -186,7 +187,7 @@ class ViewModel extends BaseModel<AppState> {
       login: (int uid, String cid) =>
           dispatchFuture(LoginAction(uid: uid, cid: cid)),
       validate: (int uid, String cid) async {
-        final res = await state.client.get(
+        final res = await get(
           'https://ngabbs.com/nuke.php?__lib=noti&__act=if&__output=11',
           headers: {'cookie': 'ngaPassportUid=$uid;ngaPassportCid=$cid;'},
         );

@@ -4,7 +4,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/post.dart';
-import 'package:ngnga/utils/requests.dart';
+import 'package:ngnga/models/response.dart';
 
 import '../state.dart';
 import 'fetch_reply.dart';
@@ -14,11 +14,9 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
     @required int topicId,
     @required int page,
   }) async {
-    final res = await fetchTopicPosts(
-      client: state.client,
+    final res = await state.repository.fetchTopicPosts(
       topicId: topicId,
       page: page,
-      baseUrl: state.settings.baseUrl,
     );
 
     for (int i = 0; i < res.posts.length; i++) {

@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 class AddToFavoritesAction extends ReduxAction<AppState> {
   final int topicId;
@@ -14,11 +13,7 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    await addToFavorites(
-      client: state.client,
-      baseUrl: state.settings.baseUrl,
-      topicId: topicId,
-    );
+    await state.repository.addToFavorites(topicId: topicId);
 
     return null;
   }

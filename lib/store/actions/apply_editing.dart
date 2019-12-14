@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 import 'clear_editing.dart';
 
@@ -36,13 +35,11 @@ class ApplyEditingAction extends ReduxAction<AppState> {
         .where((i) => i != null)
         .join('\t');
 
-    await applyEditing(
-      client: state.client,
+    await state.repository.applyEditing(
       action: action,
       categoryId: categoryId,
       topicId: topicId,
       postId: postId,
-      baseUrl: state.settings.baseUrl,
       subject: subject,
       content: content,
       attachmentCode: attachmentCode,

@@ -4,7 +4,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/post.dart';
-import 'package:ngnga/utils/requests.dart';
 
 import '../state.dart';
 
@@ -25,11 +24,9 @@ class FetchReplyAction extends ReduxAction<AppState> {
       return null;
     }
 
-    final res = await fetchReply(
-      client: state.client,
+    final res = await state.repository.fetchReply(
       topicId: topicId,
       postId: postId,
-      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(

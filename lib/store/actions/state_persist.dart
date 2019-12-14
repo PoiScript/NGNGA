@@ -102,7 +102,9 @@ class LoadState extends ReduxAction<AppState> {
 
       return state.copy(
         userState: userState,
-        client: state.client..updateCookie(userState),
+        repository: state.repository
+          ..updateCookie(userState)
+          ..baseUrl = json['baseUrl'],
         settings: state.settings.copy(
           baseUrl: json['baseUrl'],
           theme: _stringToTheme[json['theme']],

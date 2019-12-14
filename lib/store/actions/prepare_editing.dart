@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 class PrepareEditingAction extends ReduxAction<AppState> {
   final EditorAction action;
@@ -26,23 +25,21 @@ class PrepareEditingAction extends ReduxAction<AppState> {
       );
     }
 
-    final response = await prepareEditing(
-      client: state.client,
+    final res = await state.repository.prepareEditing(
       action: action,
       categoryId: categoryId,
       topicId: topicId,
       postId: postId,
-      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
       editingState: EditingState(
         perpared: true,
-        uploadUrl: response.uploadUrl,
-        attachs: response.attachs,
-        setContentEvt: Event(response.content),
-        setSubjectEvt: Event(response.subject),
-        uploadAuthCode: response.uploadAuthCode,
+        uploadUrl: res.uploadUrl,
+        attachs: res.attachs,
+        setContentEvt: Event(res.content),
+        setSubjectEvt: Event(res.subject),
+        uploadAuthCode: res.uploadAuthCode,
       ),
     );
   }

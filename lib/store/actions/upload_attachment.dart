@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 class UploadAttachmentAction extends ReduxAction<AppState> {
   final LocalAttachment attach;
@@ -13,9 +12,7 @@ class UploadAttachmentAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final res = await uploadFile(
-      originDomain: state.settings.baseUrl,
-      client: state.client,
+    final res = await state.repository.uploadFile(
       file: attach.file,
       uploadUrl: state.editingState.uploadUrl,
       auth: state.editingState.uploadAuthCode,

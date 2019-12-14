@@ -87,7 +87,7 @@ class ChangeUserAgentAction extends ReduxAction<AppState> {
     }
 
     return state.copy(
-      client: state.client..userAgent = newUserAgent,
+      repository: state.repository..userAgent = newUserAgent,
       settings: state.settings.copy(userAgent: userAgent),
     );
   }

@@ -2,16 +2,12 @@ import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
 
-import 'package:ngnga/utils/requests.dart';
-
 import '../state.dart';
 
 class FetchFavoritesAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    final res = await fetchFavorTopics(
-      client: state.client,
-      baseUrl: state.settings.baseUrl,
+    final res = await state.repository.fetchFavorTopics(
       page: 0,
     );
 

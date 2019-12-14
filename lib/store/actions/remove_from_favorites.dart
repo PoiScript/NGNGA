@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 class RemoveFromFavoritesAction extends ReduxAction<AppState> {
   final int topicId;
@@ -14,10 +13,8 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    await removeFromFavorites(
-      client: state.client,
+    await state.repository.removeFromFavorites(
       topicId: topicId,
-      baseUrl: state.settings.baseUrl,
     );
 
     return null;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/requests.dart';
 
 class DownvotePostAction extends ReduxAction<AppState> {
   final int topicId;
@@ -16,12 +15,10 @@ class DownvotePostAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final res = await votePost(
-      client: state.client,
+    final res = await state.repository.votePost(
       value: -1,
       topicId: topicId,
       postId: postId,
-      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(

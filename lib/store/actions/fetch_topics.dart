@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
 
-import 'package:ngnga/utils/requests.dart';
-
 import '../state.dart';
 
 class FetchTopicsAction extends ReduxAction<AppState> {
@@ -13,12 +11,10 @@ class FetchTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final res = await fetchCategoryTopics(
-      client: state.client,
+    final res = await state.repository.fetchCategoryTopics(
       categoryId: categoryId,
       page: 0,
       isSubcategory: state.categories[categoryId].isSubcategory,
-      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
@@ -49,12 +45,10 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     final lastPage = state.categoryStates[categoryId].lastPage;
 
-    final res = await fetchCategoryTopics(
-      client: state.client,
+    final res = await state.repository.fetchCategoryTopics(
       categoryId: categoryId,
       page: lastPage + 1,
       isSubcategory: state.categories[categoryId].isSubcategory,
-      baseUrl: state.settings.baseUrl,
     );
 
     return state.copy(
