@@ -18,7 +18,7 @@ import 'popup_menu.dart';
 
 final _numberFormatter = NumberFormat('#,###,###,###');
 
-class CategoryPage extends StatefulWidget {
+class CategoryPage extends StatelessWidget {
   final Category category;
   final List<Topic> topics;
   final int topicsCount;
@@ -40,40 +40,8 @@ class CategoryPage extends StatefulWidget {
         assert(onLoad != null),
         super(key: key);
 
-  _CategoryPageState createState() => _CategoryPageState();
-}
-
-class _CategoryPageState extends State<CategoryPage>
-    with TickerProviderStateMixin<CategoryPage> {
-  final ScrollController _scrollController = ScrollController();
-
-  AnimationController _animationController;
-  Animation<Offset> _offset;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController =
-        AnimationController(vsync: this, duration: kThemeAnimationDuration);
-
-    _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
-        .animate(_animationController);
-
-    _scrollController.addListener(() {
-      final direction = _scrollController.position.userScrollDirection;
-      if (direction == ScrollDirection.reverse &&
-          _animationController.isCompleted) {
-        _animationController.reverse();
-      } else if (direction == ScrollDirection.forward &&
-          _animationController.isDismissed) {
-        _animationController.forward();
-      }
-    });
-  }
-
   Widget build(BuildContext context) {
-    if (widget.topics.isEmpty) {
+    if (topics.isEmpty) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -86,20 +54,20 @@ class _CategoryPageState extends State<CategoryPage>
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: <Widget>[
-          PopupMenuConnector(categoryId: widget.category.id),
+          PopupMenuConnector(categoryId: category.id),
         ],
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              widget.category.title,
+              category.title,
               style: Theme.of(context).textTheme.subhead,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              '${_numberFormatter.format(widget.topicsCount)} topics',
+              '${_numberFormatter.format(topicsCount)} topics',
               style: Theme.of(context).textTheme.caption,
             ),
           ],
@@ -110,40 +78,35 @@ class _CategoryPageState extends State<CategoryPage>
         child: EasyRefresh.builder(
           header: RefreshHeader(context),
           footer: NextPageHeader(context),
-          onRefresh: widget.onRefresh,
-          onLoad: widget.onLoad,
+          onRefresh: onRefresh,
+          onLoad: onLoad,
           builder: (context, physics, header, footer) => CustomScrollView(
-            controller: _scrollController,
             physics: physics,
             slivers: <Widget>[
               header,
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => index.isOdd
-                      ? TopicRowConnector(widget.topics[index ~/ 2])
+                      ? TopicRowConnector(topics[index ~/ 2])
                       : Divider(height: 0),
-                  childCount: widget.topics.length * 2 + 1,
+                  childCount: topics.length * 2 + 1,
                   semanticIndexCallback: (widget, localIndex) =>
                       localIndex.isOdd ? localIndex ~/ 2 : null,
                 ),
               ),
-              if (widget.topics.length ~/ 35 != widget.topicsCount ~/ 35)
-                footer,
+              if (topics.length ~/ 35 != topicsCount ~/ 35) footer,
             ],
           ),
         ),
       ),
-      floatingActionButton: SlideTransition(
-        position: _offset,
-        child: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            Navigator.pushNamed(context, '/e', arguments: {
-              'action': EditorAction.newTopic,
-              'categoryId': widget.category.id,
-            });
-          },
-        ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.pushNamed(context, '/e', arguments: {
+            'action': EditorAction.newTopic,
+            'categoryId': category.id,
+          });
+        },
       ),
     );
   }

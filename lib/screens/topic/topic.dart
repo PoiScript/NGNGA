@@ -55,41 +55,8 @@ class TopicPage extends StatefulWidget {
   _TopicPageState createState() => _TopicPageState();
 }
 
-class _TopicPageState extends State<TopicPage>
-    with TickerProviderStateMixin<TopicPage> {
+class _TopicPageState extends State<TopicPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final ScrollController _scrollController = ScrollController();
-  AnimationController _animationController;
-  Animation<Offset> _offset;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController =
-        AnimationController(vsync: this, duration: kThemeAnimationDuration);
-
-    _offset = Tween<Offset>(begin: Offset.zero, end: Offset(0.0, 2.0))
-        .animate(_animationController);
-
-    _scrollController.addListener(() {
-      final direction = _scrollController.position.userScrollDirection;
-      if (direction == ScrollDirection.reverse &&
-          _animationController.isCompleted) {
-        _animationController.reverse();
-      } else if (direction == ScrollDirection.forward &&
-          _animationController.isDismissed) {
-        _animationController.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _scrollController.dispose();
-    _animationController.dispose();
-  }
 
   @override
   void didUpdateWidget(TopicPage oldWidget) {
@@ -113,9 +80,36 @@ class _TopicPageState extends State<TopicPage>
   @override
   Widget build(BuildContext context) {
     if (widget.posts.isEmpty) {
-      return Scaffold(
-        key: _scaffoldKey,
-        body: CustomScrollView(
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      key: _scaffoldKey,
+      body: Scrollbar(
+        child: _buildList(context),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.pushNamed(context, '/e', arguments: {
+            'action': EditorAction.newPost,
+            'topicId': widget.topic.id,
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    return EasyRefresh.builder(
+      header: PreviousPageHeader(context, widget.firstPage),
+      footer: NextPageHeader(context),
+      onRefresh: widget.onRefresh,
+      onLoad: widget.onLoad,
+      builder: (context, physics, header, footer) {
+        return CustomScrollView(
+          physics: physics,
+          semanticChildCount: widget.posts.length,
           slivers: <Widget>[
             SliverAppBar(
               backgroundColor: Theme.of(context).cardColor,
@@ -136,102 +130,34 @@ class _TopicPageState extends State<TopicPage>
                 PopupMenuConnector(topicId: widget.topic.id),
               ],
             ),
-            SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
+            header,
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final int itemIndex = index ~/ 2;
+                  if (index.isOdd) {
+                    return PostRowConnector(
+                      user: widget.users[itemIndex],
+                      post: widget.posts[itemIndex],
+                    );
+                  }
+                  return Divider(height: 0.0);
+                },
+                semanticIndexCallback: (widget, index) =>
+                    index.isOdd ? index ~/ 2 : null,
+                childCount:
+                    widget.posts.isEmpty ? 0 : (widget.posts.length * 2 + 1),
+              ),
+            ),
+            if (widget.reachMaxPage)
+              SliverToBoxAdapter(
+                child: UpdateIndicatorConnector(topicId: widget.topic.id),
+              )
+            else
+              footer
           ],
-        ),
-      );
-    }
-
-    return Scaffold(
-      key: _scaffoldKey,
-      body: Scrollbar(
-        child: EasyRefresh.builder(
-          header: PreviousPageHeader(context, widget.firstPage),
-          footer: NextPageHeader(context),
-          onRefresh: widget.onRefresh,
-          onLoad: widget.onLoad,
-          builder: _buildContent,
-        ),
-      ),
-      floatingActionButton: SlideTransition(
-        position: _offset,
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/e', arguments: {
-              'action': EditorAction.newPost,
-              'topicId': widget.topic.id,
-            });
-          },
-          child: Icon(Icons.add),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(
-    BuildContext context,
-    ScrollPhysics physics,
-    Widget header,
-    Widget footer,
-  ) {
-    List<Widget> slivers = [
-      SliverAppBar(
-        backgroundColor: Theme.of(context).cardColor,
-        title: TitleColorize(
-          widget.topic,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          displayLabel: false,
-        ),
-        floating: true,
-        titleSpacing: 0.0,
-        leading: BackButton(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-        ),
-        actions: <Widget>[
-          PopupMenuConnector(topicId: widget.topic.id),
-        ],
-      ),
-      header,
-      SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final int itemIndex = index ~/ 2;
-            if (index.isOdd) {
-              return PostRowConnector(
-                user: widget.users[itemIndex],
-                post: widget.posts[itemIndex],
-              );
-            }
-            return Divider(height: 0.0);
-          },
-          semanticIndexCallback: (widget, index) {
-            if (index.isOdd) {
-              return index ~/ 2;
-            }
-            // ignore: avoid_returning_null
-            return null;
-          },
-          childCount: widget.posts.isEmpty ? 0 : (widget.posts.length * 2 + 1),
-        ),
-      ),
-      if (widget.reachMaxPage)
-        SliverToBoxAdapter(
-          child: UpdateIndicatorConnector(topicId: widget.topic.id),
-        )
-      else
-        footer
-    ];
-
-    return CustomScrollView(
-      controller: _scrollController,
-      physics: physics,
-      semanticChildCount: widget.posts.length,
-      slivers: slivers,
+        );
+      },
     );
   }
 }

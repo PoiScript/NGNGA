@@ -12,10 +12,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  final PageController _pageController = PageController(
-    initialPage: 0,
-    keepPage: true,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +30,9 @@ class _HomePageState extends State<HomePage> {
         ],
         backgroundColor: Theme.of(context).cardColor,
       ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        children: <Widget>[
-          FavoritesConnector(),
-          ExploreConnector(),
-          InboxConnector(),
-        ],
-      ),
+      body: _selectedIndex == 0
+          ? FavoritesConnector()
+          : _selectedIndex == 1 ? ExploreConnector() : InboxConnector(),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -61,21 +51,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onTap,
+        onTap: (index) => setState(() => _selectedIndex = index),
       ),
-    );
-  }
-
-  _onPageChanged(int index) {
-    setState(() => _selectedIndex = index);
-  }
-
-  _onTap(int index) {
-    setState(() => _selectedIndex = index);
-    _pageController.animateToPage(
-      index,
-      duration: Duration(milliseconds: 500),
-      curve: Curves.ease,
     );
   }
 }
