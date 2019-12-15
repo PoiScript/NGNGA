@@ -1,6 +1,8 @@
 analyzer:
   errors:
     todo: ignore
+  exclude:
+    - lib/l10n
 linter:
   rules:
     - avoid_catches_without_on_clauses
