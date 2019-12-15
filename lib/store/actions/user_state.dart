@@ -19,8 +19,8 @@ class LoginAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      repository: state.repository..updateCookie(Logged(uid, cid)),
-      userState: Logged(uid, cid),
+      repository: state.repository..updateCookie(UserLogged(uid, cid)),
+      userState: UserLogged(uid, cid),
     );
   }
 
@@ -33,8 +33,8 @@ class LogoutAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.copy(
-      repository: state.repository..updateCookie(Unlogged()),
-      userState: Unlogged(),
+      repository: state.repository..updateCookie(UserUninitialized()),
+      userState: UserUninitialized(),
       pinned: [],
     );
   }

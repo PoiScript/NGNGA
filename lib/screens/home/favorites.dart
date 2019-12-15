@@ -84,7 +84,7 @@ class ViewModel extends BaseModel<AppState> {
     return ViewModel.build(
       topics:
           state.favoriteState.topicIds.map((id) => state.topics[id]).toList(),
-      isLogged: state.userState is Logged,
+      isLogged: state.userState is UserLogged,
       onRefresh: () => dispatchFuture(FetchFavoritesAction()),
     );
   }

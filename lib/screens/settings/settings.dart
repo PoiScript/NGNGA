@@ -15,7 +15,7 @@ final _deviceInfo = DeviceInfoPlugin();
 
 class SettingsPage extends StatelessWidget {
   final String baseUrl;
-  final UserState user;
+  final UserState userState;
   final AppTheme theme;
   final AppLocale locale;
   final UserAgent userAgent;
@@ -28,7 +28,7 @@ class SettingsPage extends StatelessWidget {
 
   SettingsPage({
     @required this.baseUrl,
-    @required this.user,
+    @required this.userState,
     @required this.theme,
     @required this.locale,
     @required this.logout,
@@ -38,7 +38,7 @@ class SettingsPage extends StatelessWidget {
     @required this.userAgent,
     @required this.changeUserAgent,
   })  : assert(baseUrl != null),
-        assert(user != null),
+        assert(userState != null),
         assert(theme != null),
         assert(locale != null),
         assert(logout != null),
@@ -97,7 +97,7 @@ class SettingsPage extends StatelessWidget {
             trailing: Icon(Icons.keyboard_arrow_right),
             onTap: () => _changeUserAgent(context),
           ),
-          if (user is Logged)
+          if (userState is UserLogged)
             ListTile(
               title: Text(AppLocalizations.of(context).logout),
               onTap: () => _logout(context),
@@ -338,7 +338,7 @@ class SettingsPageConnector extends StatelessWidget {
       model: ViewModel(),
       builder: (context, vm) => SettingsPage(
         baseUrl: vm.baseUrl,
-        user: vm.user,
+        userState: vm.user,
         locale: vm.locale,
         theme: vm.theme,
         logout: vm.logout,

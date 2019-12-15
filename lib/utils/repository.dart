@@ -31,13 +31,13 @@ class Repository {
 
   // update client cookies base on given userState
   void updateCookie(UserState userState) {
-    if (userState is Logged) {
+    if (userState is UserLogged) {
       cookie =
           'ngaPassportUid=${userState.uid};ngaPassportCid=${userState.cid};';
-    } else if (userState is Guest) {
-      // TODO: guest login
-      cookie = 'ngaPassportUid=${userState.uid};';
-    } else if (userState is Unlogged) {
+      // } else if (userState is Guest) {
+      //   // TODO: guest login
+      //   cookie = 'ngaPassportUid=${userState.uid};';
+    } else if (userState is UserUninitialized) {
       cookie = '';
     }
   }

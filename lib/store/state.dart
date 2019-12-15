@@ -316,7 +316,7 @@ class AppState {
 
     return AppState._(
       repository: Repository(),
-      userState: Unlogged(),
+      userState: UserUninitialized(),
       users: {},
       posts: {},
       topics: {},

@@ -88,16 +88,17 @@ class LoadState extends ReduxAction<AppState> {
       UserState userState;
 
       if (json['user'] == null) {
-        userState = Unlogged();
+        userState = UserUninitialized();
       } else if (json['user']['isLogged']) {
-        userState = Logged(
+        userState = UserLogged(
           json['user']['uid'],
           json['user']['cid'],
         );
       } else {
-        userState = Guest(
-          json['user']['uid'],
-        );
+        // TODO: guest login
+        // userState = Guest(
+        //   json['user']['uid'],
+        // );
       }
 
       return state.copy(
@@ -126,10 +127,12 @@ class LoadState extends ReduxAction<AppState> {
 }
 
 Map<String, dynamic> _userStateToJson(UserState userState) {
-  if (userState is Logged) {
+  if (userState is UserLogged) {
     return {'isLogged': true, 'uid': userState.uid, 'cid': userState.cid};
-  } else if (userState is Guest) {
-    return {'isLogged': false, 'uid': userState.uid};
   }
+  // TODO: guest login
+  // else if (userState is Guest) {
+  //   return {'isLogged': false, 'uid': userState.uid};
+  // }
   return null;
 }
