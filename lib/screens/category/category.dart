@@ -10,6 +10,7 @@ import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
@@ -19,94 +20,123 @@ import 'popup_menu.dart';
 final _numberFormatter = NumberFormat('#,###,###,###');
 
 class CategoryPage extends StatelessWidget {
-  final Category category;
-  final List<Topic> topics;
-  final int topicsCount;
+  final CategoryState categoryState;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
 
+  final Map<int, Topic> topics;
+
+  final String baseUrl;
+  final Function(Category) addToPinned;
+  final Function(Category) removeFromPinned;
+
   CategoryPage({
     Key key,
-    @required this.category,
     @required this.topics,
-    @required this.topicsCount,
+    @required this.categoryState,
     @required this.onRefresh,
     @required this.onLoad,
-  })  : assert(topics != null),
-        assert(category != null),
-        assert(topicsCount != null),
+    @required this.baseUrl,
+    @required this.addToPinned,
+    @required this.removeFromPinned,
+  })  : assert(categoryState != null),
         assert(onRefresh != null),
         assert(onLoad != null),
         super(key: key);
 
   Widget build(BuildContext context) {
-    if (topics.isEmpty) {
+    if (categoryState is CategoryUninitialized) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
+    if (categoryState is CategoryLoaded) {
+      return Scaffold(
+        appBar: _buildAppBar(context, categoryState),
+        body: _buildBody(context, categoryState),
+        floatingActionButton: _buildFab(context, categoryState),
+      );
+    }
+
+    return null;
+  }
+
+  Widget _buildFab(BuildContext context, CategoryLoaded state) {
+    return FloatingActionButton(
+      child: Icon(Icons.add),
+      onPressed: () {
+        Navigator.pushNamed(context, '/e', arguments: {
+          'action': EditorAction.newTopic,
+          'categoryId': state.category.id,
+        });
+      },
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context, CategoryLoaded state) {
+    return AppBar(
+      leading: BackButton(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      actions: <Widget>[
+        PopupMenu(
+          categoryId: state.category.id,
+          isSubcategory: state.category.isSubcategory,
+          baseUrl: baseUrl,
+          isPinned: state.isPinned,
+          addToPinned: () => addToPinned(state.category),
+          removeFromPinned: () => removeFromPinned(state.category),
         ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        actions: <Widget>[
-          PopupMenuConnector(categoryId: category.id),
+      ],
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            state.category.title,
+            style: Theme.of(context).textTheme.subhead,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${_numberFormatter.format(state.topicsCount)} topics',
+            style: Theme.of(context).textTheme.caption,
+          ),
         ],
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              category.title,
-              style: Theme.of(context).textTheme.subhead,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+      ),
+      titleSpacing: 0,
+    );
+  }
+
+  Widget _buildBody(BuildContext context, CategoryLoaded state) {
+    return Scrollbar(
+      child: EasyRefresh.builder(
+        header: RefreshHeader(context),
+        footer: NextPageHeader(context),
+        onRefresh: onRefresh,
+        onLoad: onLoad,
+        builder: (context, physics, header, footer) => CustomScrollView(
+          physics: physics,
+          slivers: <Widget>[
+            header,
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => index.isOdd
+                    ? TopicRow(
+                        topic: topics[state.topicIds[index ~/ 2]],
+                      )
+                    : Divider(height: 0),
+                childCount: state.topicIds.length * 2 + 1,
+                semanticIndexCallback: (widget, localIndex) =>
+                    localIndex.isOdd ? localIndex ~/ 2 : null,
+              ),
             ),
-            Text(
-              '${_numberFormatter.format(topicsCount)} topics',
-              style: Theme.of(context).textTheme.caption,
-            ),
+            if (!state.hasRechedMax) footer,
           ],
         ),
-        titleSpacing: 0,
-      ),
-      body: Scrollbar(
-        child: EasyRefresh.builder(
-          header: RefreshHeader(context),
-          footer: NextPageHeader(context),
-          onRefresh: onRefresh,
-          onLoad: onLoad,
-          builder: (context, physics, header, footer) => CustomScrollView(
-            physics: physics,
-            slivers: <Widget>[
-              header,
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => index.isOdd
-                      ? TopicRowConnector(topics[index ~/ 2])
-                      : Divider(height: 0),
-                  childCount: topics.length * 2 + 1,
-                  semanticIndexCallback: (widget, localIndex) =>
-                      localIndex.isOdd ? localIndex ~/ 2 : null,
-                ),
-              ),
-              if (topics.length ~/ 35 != topicsCount ~/ 35) footer,
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          Navigator.pushNamed(context, '/e', arguments: {
-            'action': EditorAction.newTopic,
-            'categoryId': category.id,
-          });
-        },
       ),
     );
   }
@@ -114,22 +144,32 @@ class CategoryPage extends StatelessWidget {
 
 class CategoryPageConnector extends StatelessWidget {
   final int categoryId;
+  final bool isSubcategory;
 
   CategoryPageConnector({
     @required this.categoryId,
+    @required this.isSubcategory,
   });
 
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(categoryId),
-      onInit: (store) => store.dispatch(FetchTopicsAction(categoryId)),
+      model: ViewModel(
+        categoryId: categoryId,
+        isSubcategory: isSubcategory,
+      ),
+      onInit: (store) => store.dispatch(FetchTopicsAction(
+        categoryId: categoryId,
+        isSubcategory: isSubcategory,
+      )),
       builder: (context, vm) => CategoryPage(
-        category: vm.category,
         topics: vm.topics,
-        topicsCount: vm.topicsCount,
+        categoryState: vm.categoryState,
         onRefresh: vm.onRefresh,
         onLoad: vm.onLoad,
+        baseUrl: vm.baseUrl,
+        addToPinned: vm.addToPinned,
+        removeFromPinned: vm.removeFromPinned,
       ),
     );
   }
@@ -137,35 +177,53 @@ class CategoryPageConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   final int categoryId;
+  final bool isSubcategory;
 
-  Category category;
-  List<Topic> topics;
-  int topicsCount;
+  CategoryState categoryState;
+
+  Map<int, Topic> topics;
 
   Future<void> Function() onRefresh;
   Future<void> Function() onLoad;
 
-  ViewModel(this.categoryId);
+  String baseUrl;
+  Function(Category) addToPinned;
+  Function(Category) removeFromPinned;
+
+  ViewModel({this.categoryId, this.isSubcategory});
 
   ViewModel.build({
     @required this.topics,
+    @required this.isSubcategory,
     @required this.categoryId,
-    @required this.category,
-    @required this.topicsCount,
+    @required this.categoryState,
     @required this.onRefresh,
     @required this.onLoad,
-  }) : super(equals: [categoryId, category, topics, topicsCount]);
+    @required this.baseUrl,
+    @required this.addToPinned,
+    @required this.removeFromPinned,
+  }) : super(equals: [topics, categoryId, categoryState]);
 
   @override
   ViewModel fromStore() {
-    CategoryState categoryState = state.categoryStates[categoryId];
     return ViewModel.build(
+      topics: state.topics,
       categoryId: categoryId,
-      category: state.categories[categoryId],
-      topics: categoryState.topicIds.map((id) => state.topics[id]).toList(),
-      topicsCount: categoryState.topicsCount,
-      onRefresh: () => dispatchFuture(FetchTopicsAction(categoryId)),
-      onLoad: () => dispatchFuture(FetchNextTopicsAction(categoryId)),
+      isSubcategory: isSubcategory,
+      categoryState:
+          state.categoryStates[categoryId] ?? CategoryUninitialized(),
+      onRefresh: () => dispatchFuture(RefreshTopicsAction(
+        categoryId: categoryId,
+        isSubcategory: isSubcategory,
+      )),
+      onLoad: () => dispatchFuture(FetchNextTopicsAction(
+        categoryId: categoryId,
+        isSubcategory: isSubcategory,
+      )),
+      baseUrl: state.settings.baseUrl,
+      addToPinned: (category) => dispatch(AddToPinnedAction(category)),
+      removeFromPinned: (category) =>
+          dispatch(RemoveFromPinnedAction(category)),
     );
   }
 }

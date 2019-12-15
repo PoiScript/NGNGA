@@ -30,7 +30,6 @@ class FetchReplyAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      topics: Map.of(state.topics)..update(topicId, (_) => res.topic),
       users: Map.of(state.users)..addAll(res.users),
       posts: Map.of(state.posts)
         ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))

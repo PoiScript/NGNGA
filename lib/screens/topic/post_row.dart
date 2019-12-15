@@ -1,4 +1,3 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,17 +7,11 @@ import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/store/actions.dart';
-import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
 import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
-
-import 'attachment_sheet.dart';
-import 'comment_sheet.dart';
-import 'top_reply_sheet.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -30,17 +23,27 @@ class PostRow extends StatefulWidget {
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
 
+  final Function(List<Attachment>) openAttachmentSheet;
+  final Function(List<int>) openCommentSheet;
+  final Function(List<int>) openTopReplySheet;
+
   PostRow({
     @required this.post,
     @required this.user,
     @required this.sentByMe,
     @required this.upvote,
     @required this.downvote,
+    @required this.openAttachmentSheet,
+    @required this.openCommentSheet,
+    @required this.openTopReplySheet,
   })  : assert(post != null),
         assert(user != null),
         assert(sentByMe != null),
         assert(upvote != null),
-        assert(downvote != null);
+        assert(downvote != null),
+        assert(openAttachmentSheet != null),
+        assert(openCommentSheet != null),
+        assert(openTopReplySheet != null);
 
   @override
   _PostRowState createState() => _PostRowState();
@@ -84,8 +87,11 @@ class _PostRowState extends State<PostRow> {
             child: GestureDetector(
               child: _buildUsername(),
               onTap: () {
-                Navigator.pushNamed(context, '/u',
-                    arguments: {'uesrId': widget.user.id});
+                Navigator.pushNamed(
+                  context,
+                  '/u',
+                  arguments: {'uesrId': widget.user.id},
+                );
               },
             ),
           ),
@@ -402,14 +408,7 @@ class _PostRowState extends State<PostRow> {
                 size: 16.0,
                 color: Color.fromARGB(255, 144, 144, 144),
               ),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => AttachmentSheet(
-                    attachments: post.attachments,
-                  ),
-                );
-              },
+              onTap: () => widget.openAttachmentSheet(post.attachments),
             ),
           ),
         if (post.attachments.length > 1)
@@ -426,14 +425,7 @@ class _PostRowState extends State<PostRow> {
                 size: 16,
                 color: Color.fromARGB(255, 144, 144, 144),
               ),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => CommentSheetConnector(
-                    postIds: post.commentIds,
-                  ),
-                );
-              },
+              onTap: () => widget.openCommentSheet(post.commentIds),
             ),
           ),
         if (post.commentIds.length > 1)
@@ -451,14 +443,9 @@ class _PostRowState extends State<PostRow> {
                 size: 16,
                 color: Color.fromARGB(255, 144, 144, 144),
               ),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => TopReplySheetConnector(
-                    postIds: (widget.post as TopicPost).topReplyIds,
-                  ),
-                );
-              },
+              onTap: () => widget.openTopReplySheet(
+                (widget.post as TopicPost).topReplyIds,
+              ),
             ),
           ),
         if (widget.post is TopicPost &&
@@ -551,83 +538,6 @@ class _PostRowState extends State<PostRow> {
   //     builder: (context) => LinkDialog(url),
   //   );
   // }
-}
-
-class PostRowConnector extends StatelessWidget {
-  final PostItem post;
-  final User user;
-
-  const PostRowConnector({
-    Key key,
-    @required this.post,
-    @required this.user,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(
-        postId: post.id,
-        userId: post.inner.userId,
-        topicId: post.inner.topicId,
-      ),
-      builder: (context, vm) => PostRow(
-        post: post,
-        user: user,
-        sentByMe: vm.sentByMe,
-        upvote: vm.upvote,
-        downvote: vm.downvote,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  final int postId;
-  final int userId;
-  final int topicId;
-
-  bool sentByMe;
-
-  Future<void> Function() upvote;
-  Future<void> Function() downvote;
-
-  ViewModel({
-    @required this.postId,
-    @required this.userId,
-    @required this.topicId,
-  });
-
-  ViewModel.build({
-    @required this.postId,
-    @required this.topicId,
-    @required this.userId,
-    @required this.upvote,
-    @required this.downvote,
-    @required this.sentByMe,
-  });
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      postId: postId,
-      topicId: topicId,
-      userId: userId,
-      sentByMe: state.userState.isMe(userId),
-      upvote: () => dispatchFuture(
-        UpvotePostAction(
-          topicId: topicId,
-          postId: postId,
-        ),
-      ),
-      downvote: () => dispatchFuture(
-        DownvotePostAction(
-          topicId: topicId,
-          postId: postId,
-        ),
-      ),
-    );
-  }
 }
 
 enum Choice {

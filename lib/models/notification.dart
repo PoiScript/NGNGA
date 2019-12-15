@@ -68,7 +68,7 @@ class UserNotification {
       dateTime: DateTime.fromMillisecondsSinceEpoch(
         json['9'] * 1000,
       ),
-      pageIndex: json['10'],
+      pageIndex: json['10'] - 1,
     );
   }
 }

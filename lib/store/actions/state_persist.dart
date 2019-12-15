@@ -44,7 +44,6 @@ class SaveState extends ReduxAction<AppState> {
       'locale': _localeToString[state.settings.locale],
       'theme': _themeToString[state.settings.theme],
       'pinned': state.pinned
-          .map((id) => state.categories[id])
           .map(
             (category) => {
               'id': category.id,
@@ -77,14 +76,6 @@ class LoadState extends ReduxAction<AppState> {
 
       print('Loaded state from ${file.path}');
 
-      Iterable<Category> categories = List.of(json['pinned']).map(
-        (json) => Category(
-          id: json['id'],
-          title: json['title'],
-          isSubcategory: json['isSubcategory'],
-        ),
-      );
-
       UserState userState;
 
       if (json['user'] == null) {
@@ -111,11 +102,15 @@ class LoadState extends ReduxAction<AppState> {
           theme: _stringToTheme[json['theme']],
           locale: _stringToLocale[json['locale']],
         ),
-        pinned: state.pinned..addAll(categories.map((category) => category.id)),
-        categories: state.categories
-          ..addEntries(
-            categories.map((category) => MapEntry(category.id, category)),
-          ),
+        pinned: List.of(json['pinned'])
+            .map(
+              (json) => Category(
+                id: json['id'],
+                title: json['title'],
+                isSubcategory: json['isSubcategory'],
+              ),
+            )
+            .toList(),
       );
     } on Exception catch (e) {
       print(e);

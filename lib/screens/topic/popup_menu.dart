@@ -1,10 +1,6 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ngnga/localizations.dart';
-
-import 'package:ngnga/store/actions.dart';
-import 'package:ngnga/store/state.dart';
 
 import 'page_picker.dart';
 
@@ -134,77 +130,6 @@ class PopupMenu extends StatelessWidget {
             break;
         }
       },
-    );
-  }
-}
-
-class PopupMenuConnector extends StatelessWidget {
-  final int topicId;
-
-  PopupMenuConnector({
-    @required this.topicId,
-  }) : assert(topicId != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(topicId),
-      builder: (context, vm) => PopupMenu(
-        topicId: topicId,
-        firstPage: vm.firstPage,
-        maxPage: vm.maxPage,
-        baseUrl: vm.baseUrl,
-        isFavorited: vm.isFavorited,
-        addToFavorites: vm.addToFavorites,
-        removeFromFavorites: vm.removeFromFavorites,
-        changePage: vm.changePage,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  final int topicId;
-
-  String baseUrl;
-  int firstPage;
-  int maxPage;
-
-  bool isFavorited;
-  Future<void> Function() addToFavorites;
-  Future<void> Function() removeFromFavorites;
-  Future<void> Function(int) changePage;
-
-  ViewModel(this.topicId);
-
-  ViewModel.build({
-    @required this.firstPage,
-    @required this.maxPage,
-    @required this.topicId,
-    @required this.baseUrl,
-    @required this.isFavorited,
-    @required this.addToFavorites,
-    @required this.removeFromFavorites,
-    @required this.changePage,
-  }) : super(equals: [isFavorited, firstPage, maxPage]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      topicId: topicId,
-      firstPage: state.topicStates[topicId].firstPage,
-      maxPage: state.topicStates[topicId].maxPage,
-      baseUrl: state.settings.baseUrl,
-      isFavorited: state.favoriteState.topicIds.contains(topicId),
-      addToFavorites: () => dispatchFuture(
-        AddToFavoritesAction(topicId: topicId),
-      ),
-      removeFromFavorites: () => dispatchFuture(
-        RemoveFromFavoritesAction(topicId: topicId),
-      ),
-      changePage: (page) => dispatchFuture(
-        FetchPostsAction(pageIndex: page, topicId: topicId),
-      ),
     );
   }
 }

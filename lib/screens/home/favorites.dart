@@ -1,49 +1,50 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-
 import 'package:ngnga/models/topic.dart';
+
 import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/favorite.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 
 class Favorites extends StatelessWidget {
-  final List<Topic> topics;
-  final bool isLogged;
+  final FavoriteState favoriteState;
+
+  final Map<int, Topic> topics;
 
   final Future<void> Function() onRefresh;
 
   Favorites({
     @required this.topics,
-    @required this.isLogged,
+    @required this.favoriteState,
     @required this.onRefresh,
-  })  : assert(isLogged != null),
-        assert(topics != null),
+  })  : assert(favoriteState != null),
         assert(onRefresh != null);
 
   @override
   Widget build(BuildContext context) {
-    return isLogged ? _favoritesList(context) : _emptyScreen(context);
+    if (favoriteState is FavoriteUninitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (favoriteState is FavoriteLoaded) {
+      return _buildList(context, favoriteState);
+    }
+
+    return null;
   }
 
-  Widget _emptyScreen(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[],
-    );
-  }
-
-  Widget _favoritesList(BuildContext context) {
+  Widget _buildList(BuildContext context, FavoriteLoaded state) {
     return EasyRefresh(
-      firstRefresh: topics.isEmpty,
       header: RefreshHeader(context),
       onRefresh: onRefresh,
       child: ListView.separated(
-        itemBuilder: (context, index) => TopicRowConnector(
-          topics[index],
-        ),
+        itemBuilder: (context, index) =>
+            TopicRow(topic: topics[state.topicIds[index]]),
         separatorBuilder: (context, index) => Divider(height: 0.0),
-        itemCount: topics.length,
+        itemCount: state.topicIds.length,
       ),
     );
   }
@@ -56,9 +57,10 @@ class FavoritesConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
+      onInit: (store) => store.dispatch(FetchFavoritesAction()),
       builder: (context, vm) => Favorites(
         topics: vm.topics,
-        isLogged: vm.isLogged,
+        favoriteState: vm.favoriteState,
         onRefresh: vm.onRefresh,
       ),
     );
@@ -66,8 +68,9 @@ class FavoritesConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  List<Topic> topics;
-  bool isLogged;
+  FavoriteState favoriteState;
+
+  Map<int, Topic> topics;
 
   Future<void> Function() onRefresh;
 
@@ -75,17 +78,16 @@ class ViewModel extends BaseModel<AppState> {
 
   ViewModel.build({
     @required this.topics,
-    @required this.isLogged,
+    @required this.favoriteState,
     @required this.onRefresh,
-  }) : super(equals: [topics, isLogged]);
+  }) : super(equals: [topics, favoriteState]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      topics:
-          state.favoriteState.topicIds.map((id) => state.topics[id]).toList(),
-      isLogged: state.userState is UserLogged,
-      onRefresh: () => dispatchFuture(FetchFavoritesAction()),
+      topics: state.topics,
+      favoriteState: state.favoriteState,
+      onRefresh: () => dispatchFuture(RefreshFavoritesAction()),
     );
   }
 }

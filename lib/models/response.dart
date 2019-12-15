@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/editing.dart';
 
 import 'category.dart';
 import 'notification.dart';
@@ -59,6 +59,7 @@ class FavoritesResponse {
 }
 
 class FetchCategoryTopicsResponse {
+  final int toppedTopicId;
   final List<Topic> topics;
   final List<Category> categories;
   final int topicCount;
@@ -69,6 +70,7 @@ class FetchCategoryTopicsResponse {
     this.categories,
     this.topicCount,
     this.maxPage,
+    this.toppedTopicId,
   }) : assert(topics != null && topicCount != null);
 
   factory FetchCategoryTopicsResponse.fromJson(Map<String, dynamic> json) {
@@ -94,6 +96,7 @@ class FetchCategoryTopicsResponse {
       categories: categories,
       topicCount: json['data']['__ROWS'],
       maxPage: json['data']['__ROWS'] ~/ json['data']['__T__ROWS_PAGE'],
+      toppedTopicId: json['data']['__F']['topped_topic'],
     );
   }
 }

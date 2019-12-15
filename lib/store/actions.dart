@@ -10,7 +10,6 @@ export 'actions/fetch_reply.dart';
 export 'actions/fetch_topics.dart';
 export 'actions/prepare_editing.dart';
 export 'actions/remove_from_favorites.dart';
-export 'actions/router.dart';
 export 'actions/settings.dart';
 export 'actions/state_persist.dart';
 export 'actions/upload_attachment.dart';

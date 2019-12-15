@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:ngnga/localizations.dart';
 
+import 'package:ngnga/models/category.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/categories.dart';
-import 'package:ngnga/widgets/category_row.dart';
 
 class Explore extends StatelessWidget {
-  final List<int> pinned;
+  final List<Category> pinned;
 
   Explore({
     @required this.pinned,
@@ -34,38 +34,46 @@ class Explore extends StatelessWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => CategoryRowConnector(
-                categoryId: pinned[index],
+              (context, index) => ListTile(
+                title: Text(pinned[index].title),
+                trailing: const Icon(Icons.keyboard_arrow_right),
+                onTap: () => Navigator.pushNamed(context, '/c', arguments: {
+                  'id': pinned[index].id,
+                  'isSubcategory': pinned[index].isSubcategory,
+                }),
               ),
               childCount: pinned.length,
             ),
           ),
         ),
-      ]..addAll(
-          categoryGroups.map(
-            (group) => SliverStickyHeader(
-              header: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                color: Theme.of(context).cardColor,
-                child: Text(
-                  group.name,
-                  style: Theme.of(context).textTheme.caption,
-                ),
+        for (CategoryGroup group in categoryGroups)
+          SliverStickyHeader(
+            header: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
               ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => CategoryRowConnector(
-                    categoryId: group.categories[index].id,
-                  ),
-                  childCount: group.categories.length,
+              color: Theme.of(context).cardColor,
+              child: Text(
+                group.name,
+                style: Theme.of(context).textTheme.caption,
+              ),
+            ),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => ListTile(
+                  title: Text(group.categories[index].title),
+                  trailing: const Icon(Icons.keyboard_arrow_right),
+                  onTap: () => Navigator.pushNamed(context, 'c', arguments: {
+                    'id': group.categories[index].id,
+                    'isSubcategory': group.categories[index].isSubcategory,
+                  }),
                 ),
+                childCount: group.categories.length,
               ),
             ),
           ),
-        ),
+      ],
     );
   }
 }
@@ -85,7 +93,7 @@ class ExploreConnector extends StatelessWidget {
 }
 
 class ViewModel extends BaseModel<AppState> {
-  List<int> pinned;
+  List<Category> pinned;
 
   ViewModel();
 
@@ -95,8 +103,6 @@ class ViewModel extends BaseModel<AppState> {
 
   @override
   ViewModel fromStore() {
-    return ViewModel.build(
-      pinned: state.pinned,
-    );
+    return ViewModel.build(pinned: state.pinned);
   }
 }

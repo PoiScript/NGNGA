@@ -2,6 +2,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/screens/editor/editor.dart';
+import 'package:ngnga/store/editing.dart';
 import 'package:ngnga/store/state.dart';
 
 class PrepareEditingAction extends ReduxAction<AppState> {
@@ -21,7 +22,13 @@ class PrepareEditingAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     if (action == EditorAction.noop) {
       return state.copy(
-        editingState: EditingState.empty().copy(perpared: true),
+        editingState: EditingLoaded(
+          uploadAuthCode: '',
+          uploadUrl: '',
+          attachs: [],
+          setSubjectEvt: Event.spent(),
+          setContentEvt: Event.spent(),
+        ),
       );
     }
 
@@ -33,8 +40,7 @@ class PrepareEditingAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      editingState: EditingState(
-        perpared: true,
+      editingState: EditingLoaded(
         uploadUrl: res.uploadUrl,
         attachs: res.attachs,
         setContentEvt: Event(res.content),

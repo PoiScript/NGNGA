@@ -1,8 +1,8 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ngnga/models/post.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/topic.dart';
 
 class UpvotePostAction extends ReduxAction<AppState> {
   final int topicId;
@@ -22,30 +22,16 @@ class UpvotePostAction extends ReduxAction<AppState> {
     );
 
     return state.copy(
-      topicSnackBarEvt: Event(res.message),
-      posts: state.posts
-        ..update(postId, (item) {
-          if (item is TopicPost) {
-            return TopicPost(
-              item.post.copy(vote: item.post.vote + res.value),
-              item.topReplyIds,
-            );
-          }
-
-          if (item is Comment) {
-            return item.addPost(item.post.copy(
-              vote: item.post.vote + res.value,
-            ));
-          }
-
-          if (item is Post) {
-            return item.copy(
-              vote: item.vote + res.value,
-            );
-          }
-
-          return null;
-        }),
+      topicStates: state.topicStates
+        ..update(
+          topicId,
+          (topicState) => topicState is TopicLoaded
+              ? topicState.copyWith(
+                  postVotedEvt:
+                      Event(PostVoted(postId: postId, delta: res.value)),
+                )
+              : topicState,
+        ),
     );
   }
 }

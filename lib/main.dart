@@ -89,6 +89,7 @@ class MyApp extends StatelessWidget {
       case '/c':
         screen = CategoryPageConnector(
           categoryId: arguments['id'],
+          isSubcategory: arguments['isSubcategory'],
         );
         break;
       case '/t':

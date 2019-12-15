@@ -1,10 +1,7 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ngnga/localizations.dart';
 
-import 'package:ngnga/store/actions.dart';
-import 'package:ngnga/store/state.dart';
+import 'package:ngnga/localizations.dart';
 
 enum Choice {
   copyLinkToClipboard,
@@ -98,63 +95,6 @@ class PopupMenu extends StatelessWidget {
             break;
         }
       },
-    );
-  }
-}
-
-class PopupMenuConnector extends StatelessWidget {
-  final int categoryId;
-
-  PopupMenuConnector({
-    @required this.categoryId,
-  }) : assert(categoryId != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(categoryId),
-      builder: (context, vm) => PopupMenu(
-        categoryId: categoryId,
-        isSubcategory: vm.isSubcategory,
-        baseUrl: vm.baseUrl,
-        isPinned: vm.isPinned,
-        addToPinned: vm.addToPinned,
-        removeFromPinned: vm.removeFromPinned,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  final int categoryId;
-
-  String baseUrl;
-  bool isSubcategory;
-
-  bool isPinned;
-  VoidCallback addToPinned;
-  VoidCallback removeFromPinned;
-
-  ViewModel(this.categoryId);
-
-  ViewModel.build({
-    @required this.isSubcategory,
-    @required this.categoryId,
-    @required this.baseUrl,
-    @required this.isPinned,
-    @required this.addToPinned,
-    @required this.removeFromPinned,
-  }) : super(equals: [isPinned]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      categoryId: categoryId,
-      isSubcategory: state.categories[categoryId].isSubcategory,
-      baseUrl: state.settings.baseUrl,
-      isPinned: state.pinned.contains(categoryId),
-      addToPinned: () => dispatch(AddToPinnedAction(categoryId)),
-      removeFromPinned: () => dispatch(RemoveFromPinnedAction(categoryId)),
     );
   }
 }

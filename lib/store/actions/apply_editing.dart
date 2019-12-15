@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/editing.dart';
 
 import 'clear_editing.dart';
 
@@ -25,26 +26,31 @@ class ApplyEditingAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    String attachmentChecksum = state.editingState.attachs
-        .map((attach) => attach is UploadedAttachment ? attach.checksum : null)
-        .where((i) => i != null)
-        .join('\t');
+    EditingState editingState = state.editingState;
 
-    String attachmentCode = state.editingState.attachs
-        .map((attach) => attach is UploadedAttachment ? attach.code : null)
-        .where((i) => i != null)
-        .join('\t');
+    if (editingState is EditingLoaded) {
+      String attachmentChecksum = editingState.attachs
+          .map(
+              (attach) => attach is UploadedAttachment ? attach.checksum : null)
+          .where((i) => i != null)
+          .join('\t');
 
-    await state.repository.applyEditing(
-      action: action,
-      categoryId: categoryId,
-      topicId: topicId,
-      postId: postId,
-      subject: subject,
-      content: content,
-      attachmentCode: attachmentCode,
-      attachmentChecksum: attachmentChecksum,
-    );
+      String attachmentCode = editingState.attachs
+          .map((attach) => attach is UploadedAttachment ? attach.code : null)
+          .where((i) => i != null)
+          .join('\t');
+
+      await state.repository.applyEditing(
+        action: action,
+        categoryId: categoryId,
+        topicId: topicId,
+        postId: postId,
+        subject: subject,
+        content: content,
+        attachmentCode: attachmentCode,
+        attachmentChecksum: attachmentChecksum,
+      );
+    }
 
     return null;
   }

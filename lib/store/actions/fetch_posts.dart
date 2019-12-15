@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/response.dart';
+import 'package:ngnga/store/favorite.dart';
+import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/topic.dart';
 
-import '../state.dart';
 import 'fetch_reply.dart';
 
 abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
@@ -52,6 +54,84 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
   }
 }
 
+class RefreshPostsAction extends FetchPostsBaseAction {
+  final int topicId;
+  final int pageIndex;
+
+  RefreshPostsAction({
+    @required this.topicId,
+    @required this.pageIndex,
+  })  : assert(topicId != null),
+        assert(pageIndex >= 0);
+
+  @override
+  Future<AppState> reduce() async {
+    final res = await fetch(topicId: topicId, page: pageIndex);
+
+    bool isFavorited = false;
+
+    if (state.favoriteState is FavoriteLoaded) {
+      FavoriteLoaded favoriteState = state.favoriteState;
+      isFavorited = favoriteState.topicIds.contains(topicId);
+    }
+
+    return state.copy(
+      topicStates: state.topicStates
+        ..[topicId] = TopicLoaded(
+          topic: res.topic,
+          firstPage: pageIndex,
+          lastPage: pageIndex,
+          maxPage: res.maxPage,
+          postIds: res.posts.map((p) => p.id).toList(),
+          postVotedEvt: Event.spent(),
+          isFavorited: isFavorited,
+        ),
+      topics: state.topics..[topicId] = res.topic,
+      users: state.users..addAll(res.users),
+      posts: state.posts
+        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
+        ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
+    );
+  }
+}
+
+class RefreshLastPageAction extends FetchPostsBaseAction {
+  final int topicId;
+
+  RefreshLastPageAction(this.topicId) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    TopicState topicState = state.topicStates[topicId];
+
+    if (topicState is TopicLoaded) {
+      assert(topicState.hasRechedMax);
+
+      final res = await fetch(topicId: topicId, page: topicState.lastPage);
+
+      return state.copy(
+        topicStates: state.topicStates
+          ..[topicId] = topicState.copyWith(
+            maxPage: res.maxPage,
+            postIds: topicState.postIds
+              ..addAll(
+                res.posts
+                    .map((p) => p.id)
+                    .where((id) => !topicState.postIds.contains(id)),
+              ),
+          ),
+        topics: state.topics..[topicId] = res.topic,
+        users: state.users..addAll(res.users),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
+          ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
+      );
+    }
+
+    return null;
+  }
+}
+
 class FetchPreviousPostsAction extends FetchPostsBaseAction {
   final int topicId;
 
@@ -59,27 +139,30 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
 
   @override
   Future<AppState> reduce() async {
-    int firstPage = state.topicStates[topicId].firstPage;
+    TopicState topicState = state.topicStates[topicId];
 
-    final res = await fetch(topicId: topicId, page: firstPage - 1);
+    if (topicState is TopicLoaded) {
+      assert(!topicState.hasRechedMin);
 
-    return state.copy(
-      topics: state.topics..[topicId] = res.topic,
-      users: state.users..addAll(res.users),
-      topicStates: state.topicStates
-        ..update(
-          topicId,
-          (topicState) => topicState.copy(
+      final res = await fetch(topicId: topicId, page: topicState.firstPage - 1);
+
+      return state.copy(
+        topicStates: state.topicStates
+          ..[topicId] = topicState.copyWith(
             maxPage: res.maxPage,
-            firstPage: firstPage - 1,
-            postIds: List.of(res.posts.map((post) => post.id))
+            firstPage: topicState.firstPage - 1,
+            postIds: List.of(res.posts.map((p) => p.id))
               ..addAll(topicState.postIds),
           ),
-        ),
-      posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
-        ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
-    );
+        topics: state.topics..[topicId] = res.topic,
+        users: state.users..addAll(res.users),
+        posts: state.posts
+          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
+          ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
+      );
+    }
+
+    return null;
   }
 }
 
@@ -90,84 +173,28 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
 
   @override
   Future<AppState> reduce() async {
-    int lastPage = state.topicStates[topicId].lastPage;
-    int maxPage = state.topicStates[topicId].maxPage;
+    TopicState topicState = state.topicStates[topicId];
 
-    if (lastPage < maxPage) {
-      final res = await fetch(topicId: topicId, page: lastPage + 1);
+    if (topicState is TopicLoaded) {
+      assert(!topicState.hasRechedMax);
 
-      return state.copy(
-        topics: state.topics..[topicId] = res.topic,
-        users: state.users..addAll(res.users),
-        topicStates: state.topicStates
-          ..update(
-            topicId,
-            (topicState) => topicState.copy(
-              lastPage: lastPage + 1,
-              maxPage: res.maxPage,
-              postIds: topicState.postIds
-                ..addAll(res.posts.map((post) => post.id)),
-            ),
-          ),
-        posts: state.posts
-          ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
-          ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
-      );
-    } else {
-      final res = await fetch(topicId: topicId, page: lastPage);
+      final res = await fetch(topicId: topicId, page: topicState.lastPage + 1);
 
       return state.copy(
+        topicStates: state.topicStates
+          ..[topicId] = topicState.copyWith(
+            lastPage: topicState.lastPage + 1,
+            maxPage: res.maxPage,
+            postIds: topicState.postIds..addAll(res.posts.map((p) => p.id)),
+          ),
         topics: state.topics..[topicId] = res.topic,
         users: state.users..addAll(res.users),
-        topicStates: state.topicStates
-          ..update(
-            topicId,
-            (topicState) => topicState.copy(
-              maxPage: res.maxPage,
-              postIds: topicState.postIds
-                ..addAll(res.posts
-                    .map((post) => post.id)
-                    .where((id) => !topicState.postIds.contains(id))),
-            ),
-          ),
         posts: state.posts
           ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
           ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
       );
     }
-  }
-}
 
-class FetchPostsAction extends FetchPostsBaseAction {
-  final int topicId;
-  final int pageIndex;
-
-  FetchPostsAction({
-    @required this.topicId,
-    @required this.pageIndex,
-  })  : assert(topicId != null),
-        assert(pageIndex >= 0);
-
-  @override
-  Future<AppState> reduce() async {
-    final res = await fetch(topicId: topicId, page: pageIndex);
-
-    return state.copy(
-      topics: state.topics..update(topicId, (_) => res.topic),
-      users: state.users..addAll(res.users),
-      topicStates: state.topicStates
-        ..update(
-          topicId,
-          (topicState) => topicState.copy(
-            firstPage: pageIndex,
-            lastPage: pageIndex,
-            maxPage: res.maxPage,
-            postIds: List.of(res.posts.map((post) => post.id)),
-          ),
-        ),
-      posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
-        ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
-    );
+    return null;
   }
 }

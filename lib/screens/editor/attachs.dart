@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
-import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/editing.dart';
 
 class EditorAttachs extends StatelessWidget {
   final List<AttachmentItem> attachs;

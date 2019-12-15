@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/editing.dart';
 
 class UploadAttachmentAction extends ReduxAction<AppState> {
   final LocalAttachment attach;
@@ -12,30 +13,36 @@ class UploadAttachmentAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final res = await state.repository.uploadFile(
-      file: attach.file,
-      uploadUrl: state.editingState.uploadUrl,
-      auth: state.editingState.uploadAuthCode,
-      categoryId: categoryId,
-    );
+    EditingState editingState = state.editingState;
 
-    int index = state.editingState.attachs.indexWhere((i) => i == attach);
+    if (editingState is EditingLoaded) {
+      final res = await state.repository.uploadFile(
+        file: attach.file,
+        uploadUrl: editingState.uploadUrl,
+        auth: editingState.uploadAuthCode,
+        categoryId: categoryId,
+      );
 
-    return state.copy(
-      editingState: state.editingState.copy(
-        attachs: [
-          ...state.editingState.attachs.getRange(0, index),
-          UploadedAttachment(
-            checksum: res.attachChecksum,
-            code: res.attachCode,
-            url: res.attachUrl,
-            file: attach.file,
-          ),
-          ...state.editingState.attachs
-              .getRange(index + 1, state.editingState.attachs.length)
-        ],
-      ),
-    );
+      int index = editingState.attachs.indexWhere((i) => i == attach);
+
+      return state.copy(
+        editingState: editingState.copy(
+          attachs: [
+            ...editingState.attachs.getRange(0, index),
+            UploadedAttachment(
+              checksum: res.attachChecksum,
+              code: res.attachCode,
+              url: res.attachUrl,
+              file: attach.file,
+            ),
+            ...editingState.attachs
+                .getRange(index + 1, editingState.attachs.length)
+          ],
+        ),
+      );
+    }
+
+    return null;
   }
 }
 
@@ -46,11 +53,17 @@ class AddAttachmentAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    return state.copy(
-      editingState: state.editingState.copy(
-        attachs: List.of(state.editingState.attachs)..add(attach),
-      ),
-    );
+    EditingState editingState = state.editingState;
+
+    if (editingState is EditingLoaded) {
+      return state.copy(
+        editingState: editingState.copy(
+          attachs: List.of(editingState.attachs)..add(attach),
+        ),
+      );
+    }
+
+    return null;
   }
 }
 
@@ -61,10 +74,16 @@ class RemoveAttachmentAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      editingState: state.editingState.copy(
-        attachs: List.of(state.editingState.attachs)..remove(attach),
-      ),
-    );
+    EditingState editingState = state.editingState;
+
+    if (editingState is EditingLoaded) {
+      return state.copy(
+        editingState: editingState.copy(
+          attachs: List.of(editingState.attachs)..remove(attach),
+        ),
+      );
+    }
+
+    return null;
   }
 }

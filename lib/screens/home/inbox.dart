@@ -5,66 +5,88 @@ import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/models/notification.dart';
 import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/inbox.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/refresh.dart';
 
 class Inbox extends StatelessWidget {
   final Future<void> Function() fetch;
-  final List<UserNotification> notifications;
+  final InboxState inboxState;
 
   const Inbox({
     Key key,
     @required this.fetch,
-    @required this.notifications,
+    @required this.inboxState,
   })  : assert(fetch != null),
-        assert(notifications != null),
+        assert(inboxState != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (inboxState is InboxUninitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (inboxState is InboxLoaded) {
+      return _buildList(context, inboxState);
+    }
+
+    return null;
+  }
+
+  Widget _buildList(BuildContext context, InboxLoaded state) {
     return EasyRefresh(
       header: RefreshHeader(context),
-      firstRefresh: true,
       onRefresh: fetch,
       child: ListView.separated(
-        separatorBuilder: (context, inex) => Divider(),
-        itemCount: notifications.length,
+        separatorBuilder: (context, inex) => Divider(height: 0.0),
+        itemCount: state.notifications.length,
         itemBuilder: (context, index) {
-          UserNotification notification = notifications[index];
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                margin: EdgeInsets.all(8.0),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        _description(
-                          context,
-                          notification.type,
-                          notification.username,
+          UserNotification notification = state.notifications[index];
+          return InkWell(
+            onTap: () => Navigator.pushNamed(
+              context,
+              '/t',
+              arguments: {
+                'id': notification.topicId,
+                'page': notification.pageIndex
+              },
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          _description(
+                            context,
+                            notification.type,
+                            notification.username,
+                          ),
+                          style: Theme.of(context).textTheme.caption,
                         ),
+                      ),
+                      // StreamBuilder<DateTime>(
+                      //   stream: Stream.periodic(const Duration(minutes: 1)),
+                      //   builder: (context, snapshot) =>
+                      Text(
+                        duration(DateTime.now(), notification.dateTime),
                         style: Theme.of(context).textTheme.caption,
                       ),
-                    ),
-                    // StreamBuilder<DateTime>(
-                    //   stream: Stream.periodic(const Duration(minutes: 1)),
-                    //   builder: (context, snapshot) =>
-                    Text(
-                      duration(DateTime.now(), notification.dateTime),
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                    // ),
-                  ],
-                ),
+                      // ),
+                    ],
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 8.0),
+                    child: Text(notification.topicTitle),
+                  ),
+                ],
               ),
-              Container(
-                margin: EdgeInsets.all(8.0),
-                child: Text(notification.topicTitle),
-              ),
-            ],
+            ),
           );
         },
       ),
@@ -99,8 +121,9 @@ class InboxConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       model: ViewModel(),
+      onInit: (store) => store.dispatch(FetchNotificationsAction()),
       builder: (context, vm) => Inbox(
-        notifications: vm.notifications,
+        inboxState: vm.inboxState,
         fetch: vm.fetch,
       ),
     );
@@ -109,20 +132,20 @@ class InboxConnector extends StatelessWidget {
 
 class ViewModel extends BaseModel<AppState> {
   Future<void> Function() fetch;
-  List<UserNotification> notifications;
+  InboxState inboxState;
 
   ViewModel();
 
   ViewModel.build({
-    @required this.notifications,
+    @required this.inboxState,
     @required this.fetch,
-  }) : super(equals: [notifications]);
+  }) : super(equals: [inboxState]);
 
   @override
   ViewModel fromStore() {
     return ViewModel.build(
-      notifications: state.notifications,
-      fetch: () => dispatchFuture(FetchNotificationsAction()),
+      inboxState: state.inboxState,
+      fetch: () => dispatchFuture(RefreshNotificationsAction()),
     );
   }
 }

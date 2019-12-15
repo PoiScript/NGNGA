@@ -1,4 +1,3 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
@@ -6,12 +5,11 @@ import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
-import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 
 class TopReplySheet extends StatelessWidget {
   final List<PostItem> posts;
-  final List<User> users;
+  final Map<int, User> users;
 
   const TopReplySheet({
     Key key,
@@ -49,7 +47,9 @@ class TopReplySheet extends StatelessWidget {
 
                 int itemIndex = index ~/ 2;
 
-                if (posts[itemIndex] == null) {
+                Post post = posts[itemIndex].inner;
+
+                if (post == null) {
                   return Text(
                     AppLocalizations.of(context).postNotFound,
                     style: Theme.of(context)
@@ -68,19 +68,21 @@ class TopReplySheet extends StatelessWidget {
                         children: <Widget>[
                           Expanded(
                             child: Text(
-                              users[itemIndex].username,
+                              users[post.userId].username,
                               style: Theme.of(context).textTheme.caption,
                             ),
                           ),
                           Text(
-                            duration(DateTime.now(),
-                                posts[itemIndex].inner.createdAt),
+                            duration(
+                              DateTime.now(),
+                              post.createdAt,
+                            ),
                             style: Theme.of(context).textTheme.caption,
                           ),
                         ],
                       ),
                       BBCodeRender(
-                        raw: posts[itemIndex].inner.content,
+                        raw: post.content,
                         // TODO
                         openLink: (x) => {},
                         openPost: (x, y, z) => {},
@@ -90,7 +92,7 @@ class TopReplySheet extends StatelessWidget {
                         children: <Widget>[
                           Spacer(),
                           Text(
-                            posts[itemIndex].inner.vote.toString(),
+                            post.vote.toString(),
                             style: Theme.of(context).textTheme.caption,
                           ),
                         ],
@@ -100,58 +102,12 @@ class TopReplySheet extends StatelessWidget {
                 );
               },
               childCount: posts.length * 2 - 1,
-              semanticIndexCallback: (Widget _, int index) =>
+              semanticIndexCallback: (widget, index) =>
                   index.isEven ? index ~/ 2 : null,
             ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class TopReplySheetConnector extends StatelessWidget {
-  final List<int> postIds;
-
-  const TopReplySheetConnector({
-    Key key,
-    @required this.postIds,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(postIds: postIds),
-      builder: (context, vm) => TopReplySheet(
-        posts: vm.posts,
-        users: vm.users,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  final List<int> postIds;
-
-  List<PostItem> posts;
-
-  List<User> users;
-
-  ViewModel({this.postIds});
-
-  ViewModel.build({
-    @required this.postIds,
-    @required this.posts,
-    @required this.users,
-  });
-
-  @override
-  ViewModel fromStore() {
-    List<PostItem> posts = postIds.map((id) => state.posts[id]).toList();
-    return ViewModel.build(
-      postIds: postIds,
-      posts: posts,
-      users: posts.map((p) => state.users[p.inner.userId]).toList(),
     );
   }
 }
