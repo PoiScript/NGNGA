@@ -218,7 +218,7 @@ packages:
     source: hosted
     version: "0.16.0"
   intl_translation:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: intl_translation
       url: "https://pub.dartlang.org"
@@ -260,7 +260,7 @@ packages:
     source: hosted
     version: "1.1.8"
   mockito:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: mockito
       url: "https://pub.dartlang.org"
@@ -342,7 +342,7 @@ packages:
       name: plugin_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   pub_semver:
     dependency: transitive
     description:
@@ -438,7 +438,7 @@ packages:
       name: url_launcher_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.1+1"
+    version: "0.0.1+2"
   url_launcher_platform_interface:
     dependency: transitive
     description:
