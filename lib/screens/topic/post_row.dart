@@ -20,7 +20,7 @@ import 'attachment_sheet.dart';
 import 'comment_sheet.dart';
 import 'top_reply_sheet.dart';
 
-final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
 class PostRow extends StatefulWidget {
   final PostItem post;
@@ -208,14 +208,14 @@ class _PostRowState extends State<PostRow> {
         dense: true,
         leading: const Icon(Icons.access_time),
         title: Text(AppLocalizations.of(context).createdAt),
-        subtitle: Text(dateFormatter.format(post.createdAt)),
+        subtitle: Text(_dateFormatter.format(post.createdAt)),
       ),
       if (post.editedAt != null)
         ListTile(
           dense: true,
           leading: const Icon(Icons.edit),
           title: Text(AppLocalizations.of(context).editedAt),
-          subtitle: Text(dateFormatter.format(post.editedAt)),
+          subtitle: Text(_dateFormatter.format(post.editedAt)),
         ),
       if (post.vendor != null) _buildVendorListTile(),
     ];

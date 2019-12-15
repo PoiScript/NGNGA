@@ -8,8 +8,7 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
-final NumberFormat numberFormatter = NumberFormat('#,###');
-final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
+final _numberFormatter = NumberFormat('#,###,###,###');
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
@@ -61,7 +60,7 @@ class TopicRow extends StatelessWidget {
               width: 64,
               padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
               child: Text(
-                numberFormatter.format(topic.postsCount),
+                _numberFormatter.format(topic.postsCount),
                 style: Theme.of(context).textTheme.caption,
               ),
             ),

@@ -8,7 +8,7 @@ import 'package:ngnga/localizations.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
-final DateFormat dateFormatter = DateFormat('HH:mm:ss');
+final _dateFormatter = DateFormat('HH:mm:ss');
 
 class UpdateIndicator extends StatefulWidget {
   final Future<void> Function() fetch;
@@ -138,7 +138,7 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
                     stream: Stream.periodic(const Duration(seconds: 1)),
                     builder: (context, snapshot) => Text(
                       AppLocalizations.of(context).lastUpdated(
-                        dateFormatter.format(_lastUpdated),
+                        _dateFormatter.format(_lastUpdated),
                         DateTime.now().difference(_lastUpdated).inSeconds,
                       ),
                       style: Theme.of(context).textTheme.caption,

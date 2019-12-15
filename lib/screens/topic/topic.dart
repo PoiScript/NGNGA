@@ -4,7 +4,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/topic.dart';
@@ -18,8 +17,6 @@ import 'package:ngnga/widgets/title_colorize.dart';
 import 'popup_menu.dart';
 import 'post_row.dart';
 import 'update_indicator.dart';
-
-final DateFormat dateFormatter = DateFormat('HH:mm:ss');
 
 class TopicPage extends StatefulWidget {
   final Topic topic;

@@ -12,7 +12,7 @@ import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 
-final DateFormat dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
+final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 
 class UserPage extends StatelessWidget {
   final User user;
@@ -54,11 +54,11 @@ class UserPage extends StatelessWidget {
             // ),
             ListTile(
               title: Text(AppLocalizations.of(context).createdAt),
-              subtitle: Text(dateFormatter.format(user.createdAt)),
+              subtitle: Text(_dateFormatter.format(user.createdAt)),
             ),
             ListTile(
               title: Text(AppLocalizations.of(context).lastVisited),
-              subtitle: Text(dateFormatter.format(user.lastVisited)),
+              subtitle: Text(_dateFormatter.format(user.lastVisited)),
             ),
             ListTile(
               title: Text(AppLocalizations.of(context).postsCount),

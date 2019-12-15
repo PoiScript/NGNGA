@@ -3,7 +3,7 @@ import 'package:html_unescape/html_unescape.dart';
 
 import 'package:ngnga/models/topic.dart';
 
-final HtmlUnescape unescape = HtmlUnescape();
+final _unescape = HtmlUnescape();
 
 class TitleColorize extends StatelessWidget {
   final Topic topic;
@@ -22,7 +22,7 @@ class TitleColorize extends StatelessWidget {
   Widget build(BuildContext context) {
     List<InlineSpan> spans = [];
 
-    final content = unescape.convert(topic.title);
+    final content = _unescape.convert(topic.title);
     var lastEnd = 0;
 
     TextStyle base = Theme.of(context).textTheme.body1.copyWith(
