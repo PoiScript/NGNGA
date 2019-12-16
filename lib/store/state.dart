@@ -54,22 +54,17 @@ class SettingsState {
       );
 }
 
-// ignore:one_member_abstracts
 abstract class UserState {
-  bool isMe(int userId);
+  const UserState();
 }
 
-class UserUninitialized extends UserState {
-  bool isMe(int userId) => false;
-}
+class UserUninitialized extends UserState {}
 
 class UserLogged extends UserState {
   final int uid;
   final String cid;
 
-  UserLogged(this.uid, this.cid);
-
-  bool isMe(int userId) => userId == uid;
+  const UserLogged(this.uid, this.cid);
 }
 
 // TODO: guest login

@@ -18,11 +18,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _selectedIndex == 0
-              ? AppLocalizations.of(context).favorites
-              : _selectedIndex == 1
-                  ? AppLocalizations.of(context).explore
-                  : AppLocalizations.of(context).inbox,
+          _appBarTitle(_selectedIndex),
           style: Theme.of(context).textTheme.body2,
         ),
         actions: <Widget>[
@@ -30,9 +26,7 @@ class _HomePageState extends State<HomePage> {
         ],
         backgroundColor: Theme.of(context).cardColor,
       ),
-      body: _selectedIndex == 0
-          ? FavoritesConnector()
-          : _selectedIndex == 1 ? ExploreConnector() : InboxConnector(),
+      body: _content(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -54,5 +48,29 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) => setState(() => _selectedIndex = index),
       ),
     );
+  }
+
+  String _appBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return AppLocalizations.of(context).explore;
+      case 1:
+        return AppLocalizations.of(context).favorites;
+      case 2:
+        return AppLocalizations.of(context).inbox;
+    }
+    return null;
+  }
+
+  Widget _content(int index) {
+    switch (index) {
+      case 0:
+        return FavoritesConnector();
+      case 1:
+        return ExploreConnector();
+      case 2:
+        return InboxConnector();
+    }
+    return null;
   }
 }

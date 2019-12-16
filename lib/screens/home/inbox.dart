@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -9,6 +11,11 @@ import 'package:ngnga/store/inbox.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/refresh.dart';
+
+final _everyMinutes = StreamController<DateTime>.broadcast()
+  ..addStream(
+    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
+  );
 
 class Inbox extends StatelessWidget {
   final Future<void> Function() fetch;
@@ -70,14 +77,14 @@ class Inbox extends StatelessWidget {
                           style: Theme.of(context).textTheme.caption,
                         ),
                       ),
-                      // StreamBuilder<DateTime>(
-                      //   stream: Stream.periodic(const Duration(minutes: 1)),
-                      //   builder: (context, snapshot) =>
-                      Text(
-                        duration(DateTime.now(), notification.dateTime),
-                        style: Theme.of(context).textTheme.caption,
+                      StreamBuilder<DateTime>(
+                        initialData: DateTime.now(),
+                        stream: _everyMinutes.stream,
+                        builder: (context, snapshot) => Text(
+                          duration(snapshot.data, notification.dateTime),
+                          style: Theme.of(context).textTheme.caption,
+                        ),
                       ),
-                      // ),
                     ],
                   ),
                   Container(
