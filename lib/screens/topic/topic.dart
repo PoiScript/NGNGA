@@ -176,6 +176,7 @@ class _TopicPageState extends State<TopicPage> {
                     assert(post != null);
                     return PostRow(
                       post: post,
+                      baseUrl: widget.baseUrl,
                       user: widget.users[post.inner.userId],
                       sentByMe: widget.isMe(post.inner.userId),
                       upvote: () => widget.upvotePost(post.inner.id),

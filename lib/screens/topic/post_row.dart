@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/bbcode/render.dart';
@@ -26,6 +27,7 @@ class PostRow extends StatefulWidget {
   final PostItem post;
   final User user;
   final bool sentByMe;
+  final String baseUrl;
 
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
@@ -39,6 +41,7 @@ class PostRow extends StatefulWidget {
     @required this.post,
     @required this.user,
     @required this.sentByMe,
+    @required this.baseUrl,
     @required this.upvote,
     @required this.downvote,
     @required this.openPost,
@@ -291,6 +294,13 @@ class _PostRowState extends State<PostRow> {
             style: Theme.of(context).textTheme.body1,
           ),
         ),
+      PopupMenuItem<Choice>(
+        value: Choice.copyLinkToClipboard,
+        child: Text(
+          AppLocalizations.of(context).copyLinkToClipboard,
+          style: Theme.of(context).textTheme.body1,
+        ),
+      ),
       if (widget.sentByMe)
         PopupMenuItem<Choice>(
           value: Choice.editThisPost,
@@ -323,13 +333,26 @@ class _PostRowState extends State<PostRow> {
     ];
   }
 
-  _onMenuSelected(Choice choice) {
+  _onMenuSelected(Choice choice) async {
     switch (choice) {
       case Choice.displayInBBCode:
         setState(() => _displayMode = DisplayMode.bbCode);
         break;
       case Choice.dispalyInRichText:
         setState(() => _displayMode = DisplayMode.richText);
+        break;
+      case Choice.copyLinkToClipboard:
+        await Clipboard.setData(ClipboardData(
+          text: Uri.https(widget.baseUrl, 'read.php', {
+            'tid': widget.post.inner.topicId.toString(),
+            'pid': widget.post.inner.id.toString(),
+          }).toString(),
+        ));
+        Scaffold.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context).copiedLinkToClipboard),
+          ));
         break;
       case Choice.editThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
@@ -491,6 +514,7 @@ class _PostRowState extends State<PostRow> {
 enum Choice {
   displayInBBCode,
   dispalyInRichText,
+  copyLinkToClipboard,
   editThisPost,
   replyToThisPost,
   quoteFromThisPost,
