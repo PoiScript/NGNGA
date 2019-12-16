@@ -50,6 +50,11 @@ class AppLocalizations {
   String get removedFromPinned =>
       Intl.message('Removed from pinned', locale: localeName);
 
+  String get copyToClipboard =>
+      Intl.message('Copy to Clipboard', locale: localeName);
+  String get open => Intl.message('Open', locale: localeName);
+  String get linkClicked => Intl.message('Link Clicked', locale: localeName);
+
   String get copyLinkToClipboard =>
       Intl.message('Copy Link to Clipboard', locale: localeName);
   String get copiedLinkToClipboard =>
