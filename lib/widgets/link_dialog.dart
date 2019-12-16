@@ -18,14 +18,14 @@ class LinkDialog extends StatelessWidget {
         FlatButton(
           onPressed: () {
             Navigator.pop(context);
-            launch(url);
+            Clipboard.setData(ClipboardData(text: url));
           },
           child: Text(AppLocalizations.of(context).copyToClipboard),
         ),
         FlatButton(
           onPressed: () {
             Navigator.pop(context);
-            Clipboard.setData(ClipboardData(text: url));
+            launch(url);
           },
           child: Text(AppLocalizations.of(context).open),
         ),
