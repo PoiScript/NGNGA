@@ -7,6 +7,7 @@ enum Choice {
   copyLinkToClipboard,
   addToPinned,
   removeFromPinned,
+  viewToppedTopic,
 }
 
 class PopupMenu extends StatelessWidget {
@@ -14,15 +15,18 @@ class PopupMenu extends StatelessWidget {
   final bool isSubcategory;
   final String baseUrl;
 
+  final int toppedTopicId;
+
   final bool isPinned;
   final VoidCallback addToPinned;
   final VoidCallback removeFromPinned;
 
-  PopupMenu({
+  const PopupMenu({
     Key key,
     @required this.categoryId,
     @required this.isSubcategory,
     @required this.baseUrl,
+    @required this.toppedTopicId,
     @required this.isPinned,
     @required this.addToPinned,
     @required this.removeFromPinned,
@@ -61,6 +65,14 @@ class PopupMenu extends StatelessWidget {
               style: Theme.of(context).textTheme.body1,
             ),
           ),
+        if (toppedTopicId != null)
+          PopupMenuItem<Choice>(
+            value: Choice.viewToppedTopic,
+            child: Text(
+              AppLocalizations.of(context).viewToppedTopic,
+              style: Theme.of(context).textTheme.body1,
+            ),
+          ),
       ],
       onSelected: (choice) async {
         switch (choice) {
@@ -92,6 +104,12 @@ class PopupMenu extends StatelessWidget {
               ..showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context).removedFromPinned),
               ));
+            break;
+          case Choice.viewToppedTopic:
+            Navigator.pushNamed(context, '/t', arguments: {
+              'id': toppedTopicId,
+              'page': 0,
+            });
             break;
         }
       },

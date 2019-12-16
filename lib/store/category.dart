@@ -10,7 +10,7 @@ class CategoryUninitialized extends CategoryState {}
 
 class CategoryLoaded extends CategoryState {
   final Category category;
-  final String toppedTopic;
+  final int toppedTopicId;
   final List<int> topicIds;
   final bool isPinned;
 
@@ -23,7 +23,7 @@ class CategoryLoaded extends CategoryState {
 
   const CategoryLoaded({
     @required this.category,
-    @required this.toppedTopic,
+    @required this.toppedTopicId,
     @required this.isPinned,
     @required this.topicIds,
     @required this.topicsCount,
@@ -35,7 +35,7 @@ class CategoryLoaded extends CategoryState {
 
   CategoryLoaded copyWith({
     Category category,
-    String toppedTopic,
+    int toppedTopicId,
     bool isPinned,
     List<int> topicIds,
     int topicsCount,
@@ -44,7 +44,7 @@ class CategoryLoaded extends CategoryState {
   }) =>
       CategoryLoaded(
         category: category ?? this.category,
-        toppedTopic: toppedTopic ?? this.toppedTopic,
+        toppedTopicId: toppedTopicId ?? this.toppedTopicId,
         isPinned: isPinned ?? this.isPinned,
         topicIds: topicIds ?? this.topicIds,
         topicsCount: topicsCount ?? this.topicsCount,

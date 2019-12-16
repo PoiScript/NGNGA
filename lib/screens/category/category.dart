@@ -77,6 +77,7 @@ class CategoryPage extends StatelessWidget {
         PopupMenu(
           categoryId: categoryState.category.id,
           isSubcategory: categoryState.category.isSubcategory,
+          toppedTopicId: categoryState.toppedTopicId,
           baseUrl: baseUrl,
           isPinned: categoryState.isPinned,
           addToPinned: () => addToPinned(categoryState.category),

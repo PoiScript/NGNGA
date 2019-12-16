@@ -42,6 +42,9 @@ class AppLocalizations {
   String get addedToPinned =>
       Intl.message('Added to pinned', locale: localeName);
 
+  String get viewToppedTopic =>
+      Intl.message('View Topped Topic', locale: localeName);
+
   String get removeFromPinned =>
       Intl.message('Remove from pinned', locale: localeName);
   String get removedFromPinned =>
