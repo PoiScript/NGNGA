@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,24 +27,25 @@ enum EditorAction {
 class EditorPage extends StatefulWidget {
   final EditingLoaded editingState;
 
-  final ValueChanged<LocalAttachment> addAttachment;
-  final ValueChanged<LocalAttachment> removeAttachment;
-  final Future<void> Function(LocalAttachment) uploadAttachment;
+  final ValueChanged<File> selectFile;
+  final ValueChanged<int> unselectFile;
+  final Future<void> Function(int) uploadFile;
+
   final Future<void> Function(String, String) applyEditing;
   final VoidCallback clearEditing;
 
   EditorPage({
     @required this.editingState,
-    @required this.addAttachment,
-    @required this.removeAttachment,
-    @required this.uploadAttachment,
+    @required this.selectFile,
+    @required this.unselectFile,
+    @required this.uploadFile,
     @required this.applyEditing,
     @required this.clearEditing,
   })  : assert(editingState != null),
         assert(applyEditing != null),
-        assert(addAttachment != null),
-        assert(removeAttachment != null),
-        assert(uploadAttachment != null),
+        assert(selectFile != null),
+        assert(unselectFile != null),
+        assert(uploadFile != null),
         assert(clearEditing != null);
 
   @override
@@ -231,10 +234,11 @@ class _EditorPageState extends State<EditorPage> {
         );
       case DisplayToolbar.attachs:
         return EditorAttachs(
-          attachs: state.attachs,
-          addAttachment: widget.addAttachment,
-          removeAttachment: widget.removeAttachment,
-          uploadAttachment: widget.uploadAttachment,
+          files: state.files,
+          attachments: state.attachments,
+          selectFile: widget.selectFile,
+          unselectFile: widget.unselectFile,
+          uploadFile: widget.uploadFile,
           insertImage: (url) => _insertContent('[img]./$url[/img]'),
         );
       case DisplayToolbar.styling:
@@ -363,9 +367,9 @@ class EditorPageConnector extends StatelessWidget {
         }
         return EditorPage(
           editingState: vm.editingState,
-          addAttachment: vm.addAttachment,
-          removeAttachment: vm.removeAttachment,
-          uploadAttachment: vm.uploadAttachment,
+          selectFile: vm.selectFile,
+          unselectFile: vm.unselectFile,
+          uploadFile: vm.uploadFile,
           applyEditing: vm.applyEditing,
           clearEditing: vm.clearEditing,
         );
@@ -380,12 +384,12 @@ bool _validateArgs(
     case EditorAction.newTopic:
       return categoryId != null && topicId == null && postId == null;
     case EditorAction.newPost:
-      return categoryId == null && topicId != null && postId == null;
+      return categoryId != null && topicId != null && postId == null;
     case EditorAction.quote:
     case EditorAction.reply:
     case EditorAction.modify:
     case EditorAction.comment:
-      return categoryId == null && topicId != null && postId != null;
+      return categoryId != null && topicId != null && postId != null;
     case EditorAction.noop:
       return categoryId == null && topicId == null && postId == null;
   }
@@ -400,9 +404,10 @@ class ViewModel extends BaseModel<AppState> {
 
   EditingState editingState;
 
-  ValueChanged<LocalAttachment> addAttachment;
-  ValueChanged<LocalAttachment> removeAttachment;
-  Future<void> Function(LocalAttachment) uploadAttachment;
+  ValueChanged<File> selectFile;
+  ValueChanged<int> unselectFile;
+  Future<void> Function(int) uploadFile;
+
   Future<void> Function(String, String) applyEditing;
   VoidCallback clearEditing;
 
@@ -419,9 +424,9 @@ class ViewModel extends BaseModel<AppState> {
     @required this.topicId,
     @required this.postId,
     @required this.editingState,
-    @required this.addAttachment,
-    @required this.removeAttachment,
-    @required this.uploadAttachment,
+    @required this.selectFile,
+    @required this.unselectFile,
+    @required this.uploadFile,
     @required this.applyEditing,
     @required this.clearEditing,
   }) : super(equals: [editingState]);
@@ -445,10 +450,10 @@ class ViewModel extends BaseModel<AppState> {
         ),
       ),
       clearEditing: () => dispatch(ClearEditingAction()),
-      addAttachment: (attach) => dispatch(AddAttachmentAction(attach)),
-      removeAttachment: (attach) => dispatch(RemoveAttachmentAction(attach)),
-      uploadAttachment: (attach) =>
-          dispatchFuture(UploadAttachmentAction(attach, categoryId)),
+      selectFile: (file) => dispatch(SelectFileAction(file)),
+      unselectFile: (index) => dispatch(UnselectFileAction(index)),
+      uploadFile: (index) =>
+          dispatchFuture(UploadFileAction(categoryId, index)),
     );
   }
 }

@@ -47,6 +47,7 @@ enum TopicDecoration {
 
 class Topic extends TopicItem {
   final int id;
+  final int categoryId;
 
   final String title;
 
@@ -66,6 +67,7 @@ class Topic extends TopicItem {
 
   Topic({
     this.id,
+    this.categoryId,
     this.title,
     this.decorations,
     this.createdAt,
@@ -136,6 +138,7 @@ class Topic extends TopicItem {
 
     return Topic(
       id: json['tid'],
+      categoryId: json['fid'],
       title: json['subject'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         json['postdate'] * 1000,

@@ -242,7 +242,7 @@ class Repository {
       await MultipartFile.fromPath('attachment_file1', file.path),
     );
 
-    print(uploadUrl);
+    if (kDebugMode) print('POST $uploadUrl');
 
     final stream = await client.send(request);
     final res = await Response.fromStream(stream);

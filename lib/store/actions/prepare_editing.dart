@@ -25,7 +25,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
         editingState: EditingLoaded(
           uploadAuthCode: '',
           uploadUrl: '',
-          attachs: [],
+          files: [],
+          attachments: [],
           initialSubject: '',
           initialContent: '',
         ),
@@ -42,7 +43,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
     return state.copy(
       editingState: EditingLoaded(
         uploadUrl: res.uploadUrl,
-        attachs: res.attachs,
+        attachments: res.attachs,
+        files: [],
         initialContent: res.content ?? '',
         initialSubject: res.subject ?? '',
         uploadAuthCode: res.uploadAuthCode,

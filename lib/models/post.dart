@@ -1,3 +1,5 @@
+import 'attachment.dart';
+
 abstract class PostItem {
   static PostItem fromJson(Map<String, dynamic> json) {
     if (json['comment_to_id'] != null) {
@@ -33,6 +35,7 @@ class Deleted extends PostItem {
 class Post extends PostItem {
   final int id;
   final int index;
+  final int categoryId;
   final int topicId;
   final int userId;
   final int replyTo;
@@ -54,6 +57,7 @@ class Post extends PostItem {
 
   Post({
     this.id,
+    this.categoryId,
     this.topicId,
     this.userId,
     this.replyTo,
@@ -193,6 +197,7 @@ class Post extends PostItem {
     return Post(
       id: json['pid'],
       topicId: json['tid'],
+      categoryId: json['fid'],
       userId: json['authorid'],
       replyTo: json['reply_to'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(
@@ -269,20 +274,3 @@ class TopicPost extends PostItem {
 }
 
 enum Vendor { android, apple, windows }
-
-class Attachment {
-  final String url;
-  final String name;
-
-  Attachment._({
-    this.url,
-    this.name,
-  });
-
-  factory Attachment.fromJson(Map<String, dynamic> json) {
-    return Attachment._(
-      name: json['url_utf8_org_name'],
-      url: json['attachurl'],
-    );
-  }
-}

@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
@@ -116,6 +117,7 @@ class _TopicPageState extends State<TopicPage> {
       onPressed: () {
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.newPost,
+          'categoryId': widget.topicState.topic.categoryId,
           'topicId': widget.topicState.topic.id,
         });
       },

@@ -29,17 +29,6 @@ class ApplyEditingAction extends ReduxAction<AppState> {
     EditingState editingState = state.editingState;
 
     if (editingState is EditingLoaded) {
-      String attachmentChecksum = editingState.attachs
-          .map(
-              (attach) => attach is UploadedAttachment ? attach.checksum : null)
-          .where((i) => i != null)
-          .join('\t');
-
-      String attachmentCode = editingState.attachs
-          .map((attach) => attach is UploadedAttachment ? attach.code : null)
-          .where((i) => i != null)
-          .join('\t');
-
       await state.repository.applyEditing(
         action: action,
         categoryId: categoryId,
@@ -47,8 +36,14 @@ class ApplyEditingAction extends ReduxAction<AppState> {
         postId: postId,
         subject: subject,
         content: content,
-        attachmentCode: attachmentCode,
-        attachmentChecksum: attachmentChecksum,
+        attachmentCode: editingState.files
+            .map((file) => file is FileUploaded ? file.code : '')
+            .where((code) => code.isNotEmpty)
+            .join('\t'),
+        attachmentChecksum: editingState.files
+            .map((file) => file is FileUploaded ? file.check : '')
+            .where((check) => check.isNotEmpty)
+            .join('\t'),
       );
     }
 

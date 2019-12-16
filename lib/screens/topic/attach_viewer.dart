@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/attachment.dart';
 
 class AttachViewer extends StatelessWidget {
   final List<Attachment> attachs;
@@ -28,16 +28,14 @@ class AttachViewer extends StatelessWidget {
           itemCount: attachs.length,
           pageController: PageController(initialPage: initialPage),
           builder: (context, index) {
-            final Attachment item = attachs[index];
+            final Attachment attach = attachs[index];
 
             return PhotoViewGalleryPageOptions(
-              imageProvider: CachedNetworkImageProvider(
-                'https://img.nga.178.com/attachments/${item.url}',
-              ),
+              imageProvider: CachedNetworkImageProvider(attach.fullUrl),
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained * 0.5,
               maxScale: PhotoViewComputedScale.covered * 1.1,
-              heroAttributes: PhotoViewHeroAttributes(tag: item.url),
+              heroAttributes: PhotoViewHeroAttributes(tag: attach.url),
             );
           },
           backgroundDecoration: BoxDecoration(

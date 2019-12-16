@@ -2,32 +2,33 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-abstract class AttachmentItem {}
+import 'package:ngnga/models/attachment.dart';
 
-class RemoteAttachment extends AttachmentItem {
-  final String url;
+abstract class FileState {
+  File get file;
 
-  RemoteAttachment(this.url);
+  const FileState();
 }
 
-class LocalAttachment extends AttachmentItem {
+class FileSelected extends FileState {
   final File file;
 
-  LocalAttachment(this.file);
+  const FileSelected(this.file);
 }
 
-class UploadedAttachment extends AttachmentItem {
-  final String checksum;
+class FileUploading extends FileState {
+  final File file;
+
+  const FileUploading(this.file);
+}
+
+class FileUploaded extends FileState {
+  final String check;
   final String code;
   final String url;
   final File file;
 
-  UploadedAttachment({
-    this.checksum,
-    this.code,
-    this.url,
-    this.file,
-  });
+  const FileUploaded({this.check, this.code, this.url, this.file});
 }
 
 abstract class EditingState {
@@ -39,33 +40,37 @@ class EditingUninitialized extends EditingState {}
 class EditingLoaded extends EditingState {
   final String uploadAuthCode;
   final String uploadUrl;
-  final List<AttachmentItem> attachs;
+  final List<FileState> files;
+  final List<Attachment> attachments;
   final String initialSubject;
   final String initialContent;
 
   const EditingLoaded({
     @required this.uploadAuthCode,
     @required this.uploadUrl,
-    @required this.attachs,
+    @required this.files,
+    @required this.attachments,
     @required this.initialSubject,
     @required this.initialContent,
   })  : assert(uploadAuthCode != null),
         assert(uploadUrl != null),
-        assert(attachs != null),
+        assert(attachments != null),
         assert(initialSubject != null),
         assert(initialContent != null);
 
   EditingLoaded copy({
     String uploadAuthCode,
     String uploadUrl,
-    List<AttachmentItem> attachs,
+    List<FileState> files,
+    List<Attachment> attachments,
     String initialSubject,
     String initialContent,
   }) =>
       EditingLoaded(
         uploadAuthCode: uploadAuthCode ?? this.uploadAuthCode,
         uploadUrl: uploadUrl ?? this.uploadUrl,
-        attachs: attachs ?? this.attachs,
+        attachments: attachments ?? this.attachments,
+        files: files ?? this.files,
         initialSubject: initialSubject ?? this.initialSubject,
         initialContent: initialContent ?? this.initialContent,
       );

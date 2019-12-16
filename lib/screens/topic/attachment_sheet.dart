@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
-import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/attachment.dart';
 
 import 'attach_viewer.dart';
 
@@ -52,7 +52,7 @@ class AttachmentSheet extends StatelessWidget {
       padding: EdgeInsets.all(8.0),
       child: ClipRRect(
         child: CachedNetworkImage(
-          imageUrl: 'https://img.nga.178.com/attachments/${attachment.url}',
+          imageUrl: attachment.thumbUrl,
           imageBuilder: (context, imageProvider) => GestureDetector(
             onTap: () {
               Navigator.push(
@@ -73,6 +73,9 @@ class AttachmentSheet extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
+          ),
+          placeholder: (context, url) => Center(
+            child: CircularProgressIndicator(),
           ),
         ),
         borderRadius: BorderRadius.circular(4.0),

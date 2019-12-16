@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
+import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
@@ -333,6 +334,7 @@ class _PostRowState extends State<PostRow> {
       case Choice.editThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.modify,
+          'categoryId': post.categoryId,
           'topicId': post.topicId,
           'postId': post.id,
         });
@@ -340,6 +342,7 @@ class _PostRowState extends State<PostRow> {
       case Choice.replyToThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.reply,
+          'categoryId': post.categoryId,
           'topicId': post.topicId,
           'postId': post.id,
         });
@@ -347,6 +350,7 @@ class _PostRowState extends State<PostRow> {
       case Choice.quoteFromThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.quote,
+          'categoryId': post.categoryId,
           'topicId': post.topicId,
           'postId': post.id,
         });
@@ -354,6 +358,7 @@ class _PostRowState extends State<PostRow> {
       case Choice.commentOnThisPost:
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.comment,
+          'categoryId': post.categoryId,
           'topicId': post.topicId,
           'postId': post.id,
         });

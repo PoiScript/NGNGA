@@ -7,31 +7,35 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
+import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/store/editing.dart';
 
 class EditorAttachs extends StatelessWidget {
-  final List<AttachmentItem> attachs;
-  final Function(LocalAttachment) addAttachment;
-  final Function(LocalAttachment) removeAttachment;
-  final Future<void> Function(LocalAttachment) uploadAttachment;
+  final List<Attachment> attachments;
+
+  final List<FileState> files;
+  final Function(File) selectFile;
+  final Function(int) unselectFile;
+  final Future<void> Function(int) uploadFile;
 
   final ValueChanged<String> insertImage;
 
   EditorAttachs({
-    @required this.attachs,
-    @required this.addAttachment,
-    @required this.removeAttachment,
-    @required this.uploadAttachment,
+    @required this.attachments,
+    @required this.files,
+    @required this.selectFile,
+    @required this.unselectFile,
+    @required this.uploadFile,
     @required this.insertImage,
-  })  : assert(attachs != null),
-        assert(addAttachment != null),
+  })  : assert(files != null),
+        assert(selectFile != null),
         assert(insertImage != null),
-        assert(removeAttachment != null),
-        assert(uploadAttachment != null);
+        assert(unselectFile != null),
+        assert(uploadFile != null);
 
   @override
   Widget build(BuildContext context) {
-    if (attachs.isEmpty) {
+    if (attachments.isEmpty && files.isEmpty) {
       return Center(
         child: FlatButton.icon(
           icon: Icon(Icons.add_photo_alternate),
@@ -48,22 +52,23 @@ class EditorAttachs extends StatelessWidget {
       mainAxisSpacing: 8,
       physics: AlwaysScrollableScrollPhysics(),
       children: <Widget>[
-        for (AttachmentItem attach in attachs)
-          if (attach is RemoteAttachment)
-            RemoteAttachmentGridTile(
-              attach: attach,
-              insertImage: insertImage,
-            )
-          else if (attach is LocalAttachment)
-            LocalAttachmentGridTile(
-              attach: attach,
-              upload: () => uploadAttachment(attach),
-            )
-          else if (attach is UploadedAttachment)
-            UploadedAttachmentGridTile(
-              attach: attach,
-              insertImage: insertImage,
+        for (Attachment attach in attachments)
+          GridTile(
+            child: _attachmentRect(context, attach),
+            footer: GestureDetector(
+              child: GridTileBar(
+                backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+                leading: Icon(Icons.insert_photo),
+                title: Text(AppLocalizations.of(context).insert),
+              ),
+              onTap: () => insertImage(attach.url),
             ),
+          ),
+        for (int index = 0; index < files.length; index++)
+          GridTile(
+            child: _fileImageRect(context, files[index].file),
+            footer: _buildGridFooter(context, index),
+          ),
         InkResponse(
           onTap: _pickImage,
           child: Container(
@@ -71,123 +76,61 @@ class EditorAttachs extends StatelessWidget {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(4.0),
             ),
-            child: Center(child: Icon(Icons.add)),
+            child: Center(child: Icon(Icons.add_photo_alternate)),
           ),
         ),
       ],
     );
   }
 
-  _pickImage() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    if (image != null) addAttachment(LocalAttachment(image));
-  }
-}
-
-class RemoteAttachmentGridTile extends StatelessWidget {
-  final RemoteAttachment attach;
-  final ValueChanged<String> insertImage;
-
-  const RemoteAttachmentGridTile({
-    Key key,
-    @required this.attach,
-    @required this.insertImage,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GridTile(
-      child: _networkImageRect(attach.url),
-      footer: _insertImageFooter(
-        context,
-        () => insertImage(attach.url),
-      ),
-    );
-  }
-}
-
-class LocalAttachmentGridTile extends StatefulWidget {
-  final LocalAttachment attach;
-  final VoidCallback upload;
-
-  const LocalAttachmentGridTile({
-    Key key,
-    @required this.attach,
-    @required this.upload,
-  }) : super(key: key);
-
-  @override
-  _LocalAttachmentGridTileState createState() =>
-      _LocalAttachmentGridTileState();
-}
-
-class _LocalAttachmentGridTileState extends State<LocalAttachmentGridTile> {
-  bool isUploading = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridTile(
-      child: _fileImageRect(context, widget.attach.file),
-      footer: GestureDetector(
+  Widget _buildGridFooter(BuildContext context, int index) {
+    FileState state = files[index];
+    if (state is FileSelected) {
+      return GestureDetector(
         child: GridTileBar(
           backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-          leading: isUploading ? null : Icon(Icons.file_upload),
-          title: Text(
-            isUploading
-                ? AppLocalizations.of(context).uploading
-                : AppLocalizations.of(context).upload,
-          ),
+          leading: Icon(Icons.file_upload),
+          title: Text(AppLocalizations.of(context).upload),
         ),
-        onTap: isUploading
-            ? null
-            : () {
-                widget.upload();
-                setState(() => isUploading = true);
-              },
-      ),
-    );
+        onTap: () => uploadFile(index),
+      );
+    }
+
+    if (state is FileUploading) {
+      return GridTileBar(
+        backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+        title: Text(AppLocalizations.of(context).uploading),
+      );
+    }
+
+    if (state is FileUploaded) {
+      return GestureDetector(
+        child: GridTileBar(
+          backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+          leading: Icon(Icons.insert_photo),
+          title: Text(AppLocalizations.of(context).insert),
+        ),
+        onTap: () => insertImage(state.url),
+      );
+    }
+
+    return null;
   }
-}
 
-class UploadedAttachmentGridTile extends StatelessWidget {
-  final UploadedAttachment attach;
-  final ValueChanged<String> insertImage;
+  Widget _attachmentRect(BuildContext context, Attachment attachment) {
+    // FIXME: better way to create unique tag
+    String tag = 'tag${DateTime.now().toString()}';
 
-  const UploadedAttachmentGridTile({
-    Key key,
-    @required this.attach,
-    @required this.insertImage,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GridTile(
-      child: _fileImageRect(context, attach.file),
-      footer: _insertImageFooter(
-        context,
-        () => insertImage(attach.url),
-      ),
-    );
-  }
-}
-
-Widget _networkImageRect(String url) {
-  // FIXME: better way to create unique tag
-  String tag = 'tag${DateTime.now().toString()}';
-
-  return ClipRRect(
-    child: CachedNetworkImage(
-      imageUrl: 'https://img.nga.178.com/attachments/$url',
-      imageBuilder: (context, imageProvider) => GestureDetector(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4.0),
+      child: GestureDetector(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => HeroPhotoViewWrapper(
                 tag: tag,
-                imageProvider: CachedNetworkImageProvider(
-                  'https://img.nga.178.com/attachments/$url',
-                ),
+                imageProvider: CachedNetworkImageProvider(attachment.fullUrl),
               ),
             ),
           );
@@ -195,49 +138,45 @@ Widget _networkImageRect(String url) {
         child: Hero(
           tag: tag,
           child: Image(
-            image: imageProvider,
+            image: CachedNetworkImageProvider(attachment.thumbUrl),
             fit: BoxFit.cover,
           ),
         ),
       ),
-    ),
-    borderRadius: BorderRadius.circular(4.0),
-  );
-}
+    );
+  }
 
-Widget _fileImageRect(BuildContext context, File file) {
-  // FIXME: better way to create unique tag
-  String tag = 'tag${DateTime.now().toString()}';
+  Widget _fileImageRect(BuildContext context, File file) {
+    // FIXME: better way to create unique tag
+    String tag = 'tag${DateTime.now().toString()}';
+    ImageProvider imageProvider = FileImage(file);
 
-  return ClipRRect(
-    child: GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HeroPhotoViewWrapper(
-              tag: tag,
-              imageProvider: FileImage(file),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4.0),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HeroPhotoViewWrapper(
+                tag: tag,
+                imageProvider: imageProvider,
+              ),
             ),
-          ),
-        );
-      },
-      child: Hero(
-        tag: tag,
-        child: Image.file(file, fit: BoxFit.cover),
+          );
+        },
+        child: Hero(
+          tag: tag,
+          child: Image(image: imageProvider, fit: BoxFit.cover),
+        ),
       ),
-    ),
-    borderRadius: BorderRadius.circular(4.0),
-  );
-}
+    );
+  }
 
-Widget _insertImageFooter(BuildContext context, VoidCallback insertImage) {
-  return GestureDetector(
-    child: GridTileBar(
-      backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-      leading: Icon(Icons.insert_photo),
-      title: Text(AppLocalizations.of(context).insert),
-    ),
-    onTap: insertImage,
-  );
+  _pickImage() async {
+    File file = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (file != null) selectFile(file);
+  }
 }

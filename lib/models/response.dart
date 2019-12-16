@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:ngnga/store/editing.dart';
-
+import 'attachment.dart';
 import 'category.dart';
 import 'notification.dart';
 import 'post.dart';
@@ -13,9 +12,9 @@ class PrepareEditingResponse {
   final String subject;
   final String uploadUrl;
   final String uploadAuthCode;
-  final List<RemoteAttachment> attachs;
+  final List<Attachment> attachs;
 
-  PrepareEditingResponse._({
+  PrepareEditingResponse({
     this.content,
     this.subject,
     this.uploadUrl,
@@ -23,14 +22,17 @@ class PrepareEditingResponse {
     this.uploadAuthCode,
   });
 
-  PrepareEditingResponse.fromJson(Map<String, dynamic> json)
-      : content = json['result'][0]['content'],
-        subject = json['result'][0]['subject'],
-        uploadUrl = json['result'][0]['attach_url'],
-        attachs = List.of(json['result'][0]['attachs'] ?? [])
-            .map((val) => RemoteAttachment(val['attachurl']))
-            .toList(),
-        uploadAuthCode = json['result'][0]['auth'];
+  factory PrepareEditingResponse.fromJson(Map<String, dynamic> json) {
+    return PrepareEditingResponse(
+      content: json['result'][0]['content'],
+      subject: json['result'][0]['subject'],
+      uploadUrl: json['result'][0]['attach_url'],
+      attachs: List.of(json['result'][0]['attachs'] ?? [])
+          .map((val) => Attachment.fromJson(val))
+          .toList(),
+      uploadAuthCode: json['result'][0]['auth'],
+    );
+  }
 }
 
 class ApplyEditingResponse {
