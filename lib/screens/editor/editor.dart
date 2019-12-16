@@ -23,12 +23,12 @@ enum EditorAction {
 }
 
 class EditorPage extends StatefulWidget {
-  final EditingState editingState;
+  final EditingLoaded editingState;
 
   final ValueChanged<LocalAttachment> addAttachment;
   final ValueChanged<LocalAttachment> removeAttachment;
   final Future<void> Function(LocalAttachment) uploadAttachment;
-  final Future<void> Function({String subject, String content}) applyEditing;
+  final Future<void> Function(String, String) applyEditing;
   final VoidCallback clearEditing;
 
   EditorPage({
@@ -56,8 +56,8 @@ enum DisplayToolbar {
 }
 
 class _EditorPageState extends State<EditorPage> {
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
+  TextEditingController _subjectController;
+  TextEditingController _contentController;
   final FocusNode _subjectFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -73,6 +73,13 @@ class _EditorPageState extends State<EditorPage> {
   void initState() {
     super.initState();
 
+    _subjectController = TextEditingController(
+      text: widget.editingState.initialSubject,
+    );
+    _contentController = TextEditingController(
+      text: widget.editingState.initialContent,
+    );
+
     _contentFocusNode.addListener(() {
       setState(() => disableToolbar = !_contentFocusNode.hasFocus);
     });
@@ -85,41 +92,7 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   @override
-  void didUpdateWidget(EditorPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _consumeEvents();
-  }
-
-  _consumeEvents() {
-    EditingState editingState = widget.editingState;
-
-    if (editingState is EditingLoaded) {
-      String subject = editingState.setSubjectEvt.consume();
-      if (subject != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _subjectController.text = subject;
-          }
-        });
-      }
-
-      String content = editingState.setContentEvt.consume();
-      if (content != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _contentController.text = content;
-          }
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.editingState is EditingUninitialized) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return WillPopScope(
       onWillPop: () async {
         if (showToolbar) {
@@ -344,8 +317,8 @@ class _EditorPageState extends State<EditorPage> {
     setState(() => isSending = true);
 
     await widget.applyEditing(
-      subject: _subjectController.text,
-      content: _contentController.text,
+      _subjectController.text,
+      _contentController.text,
     );
 
     // close editor page
@@ -367,24 +340,6 @@ class EditorPageConnector extends StatelessWidget {
   })  : assert(action != null),
         assert(_validateArgs(action, categoryId, topicId, postId));
 
-  static bool _validateArgs(
-      EditorAction action, int categoryId, int topicId, int postId) {
-    switch (action) {
-      case EditorAction.newTopic:
-        return categoryId != null && topicId == null && postId == null;
-      case EditorAction.newPost:
-        return categoryId == null && topicId != null && postId == null;
-      case EditorAction.quote:
-      case EditorAction.reply:
-      case EditorAction.modify:
-      case EditorAction.comment:
-        return categoryId == null && topicId != null && postId != null;
-      case EditorAction.noop:
-        return categoryId == null && topicId == null && postId == null;
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
@@ -400,16 +355,41 @@ class EditorPageConnector extends StatelessWidget {
         topicId: topicId,
         postId: postId,
       )),
-      builder: (context, vm) => EditorPage(
-        editingState: vm.editingState,
-        addAttachment: vm.addAttachment,
-        removeAttachment: vm.removeAttachment,
-        uploadAttachment: vm.uploadAttachment,
-        applyEditing: vm.applyEditing,
-        clearEditing: vm.clearEditing,
-      ),
+      builder: (context, vm) {
+        if (vm.editingState is EditingUninitialized) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return EditorPage(
+          editingState: vm.editingState,
+          addAttachment: vm.addAttachment,
+          removeAttachment: vm.removeAttachment,
+          uploadAttachment: vm.uploadAttachment,
+          applyEditing: vm.applyEditing,
+          clearEditing: vm.clearEditing,
+        );
+      },
     );
   }
+}
+
+bool _validateArgs(
+    EditorAction action, int categoryId, int topicId, int postId) {
+  switch (action) {
+    case EditorAction.newTopic:
+      return categoryId != null && topicId == null && postId == null;
+    case EditorAction.newPost:
+      return categoryId == null && topicId != null && postId == null;
+    case EditorAction.quote:
+    case EditorAction.reply:
+    case EditorAction.modify:
+    case EditorAction.comment:
+      return categoryId == null && topicId != null && postId != null;
+    case EditorAction.noop:
+      return categoryId == null && topicId == null && postId == null;
+  }
+  return false;
 }
 
 class ViewModel extends BaseModel<AppState> {
@@ -423,7 +403,7 @@ class ViewModel extends BaseModel<AppState> {
   ValueChanged<LocalAttachment> addAttachment;
   ValueChanged<LocalAttachment> removeAttachment;
   Future<void> Function(LocalAttachment) uploadAttachment;
-  Future<void> Function({String subject, String content}) applyEditing;
+  Future<void> Function(String, String) applyEditing;
   VoidCallback clearEditing;
 
   ViewModel({
@@ -454,11 +434,7 @@ class ViewModel extends BaseModel<AppState> {
       topicId: topicId,
       postId: postId,
       editingState: state.editingState,
-      applyEditing: ({
-        String subject,
-        String content,
-      }) =>
-          dispatchFuture(
+      applyEditing: (subject, content) => dispatchFuture(
         ApplyEditingAction(
           action: action,
           categoryId: categoryId,

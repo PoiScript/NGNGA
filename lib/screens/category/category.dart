@@ -20,7 +20,7 @@ import 'popup_menu.dart';
 final _numberFormatter = NumberFormat('#,###,###,###');
 
 class CategoryPage extends StatelessWidget {
-  final CategoryState categoryState;
+  final CategoryLoaded categoryState;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
@@ -46,34 +46,26 @@ class CategoryPage extends StatelessWidget {
         super(key: key);
 
   Widget build(BuildContext context) {
-    if (categoryState is CategoryUninitialized) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (categoryState is CategoryLoaded) {
-      return Scaffold(
-        appBar: _buildAppBar(context, categoryState),
-        body: _buildBody(context, categoryState),
-        floatingActionButton: _buildFab(context, categoryState),
-      );
-    }
-
-    return null;
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: _buildBody(context),
+      floatingActionButton: _buildFab(context),
+    );
   }
 
-  Widget _buildFab(BuildContext context, CategoryLoaded state) {
+  Widget _buildFab(BuildContext context) {
     return FloatingActionButton(
       child: Icon(Icons.add),
       onPressed: () {
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.newTopic,
-          'categoryId': state.category.id,
+          'categoryId': categoryState.category.id,
         });
       },
     );
   }
 
-  Widget _buildAppBar(BuildContext context, CategoryLoaded state) {
+  Widget _buildAppBar(BuildContext context) {
     return AppBar(
       leading: BackButton(
         color: Theme.of(context).brightness == Brightness.dark
@@ -83,12 +75,12 @@ class CategoryPage extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       actions: <Widget>[
         PopupMenu(
-          categoryId: state.category.id,
-          isSubcategory: state.category.isSubcategory,
+          categoryId: categoryState.category.id,
+          isSubcategory: categoryState.category.isSubcategory,
           baseUrl: baseUrl,
-          isPinned: state.isPinned,
-          addToPinned: () => addToPinned(state.category),
-          removeFromPinned: () => removeFromPinned(state.category),
+          isPinned: categoryState.isPinned,
+          addToPinned: () => addToPinned(categoryState.category),
+          removeFromPinned: () => removeFromPinned(categoryState.category),
         ),
       ],
       title: Column(
@@ -96,13 +88,13 @@ class CategoryPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            state.category.title,
+            categoryState.category.title,
             style: Theme.of(context).textTheme.subhead,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            '${_numberFormatter.format(state.topicsCount)} topics',
+            '${_numberFormatter.format(categoryState.topicsCount)} topics',
             style: Theme.of(context).textTheme.caption,
           ),
         ],
@@ -111,7 +103,7 @@ class CategoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, CategoryLoaded state) {
+  Widget _buildBody(BuildContext context) {
     return Scrollbar(
       child: EasyRefresh.builder(
         header: RefreshHeader(context),
@@ -126,15 +118,15 @@ class CategoryPage extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) => index.isOdd
                     ? TopicRow(
-                        topic: topics[state.topicIds[index ~/ 2]],
+                        topic: topics[categoryState.topicIds[index ~/ 2]],
                       )
                     : Divider(height: 0),
-                childCount: state.topicIds.length * 2 + 1,
+                childCount: categoryState.topicIds.length * 2 + 1,
                 semanticIndexCallback: (widget, localIndex) =>
                     localIndex.isOdd ? localIndex ~/ 2 : null,
               ),
             ),
-            if (!state.hasRechedMax) footer,
+            if (!categoryState.hasRechedMax) footer,
           ],
         ),
       ),
@@ -162,15 +154,21 @@ class CategoryPageConnector extends StatelessWidget {
         categoryId: categoryId,
         isSubcategory: isSubcategory,
       )),
-      builder: (context, vm) => CategoryPage(
-        topics: vm.topics,
-        categoryState: vm.categoryState,
-        onRefresh: vm.onRefresh,
-        onLoad: vm.onLoad,
-        baseUrl: vm.baseUrl,
-        addToPinned: vm.addToPinned,
-        removeFromPinned: vm.removeFromPinned,
-      ),
+      builder: (context, vm) {
+        if (vm.categoryState is CategoryUninitialized) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        return CategoryPage(
+          topics: vm.topics,
+          categoryState: vm.categoryState,
+          onRefresh: vm.onRefresh,
+          onLoad: vm.onLoad,
+          baseUrl: vm.baseUrl,
+          addToPinned: vm.addToPinned,
+          removeFromPinned: vm.removeFromPinned,
+        );
+      },
     );
   }
 }

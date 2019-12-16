@@ -26,7 +26,7 @@ class TopicPage extends StatefulWidget {
 
   final Map<int, User> users;
   final Map<int, PostItem> posts;
-  final TopicState topicState;
+  final TopicLoaded topicState;
 
   final Function(int) isMe;
 
@@ -99,50 +99,42 @@ class _TopicPageState extends State<TopicPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.topicState is TopicUninitialized) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (widget.topicState is TopicLoaded) {
-      return Scaffold(
-        key: _scaffoldKey,
-        body: Scrollbar(
-          child: _buildBody(context, widget.topicState),
-        ),
-        floatingActionButton: _buildFab(context, widget.topicState),
-      );
-    }
-
-    return null;
+    return Scaffold(
+      key: _scaffoldKey,
+      body: Scrollbar(child: _buildBody(context)),
+      floatingActionButton: _buildFab(context),
+    );
   }
 
-  Widget _buildFab(BuildContext context, TopicLoaded state) {
+  Widget _buildFab(BuildContext context) {
     return FloatingActionButton(
       child: Icon(Icons.add),
       onPressed: () {
         Navigator.pushNamed(context, '/e', arguments: {
           'action': EditorAction.newPost,
-          'topicId': state.topic.id,
+          'topicId': widget.topicState.topic.id,
         });
       },
     );
   }
 
-  Widget _buildBody(BuildContext context, TopicLoaded state) {
+  Widget _buildBody(BuildContext context) {
     return EasyRefresh.builder(
-      header: PreviousPageHeader(context, state.firstPage),
+      header: PreviousPageHeader(context, widget.topicState.firstPage),
       footer: NextPageHeader(context),
-      onRefresh: state.hasRechedMin ? widget.refreshFirst : widget.loadPrevious,
+      onRefresh: widget.topicState.hasRechedMin
+          ? widget.refreshFirst
+          : widget.loadPrevious,
       onLoad: widget.loadNext,
       builder: (context, physics, header, footer) {
         return CustomScrollView(
           physics: physics,
-          semanticChildCount: state.postIds.length,
+          semanticChildCount: widget.topicState.postIds.length,
           slivers: <Widget>[
             SliverAppBar(
               backgroundColor: Theme.of(context).cardColor,
               title: TitleColorize(
-                state.topic,
+                widget.topicState.topic,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 displayLabel: false,
@@ -156,10 +148,10 @@ class _TopicPageState extends State<TopicPage> {
               ),
               actions: <Widget>[
                 PopupMenu(
-                  topicId: state.topic.id,
-                  isFavorited: state.isFavorited,
-                  firstPage: state.firstPage,
-                  maxPage: state.maxPage,
+                  topicId: widget.topicState.topic.id,
+                  isFavorited: widget.topicState.isFavorited,
+                  firstPage: widget.topicState.firstPage,
+                  maxPage: widget.topicState.maxPage,
                   baseUrl: widget.baseUrl,
                   addToFavorites: widget.addToFavorites,
                   removeFromFavorites: widget.removeFromFavorites,
@@ -173,7 +165,8 @@ class _TopicPageState extends State<TopicPage> {
                 (context, index) {
                   final int itemIndex = index ~/ 2;
                   if (index.isOdd) {
-                    PostItem post = widget.posts[state.postIds[itemIndex]];
+                    PostItem post =
+                        widget.posts[widget.topicState.postIds[itemIndex]];
                     assert(post != null);
                     return PostRow(
                       post: post,
@@ -190,11 +183,12 @@ class _TopicPageState extends State<TopicPage> {
                 },
                 semanticIndexCallback: (widget, index) =>
                     index.isOdd ? index ~/ 2 : null,
-                childCount:
-                    state.postIds.isEmpty ? 0 : (state.postIds.length * 2 + 1),
+                childCount: widget.topicState.postIds.isEmpty
+                    ? 0
+                    : (widget.topicState.postIds.length * 2 + 1),
               ),
             ),
-            if (state.hasRechedMax)
+            if (widget.topicState.hasRechedMax)
               SliverToBoxAdapter(
                 child: UpdateIndicator(
                   fetch: widget.refreshLast,
@@ -285,22 +279,28 @@ class TopicPageConnector extends StatelessWidget {
         topicId: topicId,
         pageIndex: pageIndex,
       )),
-      builder: (context, vm) => TopicPage(
-        isMe: vm.isMe,
-        baseUrl: vm.baseUrl,
-        refreshFirst: vm.refreshFirst,
-        refreshLast: vm.refreshLast,
-        loadPrevious: vm.loadPrevious,
-        loadNext: vm.loadNext,
-        topicState: vm.topicState,
-        users: vm.users,
-        posts: vm.posts,
-        addToFavorites: vm.addToFavorites,
-        removeFromFavorites: vm.removeFromFavorites,
-        changePage: vm.changePage,
-        upvotePost: vm.upvotePost,
-        downvotePost: vm.downvotePost,
-      ),
+      builder: (context, vm) {
+        if (vm.topicState is TopicUninitialized) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        return TopicPage(
+          isMe: vm.isMe,
+          baseUrl: vm.baseUrl,
+          refreshFirst: vm.refreshFirst,
+          refreshLast: vm.refreshLast,
+          loadPrevious: vm.loadPrevious,
+          loadNext: vm.loadNext,
+          topicState: vm.topicState,
+          users: vm.users,
+          posts: vm.posts,
+          addToFavorites: vm.addToFavorites,
+          removeFromFavorites: vm.removeFromFavorites,
+          changePage: vm.changePage,
+          upvotePost: vm.upvotePost,
+          downvotePost: vm.downvotePost,
+        );
+      },
     );
   }
 }

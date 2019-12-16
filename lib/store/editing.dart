@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 abstract class AttachmentItem {}
@@ -41,33 +40,33 @@ class EditingLoaded extends EditingState {
   final String uploadAuthCode;
   final String uploadUrl;
   final List<AttachmentItem> attachs;
-  final Event<String> setSubjectEvt;
-  final Event<String> setContentEvt;
+  final String initialSubject;
+  final String initialContent;
 
   const EditingLoaded({
     @required this.uploadAuthCode,
     @required this.uploadUrl,
     @required this.attachs,
-    @required this.setSubjectEvt,
-    @required this.setContentEvt,
+    @required this.initialSubject,
+    @required this.initialContent,
   })  : assert(uploadAuthCode != null),
         assert(uploadUrl != null),
         assert(attachs != null),
-        assert(setSubjectEvt != null),
-        assert(setContentEvt != null);
+        assert(initialSubject != null),
+        assert(initialContent != null);
 
   EditingLoaded copy({
     String uploadAuthCode,
     String uploadUrl,
     List<AttachmentItem> attachs,
-    Event<String> setSubjectEvt,
-    Event<String> setContentEvt,
+    String initialSubject,
+    String initialContent,
   }) =>
       EditingLoaded(
         uploadAuthCode: uploadAuthCode ?? this.uploadAuthCode,
         uploadUrl: uploadUrl ?? this.uploadUrl,
         attachs: attachs ?? this.attachs,
-        setSubjectEvt: setSubjectEvt ?? this.setSubjectEvt,
-        setContentEvt: setContentEvt ?? this.setContentEvt,
+        initialSubject: initialSubject ?? this.initialSubject,
+        initialContent: initialContent ?? this.initialContent,
       );
 }

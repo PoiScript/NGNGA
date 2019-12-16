@@ -26,8 +26,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
           uploadAuthCode: '',
           uploadUrl: '',
           attachs: [],
-          setSubjectEvt: Event.spent(),
-          setContentEvt: Event.spent(),
+          initialSubject: '',
+          initialContent: '',
         ),
       );
     }
@@ -43,8 +43,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
       editingState: EditingLoaded(
         uploadUrl: res.uploadUrl,
         attachs: res.attachs,
-        setContentEvt: Event(res.content),
-        setSubjectEvt: Event(res.subject),
+        initialContent: res.content ?? '',
+        initialSubject: res.subject ?? '',
         uploadAuthCode: res.uploadAuthCode,
       ),
     );
