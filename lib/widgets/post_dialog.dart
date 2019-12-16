@@ -1,14 +1,11 @@
 import 'dart:async';
 
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
-import 'package:ngnga/store/actions.dart';
-import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
@@ -19,20 +16,23 @@ final _everyMinutes = StreamController<DateTime>.broadcast()
   );
 
 class PostDialog extends StatefulWidget {
-  final Map<int, User> userMap;
-  final Map<int, PostItem> postMap;
-  final int initialPostId;
+  final Map<int, User> users;
+  final Map<int, PostItem> posts;
+
+  final int topicId;
+  final int postId;
 
   final Future<void> Function(int, int) fetchReply;
 
   PostDialog({
-    @required this.userMap,
-    @required this.postMap,
-    @required this.initialPostId,
+    @required this.topicId,
+    @required this.postId,
+    @required this.users,
+    @required this.posts,
     @required this.fetchReply,
-  })  : assert(userMap != null),
-        assert(postMap != null),
-        assert(initialPostId != null),
+  })  : assert(users != null),
+        assert(posts != null),
+        assert(postId != null),
         assert(fetchReply != null);
 
   @override
@@ -40,12 +40,12 @@ class PostDialog extends StatefulWidget {
 }
 
 class _PostDialogState extends State<PostDialog> {
-  List<int> postIds;
+  List<int> postIds = [];
 
   @override
   void initState() {
     super.initState();
-    postIds = [widget.initialPostId];
+    _fetchReply(widget.topicId, widget.postId);
   }
 
   @override
@@ -54,12 +54,12 @@ class _PostDialogState extends State<PostDialog> {
     List<User> users = [];
 
     for (int id in postIds.reversed) {
-      PostItem postItem = widget.postMap[id];
+      PostItem postItem = widget.posts[id];
       posts.add(postItem);
       if (postItem == null || postItem is Deleted) {
         users.add(null);
       } else {
-        users.add(widget.userMap[postItem.inner.userId]);
+        users.add(widget.users[postItem.inner.userId]);
       }
     }
 
@@ -128,69 +128,21 @@ class _PostDialogState extends State<PostDialog> {
               builder: (context) => UserDialog(userId),
             );
           },
-          openPost: (int topicId, int page, int postId) async {
-            if (!postIds.contains(postId)) {
-              setState(() => postIds.add(postId));
-              await widget.fetchReply(topicId, postId);
-              setState(() {});
-            }
-          },
+          openPost: (int topicId, int page, int postId) =>
+              _fetchReply(topicId, postId),
         ),
       ],
     );
   }
-}
 
-class PostDialogConnector extends StatelessWidget {
-  final int topicId, postId;
-
-  PostDialogConnector({
-    @required this.topicId,
-    @required this.postId,
-  })  : assert(topicId != null),
-        assert(postId != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
-      onInit: (store) => store.dispatch(FetchReplyAction(
-        topicId: topicId,
-        postId: postId,
-      )),
-      builder: (context, vm) => PostDialog(
-        userMap: vm.userMap,
-        postMap: vm.postMap,
-        fetchReply: vm.fetchReply,
-        initialPostId: postId,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  Map<int, User> userMap;
-  Map<int, PostItem> postMap;
-
-  Future<void> Function(int, int) fetchReply;
-
-  ViewModel();
-
-  ViewModel.build({
-    @required this.userMap,
-    @required this.postMap,
-    @required this.fetchReply,
-  }) : super(equals: [userMap, postMap]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      userMap: state.users,
-      postMap: state.posts,
-      fetchReply: (topicId, postId) => dispatchFuture(FetchReplyAction(
-        topicId: topicId,
-        postId: postId,
-      )),
-    );
+  _fetchReply(int topicId, int postId) async {
+    if (!postIds.contains(postId)) {
+      setState(() => postIds.add(postId));
+      if (!widget.posts.containsKey(postId) ||
+          widget.posts[postId] is Deleted) {
+        await widget.fetchReply(widget.topicId, postId);
+        setState(() {});
+      }
+    }
   }
 }

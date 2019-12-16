@@ -12,6 +12,7 @@ import 'package:ngnga/screens/topic/top_reply_sheet.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
+import 'package:ngnga/widgets/post_dialog.dart';
 import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
@@ -29,6 +30,8 @@ class TopicPage extends StatefulWidget {
   final TopicLoaded topicState;
 
   final Function(int) isMe;
+
+  final Future<void> Function(int, int) fetchReply;
 
   final Future<void> Function() refreshFirst;
   final Future<void> Function() refreshLast;
@@ -52,6 +55,7 @@ class TopicPage extends StatefulWidget {
     @required this.refreshLast,
     @required this.loadPrevious,
     @required this.loadNext,
+    @required this.fetchReply,
     @required this.addToFavorites,
     @required this.removeFromFavorites,
     @required this.changePage,
@@ -177,6 +181,7 @@ class _TopicPageState extends State<TopicPage> {
                       openAttachmentSheet: _openAttachmentSheet,
                       openCommentSheet: _openCommentSheet,
                       openTopReplySheet: _openTopReplySheet,
+                      openPost: _openPostDialog,
                     );
                   }
                   return Divider(height: 0.0);
@@ -227,6 +232,19 @@ class _TopicPageState extends State<TopicPage> {
       builder: (context) => TopReplySheet(
         users: widget.users,
         posts: topReplyIds.map((id) => widget.posts[id]).toList(),
+      ),
+    );
+  }
+
+  _openPostDialog(int topicId, int postId) {
+    showDialog(
+      context: context,
+      builder: (context) => PostDialog(
+        topicId: topicId,
+        postId: postId,
+        users: widget.users,
+        posts: widget.posts,
+        fetchReply: widget.fetchReply,
       ),
     );
   }
@@ -294,6 +312,7 @@ class TopicPageConnector extends StatelessWidget {
           topicState: vm.topicState,
           users: vm.users,
           posts: vm.posts,
+          fetchReply: vm.fetchReply,
           addToFavorites: vm.addToFavorites,
           removeFromFavorites: vm.removeFromFavorites,
           changePage: vm.changePage,
@@ -314,6 +333,8 @@ class ViewModel extends BaseModel<AppState> {
   TopicState topicState;
 
   Function(int) isMe;
+
+  Future<void> Function(int, int) fetchReply;
 
   Future<void> Function() refreshFirst;
   Future<void> Function() refreshLast;
@@ -345,6 +366,7 @@ class ViewModel extends BaseModel<AppState> {
     @required this.changePage,
     @required this.upvotePost,
     @required this.downvotePost,
+    @required this.fetchReply,
   }) : super(equals: [users, posts, topicState]);
 
   @override
@@ -384,6 +406,10 @@ class ViewModel extends BaseModel<AppState> {
           postId: postId,
         ),
       ),
+      fetchReply: (topicId, postId) => dispatchFuture(FetchReplyAction(
+        topicId: topicId,
+        postId: postId,
+      )),
     );
   }
 }

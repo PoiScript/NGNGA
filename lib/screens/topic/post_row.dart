@@ -13,7 +13,6 @@ import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
-import 'package:ngnga/widgets/post_dialog.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -30,6 +29,7 @@ class PostRow extends StatefulWidget {
   final Future<void> Function() upvote;
   final Future<void> Function() downvote;
 
+  final Function(int, int) openPost;
   final Function(List<Attachment>) openAttachmentSheet;
   final Function(List<int>) openCommentSheet;
   final Function(List<int>) openTopReplySheet;
@@ -40,6 +40,7 @@ class PostRow extends StatefulWidget {
     @required this.sentByMe,
     @required this.upvote,
     @required this.downvote,
+    @required this.openPost,
     @required this.openAttachmentSheet,
     @required this.openCommentSheet,
     @required this.openTopReplySheet,
@@ -384,15 +385,7 @@ class _PostRowState extends State<PostRow> {
           raw: post.content,
           openUser: (userId) {},
           openLink: (url) => openLink(context, url),
-          openPost: (topicId, page, postId) {
-            showDialog(
-              context: context,
-              builder: (context) => PostDialogConnector(
-                topicId: topicId,
-                postId: postId,
-              ),
-            );
-          },
+          openPost: (topicId, page, postId) => widget.openPost(topicId, postId),
         );
     }
     return null;

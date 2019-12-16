@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/localizations.dart';
-import 'package:ngnga/store/actions.dart';
-import 'package:ngnga/store/state.dart';
 
 final _dateFormatter = DateFormat('HH:mm:ss');
 
@@ -151,45 +148,6 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
             ),
         ],
       ),
-    );
-  }
-}
-
-class UpdateIndicatorConnector extends StatelessWidget {
-  final int topicId;
-
-  UpdateIndicatorConnector({
-    @required this.topicId,
-  }) : assert(topicId != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(topicId),
-      builder: (context, vm) => UpdateIndicator(
-        fetch: vm.fetch,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  final int topicId;
-
-  Future<void> Function() fetch;
-
-  ViewModel(this.topicId);
-
-  ViewModel.build({
-    @required this.topicId,
-    @required this.fetch,
-  });
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      topicId: topicId,
-      fetch: () => dispatchFuture(FetchNextPostsAction(topicId)),
     );
   }
 }
