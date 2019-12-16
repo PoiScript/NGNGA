@@ -42,30 +42,48 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    final res = await state.repository.fetchCategoryTopics(
+    final res0 = await state.repository.fetchCategoryTopics(
       categoryId: categoryId,
       page: 0,
       isSubcategory: isSubcategory,
     );
 
+    String title = '';
+    String toppedTopic = '';
+
+    if (isSubcategory) {
+      final res1 = await state.repository.fetchTopicPosts(
+        topicId: categoryId,
+        page: 0,
+      );
+      title = res1.posts[0].inner.subject;
+      toppedTopic = res1.posts[0].inner.content;
+    } else {
+      final res1 = await state.repository.fetchTopicPosts(
+        topicId: res0.toppedTopicId,
+        page: 0,
+      );
+      title = res1.forumName;
+      toppedTopic = res1.posts[0].inner.content;
+    }
+
     return state.copy(
       categoryStates: state.categoryStates
         ..[categoryId] = CategoryLoaded(
-          topicIds: res.topics.map((t) => t.id).toList(),
-          topicsCount: res.topicCount,
+          topicIds: res0.topics.map((t) => t.id).toList(),
+          topicsCount: res0.topicCount,
           lastPage: 0,
-          maxPage: res.maxPage,
+          maxPage: res0.maxPage,
           category: Category(
             id: categoryId,
-            title: 'title',
+            title: title,
             isSubcategory: isSubcategory,
           ),
-          // TODO:
-          toppedTopic: 'null',
+          toppedTopic: toppedTopic,
           isPinned: state.pinned.indexWhere((c) => c.id == categoryId) != -1,
         ),
       topics: state.topics
-        ..addEntries(res.topics.map((t) => MapEntry(t.id, t))),
+        ..addEntries(res0.topics.map((t) => MapEntry(t.id, t))),
     );
   }
 }

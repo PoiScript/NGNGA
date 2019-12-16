@@ -217,6 +217,7 @@ class FetchTopicPostsResponse {
   final List<PostItem> posts;
   final List<Post> comments;
   final Map<int, User> users;
+  final String forumName;
 
   final int maxPage;
 
@@ -226,6 +227,7 @@ class FetchTopicPostsResponse {
     this.users,
     this.comments,
     this.maxPage,
+    this.forumName,
   });
 
   factory FetchTopicPostsResponse.fromJson(Map<String, dynamic> json) {
@@ -257,6 +259,7 @@ class FetchTopicPostsResponse {
       comments: comments,
       users: users,
       maxPage: (json['data']['__ROWS'] - 1) ~/ json['data']['__R__ROWS_PAGE'],
+      forumName: json['data']['__F']['name'],
     );
   }
 }

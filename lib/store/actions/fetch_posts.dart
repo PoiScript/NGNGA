@@ -68,12 +68,11 @@ class RefreshPostsAction extends FetchPostsBaseAction {
   Future<AppState> reduce() async {
     final res = await fetch(topicId: topicId, page: pageIndex);
 
-    bool isFavorited = false;
+    FavoriteState favoriteState = state.favoriteState;
 
-    if (state.favoriteState is FavoriteLoaded) {
-      FavoriteLoaded favoriteState = state.favoriteState;
-      isFavorited = favoriteState.topicIds.contains(topicId);
-    }
+    bool isFavorited = favoriteState is FavoriteLoaded
+        ? favoriteState.topicIds.contains(topicId)
+        : false;
 
     return state.copy(
       topicStates: state.topicStates

@@ -56,7 +56,7 @@ class SaveState extends ReduxAction<AppState> {
 
     await file.writeAsString(json);
 
-    print('Saved state to ${file.path}');
+    print('SAVED ${file.path}');
 
     return null;
   }
@@ -74,7 +74,7 @@ class LoadState extends ReduxAction<AppState> {
       String content = await file.readAsString();
       final json = jsonDecode(content);
 
-      print('Loaded state from ${file.path}');
+      print('LOADED ${file.path}');
 
       UserState userState;
 
