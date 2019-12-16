@@ -10,9 +10,8 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
-
-import 'link_dialog.dart';
 
 final _everyMinutes = StreamController<DateTime>.broadcast()
   ..addStream(
@@ -122,12 +121,7 @@ class _PostDialogState extends State<PostDialog> {
         ),
         BBCodeRender(
           raw: postItem.inner.content,
-          openLink: (url) {
-            showDialog(
-              context: context,
-              builder: (context) => LinkDialog(url),
-            );
-          },
+          openLink: (url) => openLink(context, url),
           openUser: (userId) {
             showDialog(
               context: context,

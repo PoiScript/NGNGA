@@ -11,8 +11,8 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/number_to_hsl_color.dart';
+import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
-import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -383,12 +383,7 @@ class _PostRowState extends State<PostRow> {
         return BBCodeRender(
           raw: post.content,
           openUser: (userId) {},
-          openLink: (url) {
-            showDialog(
-              context: context,
-              builder: (context) => LinkDialog(url),
-            );
-          },
+          openLink: (url) => openLink(context, url),
           openPost: (topicId, page, postId) {
             showDialog(
               context: context,
@@ -493,59 +488,6 @@ class _PostRowState extends State<PostRow> {
       ],
     );
   }
-
-  // void openLink(String url) {
-  //   if (url.startsWith('/read.php?') ||
-  //       url.startsWith('http://nga.178.com/read.php?') ||
-  //       url.startsWith('https://nga.178.com/read.php?') ||
-  //       url.startsWith('http://bbs.ngacn.cc/read.php?') ||
-  //       url.startsWith('https://bbs.ngacn.cc/read.php?') ||
-  //       url.startsWith('http://bbs.nga.cn/read.php?') ||
-  //       url.startsWith('https://bbs.nga.cn/read.php?') ||
-  //       url.startsWith('http://nga.donews.com/read.php?') ||
-  //       url.startsWith('https://nga.donews.com/read.php?')) {
-  // try {
-  //   final int topicId = int.parse(Uri.parse(url).queryParameters['tid']);
-  //   Navigator.pushNamed(context, '/t', arguments: {'topicId': topicId});
-  // } catch (_) {
-  //   Scaffold.of(context).showSnackBar(SnackBar(
-  //     content: Text('Can't open this link.'),
-  //   ));
-  // }
-  // } else if (url.startsWith('/thread.php?') ||
-  //     url.startsWith('http://nga.178.com/thread.php?') ||
-  //     url.startsWith('https://nga.178.com/thread.php?') ||
-  //     url.startsWith('http://bbs.ngacn.cc/thread.php?') ||
-  //     url.startsWith('https://bbs.ngacn.cc/thread.php?') ||
-  //     url.startsWith('http://nga.donews.com/thread.php?') ||
-  //     url.startsWith('https://bbs.nga.cn/thread.php?') ||
-  //     url.startsWith('http://bbs.nga.cn/thread.php?') ||
-  //     url.startsWith('https://nga.donews.com/thread.php?')) {
-  // try {
-  //   final int categoryId = int.parse(Uri.parse(url).queryParameters['fid']);
-  //   if (categoryIds.contains(categoryId)) {
-  //     Navigator.pushNamed(
-  //       context,
-  //       '/c',
-  //       arguments: {'categoryId': categoryId},
-  //     );
-  //   } else {
-  //     Scaffold.of(context).showSnackBar(SnackBar(
-  //       content: Text('Can't open this link.'),
-  //     ));
-  //   }
-  // } catch (_) {
-  //   Scaffold.of(context).showSnackBar(SnackBar(
-  //     content: Text('Can't open this link.'),
-  //   ));
-  // }
-  // }
-
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => LinkDialog(url),
-  //   );
-  // }
 }
 
 enum Choice {

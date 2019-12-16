@@ -9,7 +9,7 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/user/avatar_gallery.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/number_to_hsl_color.dart';
-import 'package:ngnga/widgets/link_dialog.dart';
+import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
@@ -79,12 +79,7 @@ class UserPage extends StatelessWidget {
                       builder: (context) => UserDialog(userId),
                     );
                   },
-                  openLink: (url) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => LinkDialog(url),
-                    );
-                  },
+                  openLink: (url) => openLink(context, url),
                   openPost: (topicId, page, postId) {},
                 ),
               )
