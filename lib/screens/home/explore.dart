@@ -64,7 +64,7 @@ class Explore extends StatelessWidget {
                 (context, index) => ListTile(
                   title: Text(group.categories[index].title),
                   trailing: const Icon(Icons.keyboard_arrow_right),
-                  onTap: () => Navigator.pushNamed(context, 'c', arguments: {
+                  onTap: () => Navigator.pushNamed(context, '/c', arguments: {
                     'id': group.categories[index].id,
                     'isSubcategory': group.categories[index].isSubcategory,
                   }),
