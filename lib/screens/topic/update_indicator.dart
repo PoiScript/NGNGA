@@ -134,7 +134,6 @@ class _UpdateIndicatorState extends State<UpdateIndicator>
                   )
                 else
                   StreamBuilder(
-                    initialData: DateTime.now(),
                     stream: Stream.periodic(const Duration(seconds: 1)),
                     builder: (context, snapshot) => Text(
                       AppLocalizations.of(context).lastUpdated(

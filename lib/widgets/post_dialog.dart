@@ -14,6 +14,11 @@ import 'package:ngnga/widgets/user_dialog.dart';
 
 import 'link_dialog.dart';
 
+final _everyMinutes = StreamController<DateTime>.broadcast()
+  ..addStream(
+    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
+  );
+
 class PostDialog extends StatefulWidget {
   final Map<int, User> userMap;
   final Map<int, PostItem> postMap;
@@ -105,9 +110,10 @@ class _PostDialogState extends State<PostDialog> {
                 ),
               ),
               StreamBuilder<DateTime>(
-                stream: Stream.periodic(const Duration(minutes: 1)),
+                initialData: DateTime.now(),
+                stream: _everyMinutes.stream,
                 builder: (context, snapshot) => Text(
-                  duration(DateTime.now(), postItem.inner.createdAt),
+                  duration(snapshot.data, postItem.inner.createdAt),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),

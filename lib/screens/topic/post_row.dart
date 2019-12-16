@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +16,11 @@ import 'package:ngnga/widgets/link_dialog.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+
+final _everyMinutes = StreamController<DateTime>.broadcast()
+  ..addStream(
+    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
+  );
 
 class PostRow extends StatefulWidget {
   final PostItem post;
@@ -198,9 +205,10 @@ class _PostRowState extends State<PostRow> {
 
         // post send date in duration format, updated by minutes
         StreamBuilder<DateTime>(
-          stream: Stream.periodic(const Duration(minutes: 1)),
+          initialData: DateTime.now(),
+          stream: _everyMinutes.stream,
           builder: (context, snapshot) => Text(
-            duration(DateTime.now(), post.createdAt),
+            duration(snapshot.data, post.createdAt),
             style: Theme.of(context).textTheme.caption,
           ),
         ),

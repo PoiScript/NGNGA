@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -6,6 +8,11 @@ import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
 final _numberFormatter = NumberFormat('#,###,###,###');
+
+final _everyMinutes = StreamController<DateTime>.broadcast()
+  ..addStream(
+    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
+  );
 
 class TopicRow extends StatelessWidget {
   final Topic topic;
@@ -78,10 +85,11 @@ class TopicRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    StreamBuilder(
-                      stream: Stream.periodic(const Duration(minutes: 1)),
+                    StreamBuilder<DateTime>(
+                      initialData: DateTime.now(),
+                      stream: _everyMinutes.stream,
                       builder: (context, snapshot) => Text(
-                        duration(DateTime.now(), topic.createdAt),
+                        duration(snapshot.data, topic.createdAt),
                         style: Theme.of(context).textTheme.caption,
                       ),
                     ),
@@ -108,10 +116,11 @@ class TopicRow extends StatelessWidget {
                           ),
                         ),
                       ),
-                      StreamBuilder(
-                        stream: Stream.periodic(const Duration(minutes: 1)),
+                      StreamBuilder<DateTime>(
+                        initialData: DateTime.now(),
+                        stream: _everyMinutes.stream,
                         builder: (context, snapshot) => Text(
-                          duration(DateTime.now(), topic.lastPostedAt),
+                          duration(snapshot.data, topic.lastPostedAt),
                           style: Theme.of(context).textTheme.caption,
                         ),
                       ),
