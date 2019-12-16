@@ -1,5 +1,5 @@
 {
-  "@@last_modified": "2019-12-09T19:19:56.533497",
+  "@@last_modified": "2019-12-16T14:36:13.070396",
   "Favorites": "Favorites",
   "@Favorites": {
     "type": "text",
@@ -55,6 +55,11 @@
     "type": "text",
     "placeholders": {}
   },
+  "View Topped Topic": "View Topped Topic",
+  "@View Topped Topic": {
+    "type": "text",
+    "placeholders": {}
+  },
   "Remove from pinned": "Remove from pinned",
   "@Remove from pinned": {
     "type": "text",
@@ -62,6 +67,21 @@
   },
   "Removed from pinned": "Removed from pinned",
   "@Removed from pinned": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Copy to Clipboard": "Copy to Clipboard",
+  "@Copy to Clipboard": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Open": "Open",
+  "@Open": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "Link Clicked": "Link Clicked",
+  "@Link Clicked": {
     "type": "text",
     "placeholders": {}
   },
@@ -155,8 +175,8 @@
     "type": "text",
     "placeholders": {}
   },
-  "Edit Cookies": "Edit Cookies",
-  "@Edit Cookies": {
+  "Log out": "Log out",
+  "@Log out": {
     "type": "text",
     "placeholders": {}
   },
