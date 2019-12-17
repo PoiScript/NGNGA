@@ -47,89 +47,77 @@ class CategoryPage extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-      floatingActionButton: _buildFab(context),
-    );
-  }
-
-  Widget _buildFab(BuildContext context) {
-    return FloatingActionButton(
-      child: Icon(Icons.add),
-      onPressed: () {
-        Navigator.pushNamed(context, '/e', arguments: {
-          'action': EditorAction.newTopic,
-          'categoryId': categoryState.category.id,
-        });
-      },
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return AppBar(
-      leading: BackButton(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black,
-      ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      actions: <Widget>[
-        PopupMenu(
-          categoryId: categoryState.category.id,
-          isSubcategory: categoryState.category.isSubcategory,
-          toppedTopicId: categoryState.toppedTopicId,
-          baseUrl: baseUrl,
-          isPinned: categoryState.isPinned,
-          addToPinned: () => addToPinned(categoryState.category),
-          removeFromPinned: () => removeFromPinned(categoryState.category),
+      appBar: AppBar(
+        leading: BackButton(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
         ),
-      ],
-      title: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            categoryState.category.title,
-            style: Theme.of(context).textTheme.subhead,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            '${_numberFormatter.format(categoryState.topicsCount)} topics',
-            style: Theme.of(context).textTheme.caption,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        actions: <Widget>[
+          PopupMenu(
+            categoryId: categoryState.category.id,
+            isSubcategory: categoryState.category.isSubcategory,
+            toppedTopicId: categoryState.toppedTopicId,
+            baseUrl: baseUrl,
+            isPinned: categoryState.isPinned,
+            addToPinned: () => addToPinned(categoryState.category),
+            removeFromPinned: () => removeFromPinned(categoryState.category),
           ),
         ],
-      ),
-      titleSpacing: 0,
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    return Scrollbar(
-      child: EasyRefresh.builder(
-        header: RefreshHeader(context),
-        footer: NextPageHeader(context),
-        onRefresh: onRefresh,
-        onLoad: onLoad,
-        builder: (context, physics, header, footer) => CustomScrollView(
-          physics: physics,
-          slivers: <Widget>[
-            header,
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => index.isOdd
-                    ? TopicRow(
-                        topic: topics[categoryState.topicIds[index ~/ 2]],
-                      )
-                    : Divider(height: 0),
-                childCount: categoryState.topicIds.length * 2 + 1,
-                semanticIndexCallback: (widget, localIndex) =>
-                    localIndex.isOdd ? localIndex ~/ 2 : null,
-              ),
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              categoryState.category.title,
+              style: Theme.of(context).textTheme.subhead,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            if (!categoryState.hasRechedMax) footer,
+            Text(
+              '${_numberFormatter.format(categoryState.topicsCount)} topics',
+              style: Theme.of(context).textTheme.caption,
+            ),
           ],
         ),
+        titleSpacing: 0,
+      ),
+      body: Scrollbar(
+        child: EasyRefresh.builder(
+          header: RefreshHeader(context),
+          footer: NextPageHeader(context),
+          onRefresh: onRefresh,
+          onLoad: onLoad,
+          builder: (context, physics, header, footer) => CustomScrollView(
+            physics: physics,
+            slivers: <Widget>[
+              header,
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => index.isOdd
+                      ? TopicRow(
+                          topic: topics[categoryState.topicIds[index ~/ 2]],
+                        )
+                      : Divider(height: 0),
+                  childCount: categoryState.topicIds.length * 2 + 1,
+                  semanticIndexCallback: (widget, localIndex) =>
+                      localIndex.isOdd ? localIndex ~/ 2 : null,
+                ),
+              ),
+              if (!categoryState.hasRechedMax) footer,
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.pushNamed(context, '/e', arguments: {
+            'action': EditorAction.newTopic,
+            'categoryId': categoryState.category.id,
+          });
+        },
       ),
     );
   }

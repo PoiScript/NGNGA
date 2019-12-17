@@ -234,23 +234,57 @@ class EditorSticker extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: <Widget>[
-        _buildSticky(context, 'Package 0', pack0),
-        _buildSticky(context, 'Package 1', pack1),
-        _buildSticky(context, 'Package 2', pack2),
-        _buildSticky(context, 'Package 3', pack3),
-        _buildSticky(context, 'Package 4', pack4),
+        _StickyStickerHeader(
+          packName: 'Package 0',
+          stickerPack: pack0,
+          insertSticker: insertSticker,
+        ),
+        _StickyStickerHeader(
+          packName: 'Package 1',
+          stickerPack: pack1,
+          insertSticker: insertSticker,
+        ),
+        _StickyStickerHeader(
+          packName: 'Package 2',
+          stickerPack: pack2,
+          insertSticker: insertSticker,
+        ),
+        _StickyStickerHeader(
+          packName: 'Package 3',
+          stickerPack: pack3,
+          insertSticker: insertSticker,
+        ),
+        _StickyStickerHeader(
+          packName: 'Package 4',
+          stickerPack: pack4,
+          insertSticker: insertSticker,
+        ),
       ],
     );
   }
+}
 
-  Widget _buildSticky(BuildContext context, String name, List<String> pack) {
+class _StickyStickerHeader extends StatelessWidget {
+  final String packName;
+  final List<String> stickerPack;
+  final ValueChanged<String> insertSticker;
+
+  const _StickyStickerHeader({
+    Key key,
+    @required this.stickerPack,
+    @required this.insertSticker,
+    @required this.packName,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return SliverStickyHeader(
       header: Container(
         padding: const EdgeInsets.all(2.0),
         constraints: const BoxConstraints(minWidth: double.infinity),
         color: Theme.of(context).cardColor,
         child: Text(
-          name,
+          packName,
           style: Theme.of(context).textTheme.caption,
         ),
       ),
@@ -262,27 +296,12 @@ class EditorSticker extends StatelessWidget {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) => GestureDetector(
-            child: Sticker(name: pack[index]),
-            onTap: () => insertSticker(pack[index]),
+            child: Sticker(name: stickerPack[index]),
+            onTap: () => insertSticker(stickerPack[index]),
           ),
-          childCount: pack.length,
+          childCount: stickerPack.length,
         ),
       ),
-    );
-  }
-}
-
-class ToolbarIcon extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  ToolbarIcon({this.icon, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Icon(icon, size: 30.0),
-      onTap: onTap,
     );
   }
 }

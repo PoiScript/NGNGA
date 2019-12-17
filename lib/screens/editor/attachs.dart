@@ -52,21 +52,16 @@ class EditorAttachs extends StatelessWidget {
       mainAxisSpacing: 8,
       physics: AlwaysScrollableScrollPhysics(),
       children: <Widget>[
-        for (Attachment attach in attachments)
+        for (Attachment attachment in attachments)
           GridTile(
-            child: _attachmentRect(context, attach),
-            footer: GestureDetector(
-              child: GridTileBar(
-                backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-                leading: Icon(Icons.insert_photo),
-                title: Text(AppLocalizations.of(context).insert),
-              ),
-              onTap: () => insertImage(attach.url),
+            child: _AttachmentRect(attachment: attachment),
+            footer: _FileUploadedBar(
+              insertImage: () => insertImage(attachment.url),
             ),
           ),
         for (int index = 0; index < files.length; index++)
           GridTile(
-            child: _fileImageRect(context, files[index].file),
+            child: _FileImageRect(file: files[index].file),
             footer: _buildGridFooter(context, index),
           ),
         InkResponse(
@@ -86,38 +81,42 @@ class EditorAttachs extends StatelessWidget {
   Widget _buildGridFooter(BuildContext context, int index) {
     FileState state = files[index];
     if (state is FileSelected) {
-      return GestureDetector(
-        child: GridTileBar(
-          backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-          leading: Icon(Icons.file_upload),
-          title: Text(AppLocalizations.of(context).upload),
-        ),
-        onTap: () => uploadFile(index),
+      return _FileSelectedBar(
+        uploadFile: () => uploadFile(index),
       );
     }
 
     if (state is FileUploading) {
-      return GridTileBar(
-        backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-        title: Text(AppLocalizations.of(context).uploading),
-      );
+      return const _FileUploadingBar();
     }
 
     if (state is FileUploaded) {
-      return GestureDetector(
-        child: GridTileBar(
-          backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
-          leading: Icon(Icons.insert_photo),
-          title: Text(AppLocalizations.of(context).insert),
-        ),
-        onTap: () => insertImage(state.url),
+      return _FileUploadedBar(
+        insertImage: () => insertImage(state.url),
       );
     }
 
     return null;
   }
 
-  Widget _attachmentRect(BuildContext context, Attachment attachment) {
+  _pickImage() async {
+    File file = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (file != null) selectFile(file);
+  }
+}
+
+class _AttachmentRect extends StatelessWidget {
+  final Attachment attachment;
+
+  const _AttachmentRect({
+    Key key,
+    @required this.attachment,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     // FIXME: better way to create unique tag
     String tag = 'tag${DateTime.now().toString()}';
 
@@ -145,8 +144,18 @@ class EditorAttachs extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _fileImageRect(BuildContext context, File file) {
+class _FileImageRect extends StatelessWidget {
+  final File file;
+
+  const _FileImageRect({
+    Key key,
+    @required this.file,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     // FIXME: better way to create unique tag
     String tag = 'tag${DateTime.now().toString()}';
     ImageProvider imageProvider = FileImage(file);
@@ -172,11 +181,58 @@ class EditorAttachs extends StatelessWidget {
       ),
     );
   }
+}
 
-  _pickImage() async {
-    File file = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
+class _FileSelectedBar extends StatelessWidget {
+  final Future<void> Function() uploadFile;
+
+  const _FileSelectedBar({
+    Key key,
+    @required this.uploadFile,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: GridTileBar(
+        backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+        leading: Icon(Icons.file_upload),
+        title: Text(AppLocalizations.of(context).upload),
+      ),
+      onTap: uploadFile,
     );
-    if (file != null) selectFile(file);
+  }
+}
+
+class _FileUploadingBar extends StatelessWidget {
+  const _FileUploadingBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridTileBar(
+      backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+      title: Text(AppLocalizations.of(context).uploading),
+    );
+  }
+}
+
+class _FileUploadedBar extends StatelessWidget {
+  final VoidCallback insertImage;
+
+  const _FileUploadedBar({
+    Key key,
+    @required this.insertImage,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: GridTileBar(
+        backgroundColor: Color.fromRGBO(0, 0, 0, 0.2),
+        leading: Icon(Icons.insert_photo),
+        title: Text(AppLocalizations.of(context).insert),
+      ),
+      onTap: insertImage,
+    );
   }
 }

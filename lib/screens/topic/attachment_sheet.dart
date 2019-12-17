@@ -39,32 +39,50 @@ class AttachmentSheet extends StatelessWidget {
             crossAxisCount: 3,
             children: [
               for (int index = 0; index < attachments.length; index++)
-                _buildAttachmentRect(attachments[index], index)
+                _AttachmentRect(
+                  attachment: attachments[index],
+                  index: index,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AttachViewer(
+                          attachs: attachments,
+                          initialPage: index,
+                        ),
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildAttachmentRect(Attachment attachment, int index) {
+class _AttachmentRect extends StatelessWidget {
+  final Attachment attachment;
+  final int index;
+  final VoidCallback onTap;
+
+  const _AttachmentRect({
+    Key key,
+    @required this.attachment,
+    @required this.index,
+    @required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(8.0),
       child: ClipRRect(
         child: CachedNetworkImage(
           imageUrl: attachment.thumbUrl,
           imageBuilder: (context, imageProvider) => GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AttachViewer(
-                    attachs: attachments,
-                    initialPage: index,
-                  ),
-                ),
-              );
-            },
+            onTap: onTap,
             child: Hero(
               // FIXME: better way to create unique tag
               tag: 'tag${DateTime.now().toString()}',

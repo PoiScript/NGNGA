@@ -1,5 +1,4 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -8,8 +7,8 @@ import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/user/avatar_gallery.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/number_to_hsl_color.dart';
 import 'package:ngnga/utils/open_link.dart';
+import 'package:ngnga/widgets/user_avatar.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
@@ -102,35 +101,10 @@ class UserPage extends StatelessWidget {
   }
 
   Widget _buildAvatar(BuildContext context) {
-    Widget letterAvatar = CircleAvatar(
-      radius: 36.0,
-      child: Text(
-        user.username[0].toUpperCase(),
-        style: Theme.of(context)
-            .textTheme
-            .body2
-            .copyWith(color: Colors.white, fontSize: 32.0),
-      ),
-      backgroundColor: numberToHslColor(
-        user.id,
-        Theme.of(context).brightness,
-      ),
-    );
-
-    if (user.avatars.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16.0),
-        child: letterAvatar,
-      );
-    }
-
-    Widget avatar = CachedNetworkImage(
-      imageUrl: user.avatars[0],
-      imageBuilder: (context, imageProvider) => CircleAvatar(
-        radius: 36.0,
-        backgroundImage: imageProvider,
-      ),
-      errorWidget: (context, url, error) => letterAvatar,
+    Widget avatar = UserAvatar(
+      user: user,
+      size: 72.0,
+      index: 0,
     );
 
     if (user.avatars.length > 1) {
@@ -157,11 +131,15 @@ class UserPage extends StatelessWidget {
       );
     }
 
+    avatar = Container(
+      padding: const EdgeInsets.all(16.0),
+      child: avatar,
+    );
+
+    if (user.avatars.isEmpty) return avatar;
+
     return GestureDetector(
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: avatar,
-      ),
+      child: avatar,
       onTap: () {
         Navigator.push(
           context,
