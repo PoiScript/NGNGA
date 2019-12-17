@@ -65,6 +65,10 @@ android {
             applicationIdSuffix ".debug"
         }
 
+        profile {
+            applicationIdSuffix ".profile"
+        }
+
         release {
             if (signKeyPassword != null && signStoreFile != null && signStorePassword != null) {
                 signingConfig signingConfigs.release
