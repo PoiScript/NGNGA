@@ -39,53 +39,59 @@ class InboxTab extends StatelessWidget {
       child: ListView.separated(
         separatorBuilder: (context, inex) => Divider(height: 0.0),
         itemCount: inboxState.notifications.length,
-        itemBuilder: (context, index) {
-          UserNotification notification = inboxState.notifications[index];
-          return InkWell(
-            onTap: () => Navigator.pushNamed(
-              context,
-              '/t',
-              arguments: {
-                'id': notification.topicId,
-                'page': notification.pageIndex
-              },
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          _description(
-                            context,
-                            notification.type,
-                            notification.username,
-                          ),
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                      ),
-                      StreamBuilder<DateTime>(
-                        initialData: DateTime.now(),
-                        stream: _everyMinutes.stream,
-                        builder: (context, snapshot) => Text(
-                          duration(snapshot.data, notification.dateTime),
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                      ),
-                    ],
+        itemBuilder: (context, index) =>
+            _NotificationItem(notification: inboxState.notifications[index]),
+      ),
+    );
+  }
+}
+
+class _NotificationItem extends StatelessWidget {
+  final UserNotification notification;
+
+  const _NotificationItem({Key key, this.notification}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Navigator.pushNamed(
+        context,
+        '/t',
+        arguments: {'id': notification.topicId, 'page': notification.pageIndex},
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    _description(
+                      context,
+                      notification.type,
+                      notification.username,
+                    ),
+                    style: Theme.of(context).textTheme.caption,
                   ),
-                  Container(
-                    margin: EdgeInsets.only(top: 8.0),
-                    child: Text(notification.topicTitle),
+                ),
+                StreamBuilder<DateTime>(
+                  initialData: DateTime.now(),
+                  stream: _everyMinutes.stream,
+                  builder: (context, snapshot) => Text(
+                    duration(snapshot.data, notification.dateTime),
+                    style: Theme.of(context).textTheme.caption,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
+            Container(
+              margin: EdgeInsets.only(top: 8.0),
+              child: Text(notification.topicTitle),
+            ),
+          ],
+        ),
       ),
     );
   }
