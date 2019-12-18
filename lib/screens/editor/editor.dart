@@ -137,19 +137,6 @@ class _EditorPageState extends State<EditorPage> {
       },
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(
-          leading: BackButton(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-          ),
-          elevation: 0.0,
-          title: Text(
-            'Editor',
-            style: Theme.of(context).textTheme.body2,
-          ),
-          backgroundColor: Theme.of(context).cardColor,
-        ),
         body: _buildBody(),
         floatingActionButton: FloatingActionButton(
           onPressed: isSending ? null : _submit,
@@ -213,45 +200,71 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   Widget _buildBody() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 8.0,
-          right: 8.0,
-          bottom: 8.0 + MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          children: [
-            TextField(
-              focusNode: _subjectFocusNode,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).subject,
-                border: InputBorder.none,
-              ),
-              controller: _subjectController,
-              style: Theme.of(context)
-                  .textTheme
-                  .subhead
-                  .copyWith(fontFamily: 'Noto Sans CJK SC'),
+    return ScrollConfiguration(
+      behavior: _Behavior(),
+      child: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            leading: BackButton(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
-            TextField(
-              focusNode: _contentFocusNode,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).content,
-                border: InputBorder.none,
+            title: Text(
+              'Editor',
+              style: Theme.of(context).textTheme.body2,
+            ),
+            titleSpacing: 0.0,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            pinned: true,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextField(
+                focusNode: _subjectFocusNode,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).subject,
+                  border: InputBorder.none,
+                ),
+                maxLines: null,
+                controller: _subjectController,
+                style: Theme.of(context)
+                    .textTheme
+                    .subhead
+                    .copyWith(fontFamily: 'Noto Sans CJK SC'),
               ),
-              controller: _contentController,
-              maxLines: null,
-              autofocus: true,
-              style: Theme.of(context)
-                  .textTheme
-                  .body1
-                  .copyWith(fontFamily: 'Noto Sans CJK SC'),
-            )
-          ],
-        ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: kToolbarHeight,
+              ),
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: TextField(
+                focusNode: _contentFocusNode,
+                keyboardType: TextInputType.multiline,
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).content,
+                  border: InputBorder.none,
+                ),
+                controller: _contentController,
+                maxLines: null,
+                autofocus: true,
+                style: Theme.of(context)
+                    .textTheme
+                    .body1
+                    .copyWith(fontFamily: 'Noto Sans CJK SC'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -357,6 +370,14 @@ class _EditorPageState extends State<EditorPage> {
 
     // close editor page
     Navigator.pop(context);
+  }
+}
+
+class _Behavior extends ScrollBehavior {
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }
 
