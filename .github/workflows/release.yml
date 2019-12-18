@@ -34,6 +34,7 @@ jobs:
         run: |
           echo $NGNGA_SIGN_STORE_BASE64 | base64 -d > key.jks
           flutter pub get
+          flutter packages pub run build_runner build
           flutter format --set-exit-if-changed lib/ test/
           flutter analyze
           flutter test
