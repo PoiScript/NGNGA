@@ -10,7 +10,6 @@ import 'package:ngnga/screens/user/avatar_gallery.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_avatar.dart';
-import 'package:ngnga/widgets/user_dialog.dart';
 
 part 'user.g.dart';
 
@@ -19,9 +18,9 @@ final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 class UserPage extends StatelessWidget {
   final User user;
 
-  UserPage({
+  const UserPage({
     @required this.user,
-  }) : assert(user != null);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,12 +74,7 @@ class UserPage extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: BBCodeRender(
                   raw: user.signature,
-                  openUser: (userId) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => UserDialog(userId),
-                    );
-                  },
+                  openUser: (userId) {},
                   openLink: (url) => openLink(context, url),
                   openPost: (topicId, page, postId) {},
                 ),

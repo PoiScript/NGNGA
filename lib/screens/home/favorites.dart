@@ -13,12 +13,11 @@ class FavoritesTab extends StatelessWidget {
 
   final Future<void> Function() refreshFavorites;
 
-  FavoritesTab({
+  const FavoritesTab({
     @required this.topics,
     @required this.favoriteState,
     @required this.refreshFavorites,
-  })  : assert(favoriteState != null),
-        assert(refreshFavorites != null);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -34,7 +34,7 @@ class CategoryPage extends StatelessWidget {
   final Function(Category) addToPinned;
   final Function(Category) removeFromPinned;
 
-  CategoryPage({
+  const CategoryPage({
     Key key,
     @required this.topics,
     @required this.categoryState,
@@ -43,10 +43,7 @@ class CategoryPage extends StatelessWidget {
     @required this.baseUrl,
     @required this.addToPinned,
     @required this.removeFromPinned,
-  })  : assert(categoryState != null),
-        assert(onRefresh != null),
-        assert(onLoad != null),
-        super(key: key);
+  }) : super(key: key);
 
   Widget build(BuildContext context) {
     if (!categoryState.initialized) {

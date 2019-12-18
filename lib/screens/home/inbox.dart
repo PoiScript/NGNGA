@@ -23,9 +23,7 @@ class InboxTab extends StatelessWidget {
     Key key,
     @required this.refreshInbox,
     @required this.inboxState,
-  })  : assert(refreshInbox != null),
-        assert(inboxState != null),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ final _dateFormatter = DateFormat('HH:mm:ss');
 class UpdateIndicator extends StatefulWidget {
   final Future<void> Function() fetch;
 
-  UpdateIndicator({
+  const UpdateIndicator({
     Key key,
     @required this.fetch,
   })  : assert(fetch != null),

@@ -7,7 +7,7 @@ const double _itemExtent = 50.0;
 const double _listHeigth = _itemExtent * 3;
 
 class PagePicker extends StatefulWidget {
-  PagePicker({
+  const PagePicker({
     Key key,
     @required this.initialPage,
     @required this.maxPage,

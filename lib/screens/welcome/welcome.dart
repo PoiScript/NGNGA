@@ -20,10 +20,7 @@ class WelcomePage extends StatefulWidget {
     @required this.loginAsGuest,
     @required this.logged,
     @required this.validate,
-  })  : assert(logged != null),
-        assert(loginAsGuest != null),
-        assert(validate != null),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   _WelcomePageState createState() => _WelcomePageState();

@@ -8,9 +8,9 @@ import 'package:ngnga/utils/categories.dart';
 class ExploreTab extends StatelessWidget {
   final List<Category> pinned;
 
-  ExploreTab({
+  const ExploreTab({
     @required this.pinned,
-  }) : assert(pinned != null);
+  });
 
   @override
   Widget build(BuildContext context) {

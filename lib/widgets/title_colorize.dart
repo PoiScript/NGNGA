@@ -11,7 +11,7 @@ class TitleColorize extends StatelessWidget {
   final TextOverflow overflow;
   final bool displayLabel;
 
-  TitleColorize(
+  const TitleColorize(
     this.topic, {
     this.maxLines,
     this.overflow,

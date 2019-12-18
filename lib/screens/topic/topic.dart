@@ -48,7 +48,7 @@ class TopicPage extends StatefulWidget {
   final Future<void> Function(int) upvotePost;
   final Future<void> Function(int) downvotePost;
 
-  TopicPage({
+  const TopicPage({
     @required this.isMe,
     @required this.users,
     @required this.posts,
@@ -63,18 +63,7 @@ class TopicPage extends StatefulWidget {
     @required this.changePage,
     @required this.upvotePost,
     @required this.downvotePost,
-  })  : assert(baseUrl != null),
-        assert(isMe != null),
-        assert(users != null),
-        assert(topicState != null),
-        assert(refreshFirst != null),
-        assert(loadPrevious != null),
-        assert(loadNext != null),
-        assert(addToFavorites != null),
-        assert(removeFromFavorites != null),
-        assert(changePage != null),
-        assert(upvotePost != null),
-        assert(downvotePost != null);
+  });
 
   @override
   _TopicPageState createState() => _TopicPageState();
@@ -173,11 +162,10 @@ class _TopicPageState extends State<TopicPage> {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final int itemIndex = index ~/ 2;
+                  int itemIndex = index ~/ 2;
                   if (index.isOdd) {
                     Post post = widget
                         .posts[widget.topicState.postIds.elementAt(itemIndex)];
-                    assert(post != null);
                     return PostRow(
                       post: post,
                       baseUrl: widget.baseUrl,

@@ -17,7 +17,7 @@ final _everyMinutes = StreamController<DateTime>.broadcast()
 class TopicRow extends StatelessWidget {
   final Topic topic;
 
-  TopicRow({
+  const TopicRow({
     @required this.topic,
   }) : assert(topic != null);
 

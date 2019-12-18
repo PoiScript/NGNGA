@@ -13,7 +13,6 @@ import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/open_link.dart';
-import 'package:ngnga/widgets/user_dialog.dart';
 
 part 'post_dialog.g.dart';
 
@@ -114,12 +113,7 @@ class _PostDialogState extends State<PostDialog> {
         BBCodeRender(
           raw: post.content,
           openLink: (url) => openLink(context, url),
-          openUser: (userId) {
-            showDialog(
-              context: context,
-              builder: (context) => UserDialog(userId),
-            );
-          },
+          openUser: (userId) {},
           openPost: (topicId, _, postId) => _fetchReply(topicId, postId),
         ),
       ],

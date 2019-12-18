@@ -41,7 +41,7 @@ class PostRow extends StatefulWidget {
   final Function(List<int>) openCommentSheet;
   final Function(List<int>) openTopReplySheet;
 
-  PostRow({
+  const PostRow({
     @required this.post,
     @required this.user,
     @required this.sentByMe,
@@ -215,7 +215,7 @@ class _MetaRow extends StatelessWidget {
               Icon(
                 Icons.edit,
                 color: Colors.grey,
-                size: 16,
+                size: 16.0,
               ),
             if (vendor != Vendor.none)
               Icon(
@@ -263,7 +263,27 @@ class _MetaRow extends StatelessWidget {
           title: Text(AppLocalizations.of(context).editedAt),
           subtitle: Text(_dateFormatter.format(editedAt)),
         ),
-      if (vendor != Vendor.none) _buildVendorListTile(context),
+      if (vendor == Vendor.android)
+        ListTile(
+          dense: true,
+          leading: const Icon(VendorIcons.android),
+          title: Text(AppLocalizations.of(context).sentFromAndroid),
+          subtitle: vendorDetail.isNotEmpty ? Text(vendorDetail) : null,
+        )
+      else if (vendor == Vendor.apple)
+        ListTile(
+          dense: true,
+          leading: const Icon(VendorIcons.apple),
+          title: Text(AppLocalizations.of(context).sentFromApple),
+          subtitle: vendorDetail.isNotEmpty ? Text(vendorDetail) : null,
+        )
+      else if (vendor == Vendor.windows)
+        ListTile(
+          dense: true,
+          leading: const Icon(VendorIcons.windows),
+          title: Text(AppLocalizations.of(context).sentFromWindows),
+          subtitle: vendorDetail.isNotEmpty ? Text(vendorDetail) : null,
+        )
     ];
 
     return ListView.separated(
@@ -272,37 +292,6 @@ class _MetaRow extends StatelessWidget {
       itemCount: listChildren.length,
       itemBuilder: (context, index) => listChildren[index],
     );
-  }
-
-  ListTile _buildVendorListTile(BuildContext context) {
-    String title;
-    switch (vendor) {
-      case Vendor.android:
-        title = AppLocalizations.of(context).sentFromAndroid;
-        break;
-      case Vendor.apple:
-        title = AppLocalizations.of(context).sentFromApple;
-        break;
-      case Vendor.windows:
-        title = AppLocalizations.of(context).sentFromWindows;
-        break;
-      case Vendor.none:
-        break;
-    }
-    if (vendorDetail.isEmpty) {
-      return ListTile(
-        dense: true,
-        leading: Icon(VendorIcons.fromVendor(vendor)),
-        title: Text(title),
-      );
-    } else {
-      return ListTile(
-        dense: true,
-        leading: Icon(VendorIcons.fromVendor(vendor)),
-        title: Text(title),
-        subtitle: Text(vendorDetail),
-      );
-    }
   }
 }
 

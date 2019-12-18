@@ -36,17 +36,13 @@ class EditorPage extends StatefulWidget {
 
   final Future<void> Function(String, String) applyEditing;
 
-  EditorPage({
+  const EditorPage({
     @required this.editingState,
     @required this.selectFile,
     @required this.unselectFile,
     @required this.uploadFile,
     @required this.applyEditing,
-  })  : assert(editingState != null),
-        assert(applyEditing != null),
-        assert(selectFile != null),
-        assert(unselectFile != null),
-        assert(uploadFile != null);
+  });
 
   @override
   _EditorPageState createState() => _EditorPageState();
