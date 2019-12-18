@@ -8,31 +8,32 @@ import 'package:ngnga/models/attachment.dart';
 
 part 'editing.g.dart';
 
-abstract class FileState {
+abstract class UploadFile implements Built<UploadFile, UploadFileBuilder> {
+  UploadFile._() {
+    assert(!uploaded || !isUploading);
+    if (uploaded) {
+      assert(check != null);
+      assert(code != null);
+      assert(url != null);
+    }
+  }
+
+  factory UploadFile([Function(UploadFileBuilder) updates]) = _$UploadFile;
+
+  bool get isUploading;
+  bool get uploaded;
+
   File get file;
+  @nullable
+  String get check;
+  @nullable
+  String get code;
+  @nullable
+  String get url;
 
-  const FileState();
-}
-
-class FileSelected extends FileState {
-  final File file;
-
-  const FileSelected(this.file);
-}
-
-class FileUploading extends FileState {
-  final File file;
-
-  const FileUploading(this.file);
-}
-
-class FileUploaded extends FileState {
-  final String check;
-  final String code;
-  final String url;
-  final File file;
-
-  const FileUploaded({this.check, this.code, this.url, this.file});
+  static void _initializeBuilder(UploadFileBuilder b) => b
+    ..isUploading = false
+    ..uploaded = false;
 }
 
 abstract class EditingState
@@ -45,7 +46,7 @@ abstract class EditingState
   bool get initialized;
   String get uploadAuthCode;
   String get uploadUrl;
-  BuiltList<FileState> get files;
+  BuiltList<UploadFile> get files;
   BuiltList<Attachment> get attachments;
   Event<String> get subjectEvt;
   Event<String> get contentEvt;

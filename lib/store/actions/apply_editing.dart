@@ -5,8 +5,6 @@ import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/editing.dart';
 
-import 'clear_editing.dart';
-
 class ApplyEditingAction extends ReduxAction<AppState> {
   final EditorAction action;
   final int categoryId;
@@ -36,17 +34,13 @@ class ApplyEditingAction extends ReduxAction<AppState> {
       subject: subject,
       content: content,
       attachmentCode: editingState.files
-          .map((file) => file is FileUploaded ? file.code : '')
-          .where((code) => code.isNotEmpty)
+          .where((file) => file.code?.isNotEmpty ?? false)
           .join('\t'),
       attachmentChecksum: editingState.files
-          .map((file) => file is FileUploaded ? file.check : '')
-          .where((check) => check.isNotEmpty)
+          .where((file) => file.code?.isNotEmpty ?? false)
           .join('\t'),
     );
 
     return null;
   }
-
-  void after() => dispatch(ClearEditingAction());
 }

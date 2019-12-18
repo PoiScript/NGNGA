@@ -12,8 +12,7 @@ import 'package:ngnga/store/editing.dart';
 
 class EditorAttachs extends StatelessWidget {
   final List<Attachment> attachments;
-
-  final List<FileState> files;
+  final List<UploadFile> files;
   final Function(File) selectFile;
   final Function(int) unselectFile;
   final Future<void> Function(int) uploadFile;
@@ -79,24 +78,17 @@ class EditorAttachs extends StatelessWidget {
   }
 
   Widget _buildGridFooter(BuildContext context, int index) {
-    FileState state = files[index];
-    if (state is FileSelected) {
+    if (files[index].uploaded) {
+      return _FileUploadedBar(
+        insertImage: () => insertImage(files[index].url),
+      );
+    } else if (files[index].isUploading) {
+      return const _FileUploadingBar();
+    } else {
       return _FileSelectedBar(
         uploadFile: () => uploadFile(index),
       );
     }
-
-    if (state is FileUploading) {
-      return const _FileUploadingBar();
-    }
-
-    if (state is FileUploaded) {
-      return _FileUploadedBar(
-        insertImage: () => insertImage(state.url),
-      );
-    }
-
-    return null;
   }
 
   _pickImage() async {

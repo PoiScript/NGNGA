@@ -16,7 +16,7 @@ class UploadFileAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     EditingState editingState = state.editingState;
 
-    assert(editingState.files[index] is FileUploading);
+    assert(editingState.files[index].isUploading);
 
     final res = await state.repository.uploadFile(
       file: editingState.files[index].file,
@@ -26,12 +26,13 @@ class UploadFileAction extends ReduxAction<AppState> {
     );
 
     return state.rebuild(
-      (b) => b.editingState.files[index] = FileUploaded(
-        check: res.attachChecksum,
-        code: res.attachCode,
-        url: res.attachUrl,
-        file: editingState.files[index].file,
-      ),
+      (b) => b.editingState.files[index] =
+          b.editingState.files[index].rebuild((b) => b
+            ..uploaded = true
+            ..isUploading = false
+            ..check = res.attachChecksum
+            ..code = res.attachCode
+            ..url = res.attachUrl),
     );
   }
 
@@ -47,12 +48,10 @@ class SetFileUploadingAction extends ReduxAction<AppState> {
   AppState reduce() {
     EditingState editingState = state.editingState;
 
-    assert(editingState.files[index] is FileSelected);
+    assert(!editingState.files[index].uploaded);
 
-    return state.rebuild(
-      (b) => b.editingState.files[index] =
-          FileUploading(editingState.files[index].file),
-    );
+    return state.rebuild((b) => b.editingState.files[index] =
+        b.editingState.files[index].rebuild((b) => b.isUploading = true));
   }
 }
 
@@ -64,7 +63,7 @@ class SelectFileAction extends ReduxAction<AppState> {
   @override
   AppState reduce() {
     return state.rebuild(
-      (b) => b.editingState.files.add(FileSelected(file)),
+      (b) => b.editingState.files.add(UploadFile((b) => b.file = file)),
     );
   }
 }
@@ -76,10 +75,6 @@ class UnselectFileAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    EditingState editingState = state.editingState;
-
-    assert(editingState.files[index] is FileSelected);
-
     return state.rebuild(
       (b) => b.editingState.files.removeAt(index),
     );
