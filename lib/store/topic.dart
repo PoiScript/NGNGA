@@ -26,7 +26,7 @@ abstract class TopicState implements Built<TopicState, TopicStateBuilder> {
   Topic get topic;
 
   BuiltSet<int> get postIds;
-  Event<PostVoted> get postVotedEvt;
+  Event<String> get snackBarEvt;
   bool get isFavorited;
 
   int get firstPage;
@@ -41,7 +41,7 @@ abstract class TopicState implements Built<TopicState, TopicStateBuilder> {
 
   static void _initializeBuilder(TopicStateBuilder b) => b
     ..initialized = false
-    ..postVotedEvt = Event.spent()
+    ..snackBarEvt = Event.spent()
     ..isFavorited = false
     ..firstPage = 0
     ..lastPage = 0

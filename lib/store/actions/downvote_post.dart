@@ -1,8 +1,8 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:ngnga/models/post.dart';
 
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/store/topic.dart';
 
 class DownvotePostAction extends ReduxAction<AppState> {
   final int topicId;
@@ -22,13 +22,33 @@ class DownvotePostAction extends ReduxAction<AppState> {
     );
 
     return state.rebuild(
-      (b) => b.topicStates.updateValue(
-        topicId,
-        (topicState) => topicState.rebuild(
-          (b) => b.postVotedEvt =
-              Event(PostVoted(postId: postId, delta: res.value)),
+      (b) => b
+        ..posts.updateValue(postId, (item) {
+          if (item is TopicPost) {
+            return TopicPost(
+              item.post.copy(vote: item.post.vote + res.value),
+              item.topReplyIds,
+            );
+          }
+
+          if (item is Comment) {
+            return item.addPost(item.post.copy(
+              vote: item.post.vote + res.value,
+            ));
+          }
+
+          if (item is Post) {
+            return item.copy(vote: item.vote + res.value);
+          }
+
+          return item;
+        })
+        ..topicStates.updateValue(
+          topicId,
+          (topicState) => topicState.rebuild(
+            (b) => b.snackBarEvt = Event(res.message),
+          ),
         ),
-      ),
     );
   }
 }

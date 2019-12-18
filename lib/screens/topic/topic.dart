@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -29,13 +30,11 @@ part 'topic.g.dart';
 class TopicPage extends StatefulWidget {
   final String baseUrl;
 
-  final Map<int, User> users;
-  final Map<int, PostItem> posts;
+  final BuiltMap<int, User> users;
+  final BuiltMap<int, PostItem> posts;
   final TopicState topicState;
 
   final Function(int) isMe;
-
-  final Future<void> Function(int) fetchReply;
 
   final Future<void> Function() refreshFirst;
   final Future<void> Function() refreshLast;
@@ -59,7 +58,6 @@ class TopicPage extends StatefulWidget {
     @required this.refreshLast,
     @required this.loadPrevious,
     @required this.loadNext,
-    @required this.fetchReply,
     @required this.addToFavorites,
     @required this.removeFromFavorites,
     @required this.changePage,
@@ -92,11 +90,13 @@ class _TopicPageState extends State<TopicPage> {
   }
 
   _consumeEvents() {
-    PostVoted postVoted = widget.topicState.postVotedEvt.consume();
-    if (postVoted != null) {
+    String message = widget.topicState.snackBarEvt.consume();
+    if (message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _updatePostVote(postVoted.postId, postVoted.delta);
+          _scaffoldKey.currentState
+            ..removeCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
         }
       });
     }
@@ -227,7 +227,7 @@ class _TopicPageState extends State<TopicPage> {
     showModalBottomSheet(
       context: context,
       builder: (context) => CommentSheet(
-        users: widget.users,
+        users: widget.users.toMap(),
         posts: commentIds.map((id) => widget.posts[id]).toList(),
       ),
     );
@@ -237,7 +237,7 @@ class _TopicPageState extends State<TopicPage> {
     showModalBottomSheet(
       context: context,
       builder: (context) => TopReplySheet(
-        users: widget.users,
+        users: widget.users.toMap(),
         posts: topReplyIds.map((id) => widget.posts[id]).toList(),
       ),
     );
@@ -246,44 +246,11 @@ class _TopicPageState extends State<TopicPage> {
   _openPostDialog(int topicId, int postId) {
     showDialog(
       context: context,
-      builder: (context) => PostDialog(
-        topicId: topicId,
-        postId: postId,
-        users: widget.users,
-        posts: widget.posts,
-        fetchReply: widget.fetchReply,
+      builder: (context) => PostDialogConnector(
+        initialTopicId: topicId,
+        initialPostId: postId,
       ),
     );
-  }
-
-  _updatePostVote(int postId, int delta) {
-    widget.posts.update(postId, (item) {
-      if (item is TopicPost) {
-        return TopicPost(
-          item.post.copy(vote: item.post.vote + delta),
-          item.topReplyIds,
-        );
-      }
-
-      if (item is Comment) {
-        return item.addPost(item.post.copy(
-          vote: item.post.vote + delta,
-        ));
-      }
-
-      if (item is Post) {
-        return item.copy(vote: item.vote + delta);
-      }
-
-      return item;
-    });
-
-    setState(() {});
-
-    // TODO: display different message based on delta
-    _scaffoldKey.currentState
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(delta.toString())));
   }
 }
 
@@ -314,7 +281,6 @@ class TopicPageConnector extends StatelessWidget {
         topicState: vm.topicState,
         users: vm.users,
         posts: vm.posts,
-        fetchReply: vm.fetchReply,
         addToFavorites: vm.addToFavorites,
         removeFromFavorites: vm.removeFromFavorites,
         changePage: vm.changePage,
@@ -332,10 +298,9 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
 
   TopicState get topicState;
   String get baseUrl;
-  Map<int, User> get users;
-  Map<int, PostItem> get posts;
+  BuiltMap<int, User> get users;
+  BuiltMap<int, PostItem> get posts;
   Function(int) get isMe;
-  Future<void> Function(int) get fetchReply;
   Future<void> Function() get refreshFirst;
   Future<void> Function() get refreshLast;
   Future<void> Function() get loadPrevious;
@@ -351,8 +316,8 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
       (b) => b
         ..topicState =
             store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder()
-        ..users = store.state.users.toMap()
-        ..posts = store.state.posts.toMap()
+        ..users = store.state.users.toBuilder()
+        ..posts = store.state.posts.toBuilder()
         ..baseUrl = store.state.repository.baseUrl
         ..refreshFirst = (() => store
             .dispatchFuture(RefreshPostsAction(topicId: topicId, pageIndex: 0)))
@@ -373,9 +338,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
         ..upvotePost = ((postId) => store
             .dispatchFuture(UpvotePostAction(topicId: topicId, postId: postId)))
         ..downvotePost = ((postId) => store.dispatchFuture(
-            DownvotePostAction(topicId: topicId, postId: postId)))
-        ..fetchReply = ((postId) => store.dispatchFuture(
-            FetchReplyAction(topicId: topicId, postId: postId))),
+            DownvotePostAction(topicId: topicId, postId: postId))),
     );
   }
 }

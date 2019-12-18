@@ -1,14 +1,21 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
+import 'package:flutter/material.dart' hide Builder;
 
 import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
+import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
+
+part 'post_dialog.g.dart';
 
 final _everyMinutes = StreamController<DateTime>.broadcast()
   ..addStream(
@@ -16,82 +23,67 @@ final _everyMinutes = StreamController<DateTime>.broadcast()
   );
 
 class PostDialog extends StatefulWidget {
-  final Map<int, User> users;
-  final Map<int, PostItem> posts;
+  final BuiltMap<int, User> users;
+  final BuiltMap<int, PostItem> posts;
 
-  final int topicId;
-  final int postId;
+  final int initialTopicId;
+  final int initialPostId;
 
-  final Future<void> Function(int) fetchReply;
+  final Future<void> Function(int, int) fetchReply;
 
-  PostDialog({
-    @required this.topicId,
-    @required this.postId,
+  const PostDialog({
+    @required this.initialTopicId,
+    @required this.initialPostId,
     @required this.users,
     @required this.posts,
     @required this.fetchReply,
-  })  : assert(users != null),
-        assert(posts != null),
-        assert(postId != null),
-        assert(fetchReply != null);
+  });
 
   @override
   _PostDialogState createState() => _PostDialogState();
 }
 
 class _PostDialogState extends State<PostDialog> {
+  bool isLoading = false;
   List<int> postIds = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchReply(widget.topicId, widget.postId);
+    _fetchReply(widget.initialTopicId, widget.initialPostId);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<PostItem> posts = [];
-    List<User> users = [];
+    List<Widget> children = [
+      if (isLoading) Center(child: CircularProgressIndicator()),
+      for (int id in postIds.reversed)
+        if (widget.posts[id] == null)
+          Text(
+            AppLocalizations.of(context).postNotFound,
+            style: Theme.of(context)
+                .textTheme
+                .caption
+                .copyWith(fontStyle: FontStyle.italic),
+          )
+        else
+          _buildContent(id)
+    ];
 
-    for (int id in postIds.reversed) {
-      PostItem postItem = widget.posts[id];
-      posts.add(postItem);
-      if (postItem == null || postItem is Deleted) {
-        users.add(null);
-      } else {
-        users.add(widget.users[postItem.inner.userId]);
-      }
-    }
-
-    List<Widget> children = [];
-
-    for (int i = 0; i < posts.length; i++) {
-      children.add(_buildContent(posts[i], users[i]));
-      children.add(Divider());
-    }
-
-    return SimpleDialog(
+    return AlertDialog(
       contentPadding: EdgeInsets.all(16.0),
-      children: children..removeLast(),
+      content: ListView.separated(
+        shrinkWrap: true,
+        itemCount: children.length,
+        itemBuilder: (context, index) => children[index],
+        separatorBuilder: (context, index) => Divider(),
+      ),
     );
   }
 
-  Widget _buildContent(PostItem postItem, User user) {
-    if (postItem == null) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (postItem is Deleted) {
-      return Text(
-        AppLocalizations.of(context).postNotFound,
-        style: Theme.of(context)
-            .textTheme
-            .caption
-            .copyWith(fontStyle: FontStyle.italic),
-      );
-    }
+  Widget _buildContent(int postId) {
+    PostItem post = widget.posts[postId];
+    User user = widget.users[post.inner.userId];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +104,7 @@ class _PostDialogState extends State<PostDialog> {
                 initialData: DateTime.now(),
                 stream: _everyMinutes.stream,
                 builder: (context, snapshot) => Text(
-                  duration(snapshot.data, postItem.inner.createdAt),
+                  duration(snapshot.data, post.inner.createdAt),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -120,7 +112,7 @@ class _PostDialogState extends State<PostDialog> {
           ),
         ),
         BBCodeRender(
-          raw: postItem.inner.content,
+          raw: post.inner.content,
           openLink: (url) => openLink(context, url),
           openUser: (userId) {
             showDialog(
@@ -128,21 +120,69 @@ class _PostDialogState extends State<PostDialog> {
               builder: (context) => UserDialog(userId),
             );
           },
-          openPost: (int topicId, int page, int postId) =>
-              _fetchReply(topicId, postId),
+          openPost: (topicId, _, postId) => _fetchReply(topicId, postId),
         ),
       ],
     );
   }
 
   _fetchReply(int topicId, int postId) async {
-    if (!postIds.contains(postId)) {
-      setState(() => postIds.add(postId));
-      if (!widget.posts.containsKey(postId) ||
-          widget.posts[postId] is Deleted) {
-        await widget.fetchReply(postId);
-        setState(() {});
+    if (!isLoading && !postIds.contains(postId)) {
+      if (!widget.posts.containsKey(postId)) {
+        setState(() => isLoading = true);
+        await widget.fetchReply(topicId, postId);
       }
+      setState(() {
+        isLoading = false;
+        postIds.add(postId);
+      });
     }
   }
+}
+
+class PostDialogConnector extends StatelessWidget {
+  final int initialTopicId;
+  final int initialPostId;
+
+  const PostDialogConnector({
+    @required this.initialPostId,
+    @required this.initialTopicId,
+  }) : assert(initialPostId != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<AppState, ViewModel>(
+      converter: (store) => ViewModel.fromStore(store),
+      onInit: (store) => store.dispatch(FetchReplyAction(
+        topicId: initialTopicId,
+        postId: initialPostId,
+      )),
+      builder: (context, vm) => PostDialog(
+        initialTopicId: initialTopicId,
+        initialPostId: initialPostId,
+        users: vm.users,
+        posts: vm.posts,
+        fetchReply: vm.fetchReply,
+      ),
+    );
+  }
+}
+
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
+
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
+
+  BuiltMap<int, User> get users;
+  BuiltMap<int, PostItem> get posts;
+
+  Future<void> Function(int, int) get fetchReply;
+
+  factory ViewModel.fromStore(Store<AppState> store) => ViewModel(
+        (b) => b
+          ..users = store.state.users.toBuilder()
+          ..posts = store.state.posts.toBuilder()
+          ..fetchReply = (topicId, postId) => store.dispatchFuture(
+              FetchReplyAction(topicId: topicId, postId: postId)),
+      );
 }
