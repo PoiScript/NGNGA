@@ -35,7 +35,6 @@ class EditorPage extends StatefulWidget {
   final Future<void> Function(int) uploadFile;
 
   final Future<void> Function(String, String) applyEditing;
-  final VoidCallback clearEditing;
 
   EditorPage({
     @required this.editingState,
@@ -43,13 +42,11 @@ class EditorPage extends StatefulWidget {
     @required this.unselectFile,
     @required this.uploadFile,
     @required this.applyEditing,
-    @required this.clearEditing,
   })  : assert(editingState != null),
         assert(applyEditing != null),
         assert(selectFile != null),
         assert(unselectFile != null),
-        assert(uploadFile != null),
-        assert(clearEditing != null);
+        assert(uploadFile != null);
 
   @override
   _EditorPageState createState() => _EditorPageState();
@@ -62,8 +59,8 @@ enum DisplayToolbar {
 }
 
 class _EditorPageState extends State<EditorPage> {
-  TextEditingController _subjectController;
-  TextEditingController _contentController;
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
   final FocusNode _subjectFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -79,13 +76,6 @@ class _EditorPageState extends State<EditorPage> {
   void initState() {
     super.initState();
 
-    _subjectController = TextEditingController(
-      text: widget.editingState.initialSubject,
-    );
-    _contentController = TextEditingController(
-      text: widget.editingState.initialContent,
-    );
-
     _contentFocusNode.addListener(() {
       setState(() => disableToolbar = !_contentFocusNode.hasFocus);
     });
@@ -95,6 +85,40 @@ class _EditorPageState extends State<EditorPage> {
         setState(() => showToolbar = false);
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(EditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _consumeEvents();
+  }
+
+  _consumeEvents() {
+    String content = widget.editingState.contentEvt.consume();
+    if (content != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _contentController.text = content;
+          if (_contentFocusNode.hasFocus) {
+            _contentController.selection =
+                TextSelection.collapsed(offset: content.length);
+          }
+        }
+      });
+    }
+
+    String subject = widget.editingState.subjectEvt.consume();
+    if (content != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _subjectController.text = subject;
+          if (_subjectFocusNode.hasFocus) {
+            _subjectController.selection =
+                TextSelection.collapsed(offset: subject.length);
+          }
+        }
+      });
+    }
   }
 
   @override
@@ -109,7 +133,6 @@ class _EditorPageState extends State<EditorPage> {
           setState(() => showToolbar = false);
           return false;
         }
-        widget.clearEditing();
         return true;
       },
       child: Scaffold(
@@ -367,13 +390,13 @@ class EditorPageConnector extends StatelessWidget {
         topicId: topicId,
         postId: postId,
       )),
+      onDispose: (store) => store.dispatch(ClearEditingAction()),
       builder: (context, vm) => EditorPage(
         editingState: vm.editingState,
         selectFile: vm.selectFile,
         unselectFile: vm.unselectFile,
         uploadFile: vm.uploadFile,
         applyEditing: vm.applyEditing,
-        clearEditing: vm.clearEditing,
       ),
     );
   }
@@ -407,7 +430,6 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   ValueChanged<int> get unselectFile;
   Future<void> Function(int) get uploadFile;
   Future<void> Function(String, String) get applyEditing;
-  Function() get clearEditing;
 
   factory ViewModel.fromStore(Store<AppState> store,
       {EditorAction action, int categoryId, int topicId, int postId}) {
@@ -423,7 +445,6 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
               content: content,
             ),
           ))
-      ..clearEditing = (() => store.dispatch(ClearEditingAction()))
       ..selectFile = ((file) => store.dispatch(SelectFileAction(file)))
       ..unselectFile = ((index) => store.dispatch(UnselectFileAction(index)))
       ..uploadFile = ((index) =>

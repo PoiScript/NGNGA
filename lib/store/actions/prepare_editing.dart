@@ -26,8 +26,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
           ..editingState.initialized = true
           ..editingState.uploadAuthCode = ''
           ..editingState.uploadUrl = ''
-          ..editingState.initialSubject = ''
-          ..editingState.initialContent = '',
+          ..editingState.contentEvt = Event('')
+          ..editingState.subjectEvt = Event(''),
       );
     }
 
@@ -43,8 +43,8 @@ class PrepareEditingAction extends ReduxAction<AppState> {
         ..editingState.initialized = true
         ..editingState.uploadUrl = res.uploadUrl
         ..editingState.attachments = ListBuilder(res.attachs)
-        ..editingState.initialContent = res.content ?? ''
-        ..editingState.initialSubject = res.subject ?? ''
+        ..editingState.contentEvt = Event(res.content ?? '')
+        ..editingState.subjectEvt = Event(res.subject ?? '')
         ..editingState.uploadAuthCode = res.uploadAuthCode,
     );
   }

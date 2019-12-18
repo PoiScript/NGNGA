@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:async_redux/async_redux.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 
@@ -46,13 +47,13 @@ abstract class EditingState
   String get uploadUrl;
   BuiltList<FileState> get files;
   BuiltList<Attachment> get attachments;
-  String get initialSubject;
-  String get initialContent;
+  Event<String> get subjectEvt;
+  Event<String> get contentEvt;
 
   static void _initializeBuilder(EditingStateBuilder b) => b
     ..initialized = false
     ..uploadAuthCode = ''
     ..uploadUrl = ''
-    ..initialSubject = ''
-    ..initialContent = '';
+    ..subjectEvt = Event.spent()
+    ..contentEvt = Event.spent();
 }
