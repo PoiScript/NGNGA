@@ -8,7 +8,7 @@ import 'package:ngnga/models/user.dart';
 import 'package:ngnga/utils/duration.dart';
 
 class CommentSheet extends StatelessWidget {
-  final List<PostItem> posts;
+  final List<Post> posts;
   final Map<int, User> users;
 
   const CommentSheet({
@@ -47,7 +47,7 @@ class CommentSheet extends StatelessWidget {
 
                 int itemIndex = index ~/ 2;
 
-                Post post = posts[itemIndex].inner;
+                Post post = posts[itemIndex];
 
                 if (post == null) {
                   return Text(

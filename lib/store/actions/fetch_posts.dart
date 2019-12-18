@@ -5,52 +5,103 @@ import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ngnga/models/post.dart';
-import 'package:ngnga/models/response.dart';
+import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
 
-import 'fetch_reply.dart';
+class FetchPostsResult {
+  final Topic topic;
+  final List<int> postIds;
+  final Map<int, User> users;
+  final Map<int, Post> posts;
+  final String forumName;
+  final int maxPage;
+
+  FetchPostsResult({
+    this.topic,
+    this.postIds,
+    this.users,
+    this.posts,
+    this.forumName,
+    this.maxPage,
+  });
+}
 
 abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
-  Future<FetchTopicPostsResponse> fetch({
+  Future<FetchPostsResult> fetchPosts({
     @required int topicId,
-    @required int page,
+    int page,
+    int postId,
   }) async {
-    final res = await state.repository.fetchTopicPosts(
-      topicId: topicId,
-      page: page,
-    );
+    assert(postId != null || page != null);
 
-    for (int i = 0; i < res.posts.length; i++) {
-      PostItem post = res.posts[i];
+    List<int> postIds = [];
+    Map<int, Post> posts = {};
+
+    final res = page != null
+        ? await state.repository.fetchTopicPosts(
+            topicId: topicId,
+            page: page,
+          )
+        : await state.repository.fetchReply(
+            topicId: topicId,
+            postId: postId,
+          );
+
+    posts.addEntries(res.comments.map(((c) => MapEntry(c.id, c))));
+
+    for (PostItem post in res.posts) {
+      if (post is Post) {
+        postIds.add(post.id);
+        posts[post.id] = post;
+        for (int replyId in post.topReplyIds) {
+          if (res.posts
+                      .indexWhere((p) => p is Post ? p.id == replyId : false) ==
+                  -1 &&
+              res.comments.indexWhere((p) => p.postId == replyId) == -1 &&
+              !state.posts.containsKey(replyId)) {
+            await dispatchFuture(FetchReplyAction(
+              topicId: topicId,
+              postId: replyId,
+            ));
+          }
+        }
+      }
+
       if (post is Comment) {
-        int index = res.comments.indexWhere((c) => c.id == post.id);
+        postIds.add(post.postId);
+
+        int index = res.comments.indexWhere((c) => c.id == post.postId);
         if (index != -1) {
-          res.posts[i] = post.addPost(res.comments[index]);
+          posts[post.postId] = (res.comments[index].toBuilder()
+                ..commentTo = post.commentTo
+                ..index = post.index)
+              .build();
         } else {
-          if (!state.posts.containsKey(post.id)) {
+          if (!state.posts.containsKey(post.postId)) {
             await dispatchFuture(FetchReplyAction(
               topicId: topicId,
               postId: post.commentTo,
             ));
           }
-          res.posts[i] = post.addPost(state.posts[post.id].inner);
-        }
-      } else if (post is TopicPost) {
-        for (int postId in post.topReplyIds) {
-          if (res.posts.indexWhere((p) => p.id == postId) == -1 &&
-              res.comments.indexWhere((p) => p.id == postId) == -1 &&
-              !state.posts.containsKey(postId)) {
-            await dispatchFuture(FetchReplyAction(
-              topicId: topicId,
-              postId: postId,
-            ));
-          }
+
+          posts[post.postId] = (state.posts[post.postId].toBuilder()
+                ..commentTo = post.commentTo
+                ..index = post.index)
+              .build();
         }
       }
     }
 
-    return res;
+    return FetchPostsResult(
+      topic: res.topic,
+      postIds: postIds,
+      users: res.users,
+      posts: posts,
+      forumName: res.forumName,
+      maxPage: res.maxPage,
+    );
   }
 }
 
@@ -66,7 +117,7 @@ class RefreshPostsAction extends FetchPostsBaseAction {
 
   @override
   Future<AppState> reduce() async {
-    final res = await fetch(topicId: topicId, page: pageIndex);
+    final res = await fetchPosts(topicId: topicId, page: pageIndex);
 
     return state.rebuild(
       (b) => b
@@ -77,13 +128,12 @@ class RefreshPostsAction extends FetchPostsBaseAction {
             ..firstPage = pageIndex
             ..lastPage = pageIndex
             ..maxPage = res.maxPage
-            ..postIds = SetBuilder(res.posts.map((p) => p.id))
+            ..postIds = SetBuilder(res.postIds)
             ..isFavorited = state.favoriteState.topicIds.contains(topicId),
         )
         ..topics[topicId] = res.topic
         ..users.addAll(res.users)
-        ..posts.addEntries(res.posts.map((p) => MapEntry(p.id, p)))
-        ..posts.addEntries(res.comments.map((p) => MapEntry(p.id, p))),
+        ..posts.addAll(res.posts),
     );
   }
 }
@@ -99,19 +149,18 @@ class RefreshLastPageAction extends FetchPostsBaseAction {
 
     assert(topicState.hasRechedMax);
 
-    final res = await fetch(topicId: topicId, page: topicState.lastPage);
+    final res = await fetchPosts(topicId: topicId, page: topicState.lastPage);
 
     return state.rebuild(
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
             ..maxPage = res.maxPage
-            ..postIds.addAll(res.posts.map((p) => p.id)),
+            ..postIds.addAll(res.postIds),
         )
         ..topics[topicId] = res.topic
         ..users.addAll(res.users)
-        ..posts.addEntries(res.posts.map((p) => MapEntry(p.id, p)))
-        ..posts.addEntries(res.comments.map((p) => MapEntry(p.id, p))),
+        ..posts.addAll(res.posts),
     );
   }
 }
@@ -127,7 +176,8 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
 
     assert(!topicState.hasRechedMin);
 
-    final res = await fetch(topicId: topicId, page: topicState.firstPage - 1);
+    final res =
+        await fetchPosts(topicId: topicId, page: topicState.firstPage - 1);
 
     return state.rebuild(
       (b) => b
@@ -135,13 +185,11 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
           (b) => b
             ..maxPage = res.maxPage
             ..firstPage = topicState.firstPage - 1
-            ..postIds = (SetBuilder(res.posts.map((p) => p.id))
-              ..addAll(topicState.postIds)),
+            ..postIds = SetBuilder(res.postIds..addAll(topicState.postIds)),
         )
         ..topics[topicId] = res.topic
         ..users.addAll(res.users)
-        ..posts.addEntries(res.posts.map((p) => MapEntry(p.id, p)))
-        ..posts.addEntries(res.comments.map((p) => MapEntry(p.id, p))),
+        ..posts.addAll(res.posts),
     );
   }
 }
@@ -157,7 +205,8 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
 
     assert(!state.topicStates[topicId].hasRechedMax);
 
-    final res = await fetch(topicId: topicId, page: topicState.lastPage + 1);
+    final res =
+        await fetchPosts(topicId: topicId, page: topicState.lastPage + 1);
 
     return state.rebuild(
       (b) => b
@@ -165,12 +214,36 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
           (b) => b
             ..lastPage = topicState.lastPage + 1
             ..maxPage = res.maxPage
-            ..postIds.addAll(res.posts.map((p) => p.id)),
+            ..postIds.addAll(res.postIds),
         )
         ..topics[topicId] = res.topic
         ..users.addAll(res.users)
-        ..posts.addEntries(res.posts.map((p) => MapEntry(p.id, p)))
-        ..posts.addEntries(res.comments.map((p) => MapEntry(p.id, p))),
+        ..posts.addAll(res.posts),
+    );
+  }
+}
+
+class FetchReplyAction extends FetchPostsBaseAction {
+  final int topicId;
+  final int postId;
+
+  FetchReplyAction({
+    @required this.topicId,
+    @required this.postId,
+  }) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    final res = await fetchPosts(
+      topicId: topicId,
+      postId: postId,
+    );
+
+    return state.rebuild(
+      (b) => b
+        ..topics[topicId] = res.topic
+        ..users.addAll(res.users)
+        ..posts.addAll(res.posts),
     );
   }
 }

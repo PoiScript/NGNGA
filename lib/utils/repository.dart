@@ -82,21 +82,21 @@ abstract class Repository implements Built<Repository, RepositoryBuilder> {
   ) =>
       fetch('POST', path, queryParameters);
 
-  Future<FetchTopicPostsResponse> fetchTopicPosts({
+  Future<FetchPostsResponse> fetchTopicPosts({
     @required int topicId,
     @required int page,
   }) async =>
-      FetchTopicPostsResponse.fromJson(await getJson('read.php', {
+      FetchPostsResponse.fromJson(await getJson('read.php', {
         'tid': topicId.toString(),
         'page': (page + 1).toString(),
         '__output': '11',
       }));
 
-  Future<FetchTopicPostsResponse> fetchReply({
+  Future<FetchPostsResponse> fetchReply({
     @required int topicId,
     @required int postId,
   }) async =>
-      FetchTopicPostsResponse.fromJson(await getJson('read.php', {
+      FetchPostsResponse.fromJson(await getJson('read.php', {
         'pid': postId.toString(),
         'tid': topicId.toString(),
         '__output': '11',

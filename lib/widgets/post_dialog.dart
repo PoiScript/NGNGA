@@ -24,7 +24,7 @@ final _everyMinutes = StreamController<DateTime>.broadcast()
 
 class PostDialog extends StatefulWidget {
   final BuiltMap<int, User> users;
-  final BuiltMap<int, PostItem> posts;
+  final BuiltMap<int, Post> posts;
 
   final int initialTopicId;
   final int initialPostId;
@@ -82,8 +82,8 @@ class _PostDialogState extends State<PostDialog> {
   }
 
   Widget _buildContent(int postId) {
-    PostItem post = widget.posts[postId];
-    User user = widget.users[post.inner.userId];
+    Post post = widget.posts[postId];
+    User user = widget.users[post.userId];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +104,7 @@ class _PostDialogState extends State<PostDialog> {
                 initialData: DateTime.now(),
                 stream: _everyMinutes.stream,
                 builder: (context, snapshot) => Text(
-                  duration(snapshot.data, post.inner.createdAt),
+                  duration(snapshot.data, post.createdAt),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -112,7 +112,7 @@ class _PostDialogState extends State<PostDialog> {
           ),
         ),
         BBCodeRender(
-          raw: post.inner.content,
+          raw: post.content,
           openLink: (url) => openLink(context, url),
           openUser: (userId) {
             showDialog(
@@ -127,14 +127,16 @@ class _PostDialogState extends State<PostDialog> {
   }
 
   _fetchReply(int topicId, int postId) async {
-    if (!isLoading && !postIds.contains(postId)) {
-      if (!widget.posts.containsKey(postId)) {
+    int fixedPostId = (postId == 0 ? 2 ^ 32 - topicId : postId);
+    print('fixedPostId: $fixedPostId');
+    if (!isLoading && !postIds.contains(fixedPostId)) {
+      if (!widget.posts.containsKey(fixedPostId)) {
         setState(() => isLoading = true);
-        await widget.fetchReply(topicId, postId);
+        await widget.fetchReply(topicId, fixedPostId);
       }
       setState(() {
         isLoading = false;
-        postIds.add(postId);
+        postIds.add(fixedPostId);
       });
     }
   }
@@ -153,10 +155,6 @@ class PostDialogConnector extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       converter: (store) => ViewModel.fromStore(store),
-      onInit: (store) => store.dispatch(FetchReplyAction(
-        topicId: initialTopicId,
-        postId: initialPostId,
-      )),
       builder: (context, vm) => PostDialog(
         initialTopicId: initialTopicId,
         initialPostId: initialPostId,
@@ -174,7 +172,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
   BuiltMap<int, User> get users;
-  BuiltMap<int, PostItem> get posts;
+  BuiltMap<int, Post> get posts;
 
   Future<void> Function(int, int) get fetchReply;
 

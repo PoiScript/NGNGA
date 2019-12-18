@@ -28,7 +28,7 @@ enum DisplayMode {
 }
 
 class PostRow extends StatefulWidget {
-  final PostItem post;
+  final Post post;
   final User user;
   final bool sentByMe;
   final String baseUrl;
@@ -68,8 +68,6 @@ class PostRow extends StatefulWidget {
 class _PostRowState extends State<PostRow> {
   DisplayMode _displayMode = DisplayMode.richText;
 
-  Post get post => widget.post.inner;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -90,26 +88,25 @@ class _PostRowState extends State<PostRow> {
             Container(
               padding: EdgeInsets.only(bottom: 6.0),
               child: SelectableText(
-                post.content.replaceAll('<br/>', '\n'),
+                widget.post.content.replaceAll('<br/>', '\n'),
               ),
             ),
           if (_displayMode == DisplayMode.richText)
             BBCodeRender(
-              raw: post.content,
+              raw: widget.post.content,
               openUser: (userId) {},
               openLink: (url) => openLink(context, url),
               openPost: (topicId, page, postId) =>
                   widget.openPost(topicId, postId),
             ),
           _Footer(
-            attachments: post.attachments,
+            attachments: widget.post.attachments.toList(),
             openAttachmentSheet: widget.openAttachmentSheet,
-            commentIds: post.commentIds,
+            commentIds: widget.post.commentIds.toList(),
             openCommentSheet: widget.openCommentSheet,
-            topReplyIds:
-                post is TopicPost ? (post as TopicPost).topReplyIds : [],
+            topReplyIds: widget.post.topReplyIds.toList(),
             openTopReplySheet: widget.openTopReplySheet,
-            vote: post.vote,
+            vote: widget.post.vote,
             upvote: widget.upvote,
             downvote: widget.downvote,
           ),
@@ -125,7 +122,7 @@ class _PostRowState extends State<PostRow> {
         children: [
           GestureDetector(
             child: UserAvatar(
-              index: post.index,
+              index: widget.post.index,
               size: 32.0,
               user: widget.user,
             ),
@@ -164,18 +161,18 @@ class _PostRowState extends State<PostRow> {
             ),
           ),
           _MetaRow(
-            index: post.index,
-            createdAt: post.createdAt,
-            editedAt: post.editedAt,
-            editedBy: post.editedBy,
-            vendor: post.vendor,
-            vendorDetail: post.vendorDetail,
+            index: widget.post.index,
+            createdAt: widget.post.createdAt,
+            editedAt: widget.post.editedAt,
+            editedBy: widget.post.editedBy,
+            vendor: widget.post.vendor,
+            vendorDetail: widget.post.vendorDetail,
           ),
           _PopupMenuButton(
             baseUrl: widget.baseUrl,
-            topicId: post.topicId,
-            postId: post.id,
-            categoryId: post.categoryId,
+            topicId: widget.post.topicId,
+            postId: widget.post.id,
+            categoryId: widget.post.categoryId,
             displayMode: _displayMode,
             changeDisplayMode: (displayMode) =>
                 setState(() => _displayMode = displayMode),
@@ -220,7 +217,7 @@ class _MetaRow extends StatelessWidget {
                 color: Colors.grey,
                 size: 16,
               ),
-            if (vendor != null)
+            if (vendor != Vendor.none)
               Icon(
                 VendorIcons.fromVendor(vendor),
                 color: Colors.grey,
@@ -266,7 +263,7 @@ class _MetaRow extends StatelessWidget {
           title: Text(AppLocalizations.of(context).editedAt),
           subtitle: Text(_dateFormatter.format(editedAt)),
         ),
-      if (vendor != null) _buildVendorListTile(context),
+      if (vendor != Vendor.none) _buildVendorListTile(context),
     ];
 
     return ListView.separated(
@@ -288,6 +285,8 @@ class _MetaRow extends StatelessWidget {
         break;
       case Vendor.windows:
         title = AppLocalizations.of(context).sentFromWindows;
+        break;
+      case Vendor.none:
         break;
     }
     if (vendorDetail.isEmpty) {

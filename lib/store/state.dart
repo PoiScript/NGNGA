@@ -74,7 +74,7 @@ abstract class AppState implements Built<AppState, AppStateBuilder> {
 
   BuiltMap<int, User> get users;
   BuiltMap<int, Topic> get topics;
-  BuiltMap<int, PostItem> get posts;
+  BuiltMap<int, Post> get posts;
 
   BuiltMap<int, CategoryState> get categoryStates;
   BuiltMap<int, TopicState> get topicStates;

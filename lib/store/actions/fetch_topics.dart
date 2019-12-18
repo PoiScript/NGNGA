@@ -4,6 +4,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/models/category.dart';
+import 'package:ngnga/models/post.dart';
 import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
@@ -80,6 +81,8 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
         isSubcategory: isSubcategory,
       );
 
+      List<Post> posts = res1.posts.whereType<Post>().toList(growable: false);
+
       return state.rebuild(
         (b) => b
           ..categoryStates[categoryId] = CategoryState(
@@ -98,10 +101,10 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
               ..initialized = true
               ..topic = res1.topic
               ..maxPage = res1.maxPage
-              ..postIds = SetBuilder(res1.posts.map((p) => p.id)),
+              ..postIds = SetBuilder(posts.map((p) => p.id)),
           )
           ..users.addAll(res1.users)
-          ..posts.addEntries(res1.posts.map((p) => MapEntry(p.id, p)))
+          ..posts.addEntries(posts.map((p) => MapEntry(p.id, p)))
           ..posts.addEntries(res1.comments.map((p) => MapEntry(p.id, p))),
       );
     }

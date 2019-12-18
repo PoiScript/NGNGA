@@ -31,7 +31,7 @@ class TopicPage extends StatefulWidget {
   final String baseUrl;
 
   final BuiltMap<int, User> users;
-  final BuiltMap<int, PostItem> posts;
+  final BuiltMap<int, Post> posts;
   final TopicState topicState;
 
   final Function(int) isMe;
@@ -175,16 +175,16 @@ class _TopicPageState extends State<TopicPage> {
                 (context, index) {
                   final int itemIndex = index ~/ 2;
                   if (index.isOdd) {
-                    PostItem post = widget
+                    Post post = widget
                         .posts[widget.topicState.postIds.elementAt(itemIndex)];
                     assert(post != null);
                     return PostRow(
                       post: post,
                       baseUrl: widget.baseUrl,
-                      user: widget.users[post.inner.userId],
-                      sentByMe: widget.isMe(post.inner.userId),
-                      upvote: () => widget.upvotePost(post.inner.id),
-                      downvote: () => widget.downvotePost(post.inner.id),
+                      user: widget.users[post.userId],
+                      sentByMe: widget.isMe(post.userId),
+                      upvote: () => widget.upvotePost(post.id),
+                      downvote: () => widget.downvotePost(post.id),
                       openAttachmentSheet: _openAttachmentSheet,
                       openCommentSheet: _openCommentSheet,
                       openTopReplySheet: _openTopReplySheet,
@@ -299,7 +299,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   TopicState get topicState;
   String get baseUrl;
   BuiltMap<int, User> get users;
-  BuiltMap<int, PostItem> get posts;
+  BuiltMap<int, Post> get posts;
   Function(int) get isMe;
   Future<void> Function() get refreshFirst;
   Future<void> Function() get refreshLast;

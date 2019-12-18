@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'attachment.dart';
-import 'category.dart';
 import 'notification.dart';
 import 'post.dart';
 import 'topic.dart';
@@ -29,7 +28,7 @@ class PrepareEditingResponse {
       uploadUrl: json['result'][0]['attach_url'],
       attachs: List.of(json['result'][0]['attachs'] ?? [])
           .map((val) => Attachment.fromJson(val))
-          .toList(),
+          .toList(growable: false),
       uploadAuthCode: json['result'][0]['auth'],
     );
   }
@@ -63,13 +62,11 @@ class FavoritesResponse {
 class FetchCategoryTopicsResponse {
   final int toppedTopicId;
   final List<Topic> topics;
-  final List<Category> categories;
   final int topicCount;
   final int maxPage;
 
   FetchCategoryTopicsResponse({
     this.topics,
-    this.categories,
     this.topicCount,
     this.maxPage,
     this.toppedTopicId,
@@ -77,25 +74,21 @@ class FetchCategoryTopicsResponse {
 
   factory FetchCategoryTopicsResponse.fromJson(Map<String, dynamic> json) {
     List<Topic> topics = [];
-    List<Category> categories = [];
 
     if (json['data']['__T'] is List) {
       for (var value in List.from(json['data']['__T'])) {
         Topic topic = Topic.fromJson(value);
-        if (topic.category != null) categories.add(topic.category);
         topics.add(topic);
       }
     } else {
       for (var value in Map.from(json['data']['__T']).values) {
         Topic topic = Topic.fromJson(value);
-        if (topic.category != null) categories.add(topic.category);
         topics.add(topic);
       }
     }
 
     return FetchCategoryTopicsResponse(
       topics: topics,
-      categories: categories,
       topicCount: json['data']['__ROWS'],
       maxPage: json['data']['__ROWS'] ~/ json['data']['__T__ROWS_PAGE'],
       toppedTopicId: json['data']['__F']['topped_topic'],
@@ -118,13 +111,16 @@ class FetchFavorTopicsResponse {
     List<Topic> favorites = [];
 
     if (json['data'][0][0] is List) {
-      for (final value in json['data'][0][0]) {
-        if (value['__P'] == null) favorites.add(Topic.fromJson(value));
-      }
+      favorites = List.of(json['data'][0][0])
+          .where((value) => value['__P'] == null)
+          .map((value) => Topic.fromJson(value))
+          .toList(growable: false);
     } else if (json['data'][0][0] is Map) {
-      for (final value in json['data'][0][0].values) {
-        if (value['__P'] == null) favorites.add(Topic.fromJson(value));
-      }
+      favorites = Map.of(json['data'][0][0])
+          .values
+          .where((value) => value['__P'] == null)
+          .map((value) => Topic.fromJson(value))
+          .toList(growable: false);
     }
 
     return FetchFavorTopicsResponse(
@@ -214,7 +210,7 @@ class VoteResponse {
   }
 }
 
-class FetchTopicPostsResponse {
+class FetchPostsResponse {
   final Topic topic;
   final List<PostItem> posts;
   final List<Post> comments;
@@ -223,16 +219,25 @@ class FetchTopicPostsResponse {
 
   final int maxPage;
 
-  FetchTopicPostsResponse({
+  final String errorMessage;
+
+  FetchPostsResponse({
     this.topic,
     this.posts,
     this.users,
     this.comments,
     this.maxPage,
     this.forumName,
+    this.errorMessage,
   });
 
-  factory FetchTopicPostsResponse.fromJson(Map<String, dynamic> json) {
+  factory FetchPostsResponse.fromJson(Map<String, dynamic> json) {
+    if (json['error'] != null) {
+      return FetchPostsResponse(
+        errorMessage: json['error']['__MESSAGE']['1'],
+      );
+    }
+
     Map<int, User> users = {};
     List<PostItem> posts = [];
     List<Post> comments = [];
@@ -246,7 +251,11 @@ class FetchTopicPostsResponse {
     }
 
     for (var value in List.from(json['data']['__R'])) {
-      posts.add(PostItem.fromJson(value));
+      if (value['comment_to_id'] != null) {
+        posts.add(Comment.fromJson(value));
+      } else {
+        posts.add(Post.fromJson(value));
+      }
 
       if (value['comment'] is List) {
         for (var value in List.of(value['comment'])) {
@@ -255,7 +264,7 @@ class FetchTopicPostsResponse {
       }
     }
 
-    return FetchTopicPostsResponse(
+    return FetchPostsResponse(
       topic: Topic.fromJson(json['data']['__T']),
       posts: posts,
       comments: comments,
