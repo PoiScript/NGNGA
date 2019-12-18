@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:ngnga/models/category.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -40,7 +41,7 @@ class SaveState extends ReduxAction<AppState> {
 
     String json = jsonEncode({
       'user': _userStateToJson(state.userState),
-      'baseUrl': state.settings.baseUrl,
+      'baseUrl': state.repository.baseUrl,
       'locale': _localeToString[state.settings.locale],
       'theme': _themeToString[state.settings.theme],
       'pinned': state.pinned
@@ -92,25 +93,22 @@ class LoadState extends ReduxAction<AppState> {
         // );
       }
 
-      return state.copy(
-        userState: userState,
-        repository: state.repository
-          ..updateCookie(userState)
-          ..baseUrl = json['baseUrl'],
-        settings: state.settings.copy(
-          baseUrl: json['baseUrl'],
-          theme: _stringToTheme[json['theme']],
-          locale: _stringToLocale[json['locale']],
-        ),
-        pinned: List.of(json['pinned'])
-            .map(
+      return state.rebuild(
+        (b) => b
+          ..userState = userState
+          ..repository.baseUrl = json['baseUrl']
+          ..repository.cookie = _updateCookie(userState)
+          ..settings.theme = _stringToTheme[json['theme']]
+          ..settings.locale = _stringToLocale[json['locale']]
+          ..pinned = ListBuilder(
+            List.of(json['pinned']).map(
               (json) => Category(
                 id: json['id'],
                 title: json['title'],
                 isSubcategory: json['isSubcategory'],
               ),
-            )
-            .toList(),
+            ),
+          ),
       );
     } on Exception catch (e) {
       print(e);
@@ -129,5 +127,17 @@ Map<String, dynamic> _userStateToJson(UserState userState) {
   // else if (userState is Guest) {
   //   return {'isLogged': false, 'uid': userState.uid};
   // }
+  return null;
+}
+
+String _updateCookie(UserState userState) {
+  if (userState is UserLogged) {
+    return 'ngaPassportUid=${userState.uid};ngaPassportCid=${userState.cid};';
+    // } else if (userState is Guest) {
+    //   // TODO: guest login
+    //   cookie = 'ngaPassportUid=${userState.uid};';
+  } else if (userState is UserUninitialized) {
+    return '';
+  }
   return null;
 }

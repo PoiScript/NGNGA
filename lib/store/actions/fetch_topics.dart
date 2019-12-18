@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/store/category.dart';
@@ -20,7 +21,7 @@ class FetchTopicsAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     if (state.categoryStates[categoryId] == null ||
-        state.categoryStates[categoryId] is CategoryUninitialized) {
+        !state.categoryStates[categoryId].initialized) {
       await dispatchFuture(RefreshTopicsAction(
         categoryId: categoryId,
         isSubcategory: isSubcategory,
@@ -50,59 +51,58 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
     );
 
     if (isSubcategory) {
-      return state.copy(
-        categoryStates: state.categoryStates
-          ..[categoryId] = CategoryLoaded(
-            topicIds: res0.topics.map((t) => t.id).toList(),
-            topicsCount: res0.topicCount,
-            lastPage: 0,
-            maxPage: res0.maxPage,
-            category: Category(
-              id: categoryId,
-              title: res0.topics.first.title,
-              isSubcategory: isSubcategory,
-            ),
-            toppedTopicId: null,
-            isPinned: state.pinned.indexWhere((c) => c.id == categoryId) != -1,
-          ),
-        topics: state.topics
-          ..addEntries(res0.topics.map((t) => MapEntry(t.id, t))),
+      Category category = Category(
+        id: categoryId,
+        title: res0.topics.first.title,
+        isSubcategory: isSubcategory,
+      );
+
+      return state.rebuild(
+        (b) => b
+          ..categoryStates[categoryId] = CategoryState(
+            (b) => b
+              ..initialized = true
+              ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+              ..topicsCount = res0.topicCount
+              ..maxPage = res0.maxPage
+              ..category = category
+              ..isPinned = state.pinned.contains(category),
+          )
+          ..topics.addEntries(res0.topics.map((t) => MapEntry(t.id, t))),
       );
     } else {
       final res1 = await state.repository
           .fetchTopicPosts(topicId: res0.toppedTopicId, page: 0);
 
-      return state.copy(
-        categoryStates: state.categoryStates
-          ..[categoryId] = CategoryLoaded(
-            topicIds: res0.topics.map((t) => t.id).toList(),
-            topicsCount: res0.topicCount,
-            lastPage: 0,
-            maxPage: res0.maxPage,
-            category: Category(
-              id: categoryId,
-              title: res1.forumName,
-              isSubcategory: isSubcategory,
-            ),
-            toppedTopicId: res0.toppedTopicId,
-            isPinned: state.pinned.indexWhere((c) => c.id == categoryId) != -1,
-          ),
-        topics: state.topics
-          ..addEntries(res0.topics.map((t) => MapEntry(t.id, t))),
-        topicStates: state.topicStates
-          ..[res0.toppedTopicId] = TopicLoaded(
-            topic: res1.topic,
-            firstPage: 0,
-            lastPage: 0,
-            maxPage: res1.maxPage,
-            postIds: res1.posts.map((p) => p.id).toList(),
-            postVotedEvt: Event.spent(),
-            isFavorited: false,
-          ),
-        users: state.users..addAll(res1.users),
-        posts: state.posts
-          ..addEntries(res1.posts.map((post) => MapEntry(post.id, post)))
-          ..addEntries(res1.comments.map((post) => MapEntry(post.id, post))),
+      Category category = Category(
+        id: categoryId,
+        title: res1.forumName,
+        isSubcategory: isSubcategory,
+      );
+
+      return state.rebuild(
+        (b) => b
+          ..categoryStates[categoryId] = CategoryState(
+            (b) => b
+              ..initialized = true
+              ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+              ..topicsCount = res0.topicCount
+              ..maxPage = res0.maxPage
+              ..category = category
+              ..toppedTopicId = res0.toppedTopicId
+              ..isPinned = state.pinned.contains(category),
+          )
+          ..topics.addEntries(res0.topics.map((t) => MapEntry(t.id, t)))
+          ..topicStates[res0.toppedTopicId] = TopicState(
+            (b) => b
+              ..initialized = true
+              ..topic = res1.topic
+              ..maxPage = res1.maxPage
+              ..postIds = SetBuilder(res1.posts.map((p) => p.id)),
+          )
+          ..users.addAll(res1.users)
+          ..posts.addEntries(res1.posts.map((p) => MapEntry(p.id, p)))
+          ..posts.addEntries(res1.comments.map((p) => MapEntry(p.id, p))),
       );
     }
   }
@@ -122,27 +122,22 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     CategoryState categoryState = state.categoryStates[categoryId];
 
-    if (categoryState is CategoryLoaded) {
-      final res = await state.repository.fetchCategoryTopics(
-        categoryId: categoryId,
-        page: categoryState.lastPage + 1,
-        isSubcategory: isSubcategory,
-      );
+    final res = await state.repository.fetchCategoryTopics(
+      categoryId: categoryId,
+      page: categoryState.lastPage + 1,
+      isSubcategory: isSubcategory,
+    );
 
-      return state.copy(
-        categoryStates: state.categoryStates
-          ..[categoryId] = categoryState.copyWith(
-            topicIds: categoryState.topicIds
-              ..addAll(res.topics.map((t) => t.id)),
-            topicsCount: res.topicCount,
-            lastPage: categoryState.lastPage + 1,
-            maxPage: res.maxPage,
-          ),
-        topics: state.topics
-          ..addEntries(res.topics.map((t) => MapEntry(t.id, t))),
-      );
-    }
-
-    return null;
+    return state.rebuild(
+      (b) => b
+        ..categoryStates[categoryId] = categoryState.rebuild(
+          (b) => b
+            ..topicIds.addAll(res.topics.map((t) => t.id))
+            ..topicsCount = res.topicCount
+            ..lastPage = categoryState.lastPage + 1
+            ..maxPage = res.maxPage,
+        )
+        ..topics.addEntries(res.topics.map((t) => MapEntry(t.id, t))),
+    );
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
 
 import 'package:ngnga/models/attachment.dart';
+
+part 'editing.g.dart';
 
 abstract class FileState {
   File get file;
@@ -31,47 +34,25 @@ class FileUploaded extends FileState {
   const FileUploaded({this.check, this.code, this.url, this.file});
 }
 
-abstract class EditingState {
-  const EditingState();
-}
+abstract class EditingState
+    implements Built<EditingState, EditingStateBuilder> {
+  EditingState._();
 
-class EditingUninitialized extends EditingState {}
+  factory EditingState([Function(EditingStateBuilder) updates]) =
+      _$EditingState;
 
-class EditingLoaded extends EditingState {
-  final String uploadAuthCode;
-  final String uploadUrl;
-  final List<FileState> files;
-  final List<Attachment> attachments;
-  final String initialSubject;
-  final String initialContent;
+  bool get initialized;
+  String get uploadAuthCode;
+  String get uploadUrl;
+  BuiltList<FileState> get files;
+  BuiltList<Attachment> get attachments;
+  String get initialSubject;
+  String get initialContent;
 
-  const EditingLoaded({
-    @required this.uploadAuthCode,
-    @required this.uploadUrl,
-    @required this.files,
-    @required this.attachments,
-    @required this.initialSubject,
-    @required this.initialContent,
-  })  : assert(uploadAuthCode != null),
-        assert(uploadUrl != null),
-        assert(attachments != null),
-        assert(initialSubject != null),
-        assert(initialContent != null);
-
-  EditingLoaded copy({
-    String uploadAuthCode,
-    String uploadUrl,
-    List<FileState> files,
-    List<Attachment> attachments,
-    String initialSubject,
-    String initialContent,
-  }) =>
-      EditingLoaded(
-        uploadAuthCode: uploadAuthCode ?? this.uploadAuthCode,
-        uploadUrl: uploadUrl ?? this.uploadUrl,
-        attachments: attachments ?? this.attachments,
-        files: files ?? this.files,
-        initialSubject: initialSubject ?? this.initialSubject,
-        initialContent: initialContent ?? this.initialContent,
-      );
+  static void _initializeBuilder(EditingStateBuilder b) => b
+    ..initialized = false
+    ..uploadAuthCode = ''
+    ..uploadUrl = ''
+    ..initialSubject = ''
+    ..initialContent = '';
 }

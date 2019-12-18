@@ -21,17 +21,14 @@ class DownvotePostAction extends ReduxAction<AppState> {
       postId: postId,
     );
 
-    return state.copy(
-      topicStates: state.topicStates
-        ..update(
-          topicId,
-          (topicState) => topicState is TopicLoaded
-              ? topicState.copyWith(
-                  postVotedEvt:
-                      Event(PostVoted(postId: postId, delta: res.value)),
-                )
-              : topicState,
+    return state.rebuild(
+      (b) => b.topicStates.updateValue(
+        topicId,
+        (topicState) => topicState.rebuild(
+          (b) => b.postVotedEvt =
+              Event(PostVoted(postId: postId, delta: res.value)),
         ),
+      ),
     );
   }
 }

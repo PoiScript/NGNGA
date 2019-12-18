@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_value/built_value.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Builder;
 
 import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/models/post.dart';
@@ -23,16 +24,18 @@ import 'popup_menu.dart';
 import 'post_row.dart';
 import 'update_indicator.dart';
 
+part 'topic.g.dart';
+
 class TopicPage extends StatefulWidget {
   final String baseUrl;
 
   final Map<int, User> users;
   final Map<int, PostItem> posts;
-  final TopicLoaded topicState;
+  final TopicState topicState;
 
   final Function(int) isMe;
 
-  final Future<void> Function(int, int) fetchReply;
+  final Future<void> Function(int) fetchReply;
 
   final Future<void> Function() refreshFirst;
   final Future<void> Function() refreshLast;
@@ -89,21 +92,22 @@ class _TopicPageState extends State<TopicPage> {
   }
 
   _consumeEvents() {
-    TopicState topicState = widget.topicState;
-    if (topicState is TopicLoaded) {
-      PostVoted postVoted = topicState.postVotedEvt.consume();
-      if (postVoted != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _updatePostVote(postVoted.postId, postVoted.delta);
-          }
-        });
-      }
+    PostVoted postVoted = widget.topicState.postVotedEvt.consume();
+    if (postVoted != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _updatePostVote(postVoted.postId, postVoted.delta);
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.topicState.initialized) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       body: Scrollbar(child: _buildBody(context)),
@@ -171,8 +175,8 @@ class _TopicPageState extends State<TopicPage> {
                 (context, index) {
                   final int itemIndex = index ~/ 2;
                   if (index.isOdd) {
-                    PostItem post =
-                        widget.posts[widget.topicState.postIds[itemIndex]];
+                    PostItem post = widget
+                        .posts[widget.topicState.postIds.elementAt(itemIndex)];
                     assert(post != null);
                     return PostRow(
                       post: post,
@@ -295,124 +299,83 @@ class TopicPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(topicId),
+      converter: (store) => ViewModel.fromStore(store, topicId),
       onInit: (store) => store.dispatch(RefreshPostsAction(
         topicId: topicId,
         pageIndex: pageIndex,
       )),
-      builder: (context, vm) {
-        if (vm.topicState is TopicUninitialized) {
-          return Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-
-        return TopicPage(
-          isMe: vm.isMe,
-          baseUrl: vm.baseUrl,
-          refreshFirst: vm.refreshFirst,
-          refreshLast: vm.refreshLast,
-          loadPrevious: vm.loadPrevious,
-          loadNext: vm.loadNext,
-          topicState: vm.topicState,
-          users: vm.users,
-          posts: vm.posts,
-          fetchReply: vm.fetchReply,
-          addToFavorites: vm.addToFavorites,
-          removeFromFavorites: vm.removeFromFavorites,
-          changePage: vm.changePage,
-          upvotePost: vm.upvotePost,
-          downvotePost: vm.downvotePost,
-        );
-      },
+      builder: (context, vm) => TopicPage(
+        isMe: vm.isMe,
+        baseUrl: vm.baseUrl,
+        refreshFirst: vm.refreshFirst,
+        refreshLast: vm.refreshLast,
+        loadPrevious: vm.loadPrevious,
+        loadNext: vm.loadNext,
+        topicState: vm.topicState,
+        users: vm.users,
+        posts: vm.posts,
+        fetchReply: vm.fetchReply,
+        addToFavorites: vm.addToFavorites,
+        removeFromFavorites: vm.removeFromFavorites,
+        changePage: vm.changePage,
+        upvotePost: vm.upvotePost,
+        downvotePost: vm.downvotePost,
+      ),
     );
   }
 }
 
-class ViewModel extends BaseModel<AppState> {
-  final int topicId;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  String baseUrl;
-  Map<int, User> users;
-  Map<int, PostItem> posts;
-  TopicState topicState;
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  Function(int) isMe;
+  TopicState get topicState;
+  String get baseUrl;
+  Map<int, User> get users;
+  Map<int, PostItem> get posts;
+  Function(int) get isMe;
+  Future<void> Function(int) get fetchReply;
+  Future<void> Function() get refreshFirst;
+  Future<void> Function() get refreshLast;
+  Future<void> Function() get loadPrevious;
+  Future<void> Function() get loadNext;
+  Future<void> Function() get addToFavorites;
+  Future<void> Function() get removeFromFavorites;
+  Future<void> Function(int) get changePage;
+  Future<void> Function(int) get upvotePost;
+  Future<void> Function(int) get downvotePost;
 
-  Future<void> Function(int, int) fetchReply;
-
-  Future<void> Function() refreshFirst;
-  Future<void> Function() refreshLast;
-  Future<void> Function() loadPrevious;
-  Future<void> Function() loadNext;
-
-  Future<void> Function() addToFavorites;
-  Future<void> Function() removeFromFavorites;
-  Future<void> Function(int) changePage;
-
-  Future<void> Function(int) upvotePost;
-  Future<void> Function(int) downvotePost;
-
-  ViewModel(this.topicId);
-
-  ViewModel.build({
-    @required this.topicId,
-    @required this.users,
-    @required this.posts,
-    @required this.isMe,
-    @required this.baseUrl,
-    @required this.topicState,
-    @required this.refreshFirst,
-    @required this.refreshLast,
-    @required this.loadPrevious,
-    @required this.loadNext,
-    @required this.addToFavorites,
-    @required this.removeFromFavorites,
-    @required this.changePage,
-    @required this.upvotePost,
-    @required this.downvotePost,
-    @required this.fetchReply,
-  }) : super(equals: [users, posts, topicState]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      topicId: topicId,
-      topicState: state.topicStates[topicId] ?? TopicUninitialized(),
-      users: state.users,
-      posts: state.posts,
-      baseUrl: state.repository.baseUrl,
-      refreshFirst: () =>
-          dispatchFuture(RefreshPostsAction(topicId: topicId, pageIndex: 0)),
-      refreshLast: () => dispatchFuture(RefreshLastPageAction(topicId)),
-      loadPrevious: () => dispatchFuture(FetchPreviousPostsAction(topicId)),
-      loadNext: () => dispatchFuture(FetchNextPostsAction(topicId)),
-      addToFavorites: () => dispatchFuture(
-        AddToFavoritesAction(topicId: topicId),
-      ),
-      removeFromFavorites: () => dispatchFuture(
-        RemoveFromFavoritesAction(topicId: topicId),
-      ),
-      changePage: (page) => dispatchFuture(
-        RefreshPostsAction(pageIndex: page, topicId: topicId),
-      ),
-      isMe: (userId) =>
-          state.userState is UserLogged &&
-          (state.userState as UserLogged).uid == userId,
-      upvotePost: (postId) => dispatchFuture(
-        UpvotePostAction(
-          topicId: topicId,
-          postId: postId,
-        ),
-      ),
-      downvotePost: (postId) => dispatchFuture(
-        DownvotePostAction(
-          topicId: topicId,
-          postId: postId,
-        ),
-      ),
-      fetchReply: (topicId, postId) => dispatchFuture(FetchReplyAction(
-        topicId: topicId,
-        postId: postId,
-      )),
+  factory ViewModel.fromStore(Store<AppState> store, int topicId) {
+    return ViewModel(
+      (b) => b
+        ..topicState =
+            store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder()
+        ..users = store.state.users.toMap()
+        ..posts = store.state.posts.toMap()
+        ..baseUrl = store.state.repository.baseUrl
+        ..refreshFirst = (() => store
+            .dispatchFuture(RefreshPostsAction(topicId: topicId, pageIndex: 0)))
+        ..refreshLast =
+            (() => store.dispatchFuture(RefreshLastPageAction(topicId)))
+        ..loadPrevious =
+            (() => store.dispatchFuture(FetchPreviousPostsAction(topicId)))
+        ..loadNext = (() => store.dispatchFuture(FetchNextPostsAction(topicId)))
+        ..addToFavorites =
+            (() => store.dispatchFuture(AddToFavoritesAction(topicId: topicId)))
+        ..removeFromFavorites = (() =>
+            store.dispatchFuture(RemoveFromFavoritesAction(topicId: topicId)))
+        ..changePage = ((pageIndex) => store.dispatchFuture(
+            RefreshPostsAction(topicId: topicId, pageIndex: pageIndex)))
+        ..isMe = ((userId) =>
+            store.state.userState is UserLogged &&
+            (store.state.userState as UserLogged).uid == userId)
+        ..upvotePost = ((postId) => store
+            .dispatchFuture(UpvotePostAction(topicId: topicId, postId: postId)))
+        ..downvotePost = ((postId) => store.dispatchFuture(
+            DownvotePostAction(topicId: topicId, postId: postId)))
+        ..fetchReply = ((postId) => store.dispatchFuture(
+            FetchReplyAction(topicId: topicId, postId: postId))),
     );
   }
 }

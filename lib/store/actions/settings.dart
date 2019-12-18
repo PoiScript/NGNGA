@@ -14,9 +14,7 @@ class ChangeBaseUrlAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      settings: state.settings.copy(baseUrl: baseUrl),
-    );
+    return state.rebuild((b) => b.repository.baseUrl = baseUrl);
   }
 
   void after() => dispatch(SaveState());
@@ -29,9 +27,7 @@ class ChangeLocaleAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      settings: state.settings.copy(locale: locale),
-    );
+    return state.rebuild((b) => b.settings.locale = locale);
   }
 
   void after() => dispatch(SaveState());
@@ -44,9 +40,7 @@ class ChangeThemeAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      settings: state.settings.copy(theme: theme),
-    );
+    return state.rebuild((b) => b.settings.theme = theme);
   }
 
   void after() => dispatch(SaveState());
@@ -86,9 +80,10 @@ class ChangeUserAgentAction extends ReduxAction<AppState> {
         break;
     }
 
-    return state.copy(
-      repository: state.repository..userAgent = newUserAgent,
-      settings: state.settings.copy(userAgent: userAgent),
+    return state.rebuild(
+      (b) => b
+        ..repository = (b.repository..userAgent = newUserAgent)
+        ..settings.userAgent = userAgent,
     );
   }
 

@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart';
+import 'package:built_value/built_value.dart';
+import 'package:flutter/material.dart' hide Builder;
 import 'package:flutter/services.dart';
 
 import 'package:ngnga/localizations.dart';
@@ -14,6 +15,8 @@ import 'preview_dialog.dart';
 import 'sticker.dart';
 import 'styling.dart';
 
+part 'editor.g.dart';
+
 enum EditorAction {
   newTopic,
   newPost,
@@ -25,7 +28,7 @@ enum EditorAction {
 }
 
 class EditorPage extends StatefulWidget {
-  final EditingLoaded editingState;
+  final EditingState editingState;
 
   final ValueChanged<File> selectFile;
   final ValueChanged<int> unselectFile;
@@ -96,6 +99,10 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.editingState.initialized) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return WillPopScope(
       onWillPop: () async {
         if (showToolbar) {
@@ -120,7 +127,7 @@ class _EditorPageState extends State<EditorPage> {
           ),
           backgroundColor: Theme.of(context).cardColor,
         ),
-        body: _buildBody(widget.editingState),
+        body: _buildBody(),
         floatingActionButton: FloatingActionButton(
           onPressed: isSending ? null : _submit,
           child: Icon(Icons.send),
@@ -173,7 +180,7 @@ class _EditorPageState extends State<EditorPage> {
                 duration: const Duration(milliseconds: 500),
                 height: (!disableToolbar && showToolbar) ? 150.0 : 0.0,
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: _buildToolbarContent(widget.editingState),
+                child: _buildToolbarContent(),
               ),
             ],
           ),
@@ -182,7 +189,7 @@ class _EditorPageState extends State<EditorPage> {
     );
   }
 
-  Widget _buildBody(EditingLoaded state) {
+  Widget _buildBody() {
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -226,7 +233,7 @@ class _EditorPageState extends State<EditorPage> {
     );
   }
 
-  Widget _buildToolbarContent(EditingLoaded state) {
+  Widget _buildToolbarContent() {
     switch (displayToolbar) {
       case DisplayToolbar.sticker:
         return EditorSticker(
@@ -234,8 +241,8 @@ class _EditorPageState extends State<EditorPage> {
         );
       case DisplayToolbar.attachs:
         return EditorAttachs(
-          files: state.files,
-          attachments: state.attachments,
+          files: widget.editingState.files.toList(growable: false),
+          attachments: widget.editingState.attachments.toList(growable: false),
           selectFile: widget.selectFile,
           unselectFile: widget.unselectFile,
           uploadFile: widget.uploadFile,
@@ -347,7 +354,8 @@ class EditorPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(
+      converter: (store) => ViewModel.fromStore(
+        store,
         action: action,
         categoryId: categoryId,
         topicId: topicId,
@@ -359,21 +367,14 @@ class EditorPageConnector extends StatelessWidget {
         topicId: topicId,
         postId: postId,
       )),
-      builder: (context, vm) {
-        if (vm.editingState is EditingUninitialized) {
-          return Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        return EditorPage(
-          editingState: vm.editingState,
-          selectFile: vm.selectFile,
-          unselectFile: vm.unselectFile,
-          uploadFile: vm.uploadFile,
-          applyEditing: vm.applyEditing,
-          clearEditing: vm.clearEditing,
-        );
-      },
+      builder: (context, vm) => EditorPage(
+        editingState: vm.editingState,
+        selectFile: vm.selectFile,
+        unselectFile: vm.unselectFile,
+        uploadFile: vm.uploadFile,
+        applyEditing: vm.applyEditing,
+        clearEditing: vm.clearEditing,
+      ),
     );
   }
 }
@@ -396,64 +397,36 @@ bool _validateArgs(
   return false;
 }
 
-class ViewModel extends BaseModel<AppState> {
-  final EditorAction action;
-  final int categoryId;
-  final int topicId;
-  final int postId;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  EditingState editingState;
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  ValueChanged<File> selectFile;
-  ValueChanged<int> unselectFile;
-  Future<void> Function(int) uploadFile;
+  EditingState get editingState;
+  ValueChanged<File> get selectFile;
+  ValueChanged<int> get unselectFile;
+  Future<void> Function(int) get uploadFile;
+  Future<void> Function(String, String) get applyEditing;
+  Function() get clearEditing;
 
-  Future<void> Function(String, String) applyEditing;
-  VoidCallback clearEditing;
-
-  ViewModel({
-    @required this.action,
-    @required this.categoryId,
-    @required this.topicId,
-    @required this.postId,
-  });
-
-  ViewModel.build({
-    @required this.action,
-    @required this.categoryId,
-    @required this.topicId,
-    @required this.postId,
-    @required this.editingState,
-    @required this.selectFile,
-    @required this.unselectFile,
-    @required this.uploadFile,
-    @required this.applyEditing,
-    @required this.clearEditing,
-  }) : super(equals: [editingState]);
-
-  @override
-  BaseModel fromStore() {
-    return ViewModel.build(
-      action: action,
-      categoryId: categoryId,
-      topicId: topicId,
-      postId: postId,
-      editingState: state.editingState,
-      applyEditing: (subject, content) => dispatchFuture(
-        ApplyEditingAction(
-          action: action,
-          categoryId: categoryId,
-          topicId: topicId,
-          postId: postId,
-          subject: subject,
-          content: content,
-        ),
-      ),
-      clearEditing: () => dispatch(ClearEditingAction()),
-      selectFile: (file) => dispatch(SelectFileAction(file)),
-      unselectFile: (index) => dispatch(UnselectFileAction(index)),
-      uploadFile: (index) =>
-          dispatchFuture(UploadFileAction(categoryId, index)),
-    );
+  factory ViewModel.fromStore(Store<AppState> store,
+      {EditorAction action, int categoryId, int topicId, int postId}) {
+    return ViewModel((b) => b
+      ..editingState = store.state.editingState.toBuilder()
+      ..applyEditing = ((subject, content) => store.dispatchFuture(
+            ApplyEditingAction(
+              action: action,
+              categoryId: categoryId,
+              topicId: topicId,
+              postId: postId,
+              subject: subject,
+              content: content,
+            ),
+          ))
+      ..clearEditing = (() => store.dispatch(ClearEditingAction()))
+      ..selectFile = ((file) => store.dispatch(SelectFileAction(file)))
+      ..unselectFile = ((index) => store.dispatch(UnselectFileAction(index)))
+      ..uploadFile = ((index) =>
+          store.dispatchFuture(UploadFileAction(categoryId, index))));
   }
 }

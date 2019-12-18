@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:built_value/built_value.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart';
 
 import 'package:ngnga/models/response.dart';
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/store/state.dart';
+
+part 'repository.g.dart';
 
 const _editorActionToString = {
   EditorAction.newTopic: 'new',
@@ -20,27 +21,21 @@ const _editorActionToString = {
   EditorAction.newPost: 'reply',
 };
 
-class Repository {
-  String userAgent = '';
-  String cookie = '';
-  String baseUrl = 'ngabbs.com';
+abstract class Repository implements Built<Repository, RepositoryBuilder> {
+  Repository._();
 
-  final Client client;
+  factory Repository([Function(RepositoryBuilder) updates]) = _$Repository;
 
-  Repository() : client = Client();
+  String get userAgent;
+  String get cookie;
+  String get baseUrl;
+  Client get client;
 
-  // update client cookies base on given userState
-  void updateCookie(UserState userState) {
-    if (userState is UserLogged) {
-      cookie =
-          'ngaPassportUid=${userState.uid};ngaPassportCid=${userState.cid};';
-      // } else if (userState is Guest) {
-      //   // TODO: guest login
-      //   cookie = 'ngaPassportUid=${userState.uid};';
-    } else if (userState is UserUninitialized) {
-      cookie = '';
-    }
-  }
+  static void _initializeBuilder(RepositoryBuilder b) => b
+    ..baseUrl = 'ngabbs.com'
+    ..cookie = ''
+    ..userAgent = ''
+    ..client = Client();
 
   Future<Map<String, dynamic>> fetch(
     String method,

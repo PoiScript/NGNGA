@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_value/built_value.dart';
 import 'package:device_info/device_info.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Builder;
 
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/main.dart';
@@ -10,6 +11,8 @@ import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
 
 import 'about.dart';
+
+part 'settings.g.dart';
 
 final _deviceInfo = DeviceInfoPlugin();
 
@@ -335,7 +338,7 @@ class SettingsPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
+      converter: (store) => ViewModel.fromStore(store),
       builder: (context, vm) => SettingsPage(
         baseUrl: vm.baseUrl,
         userState: vm.user,
@@ -352,48 +355,38 @@ class SettingsPageConnector extends StatelessWidget {
   }
 }
 
-class ViewModel extends BaseModel<AppState> {
-  String baseUrl;
-  UserState user;
-  AppTheme theme;
-  AppLocale locale;
-  UserAgent userAgent;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  VoidCallback logout;
-  ValueChanged<UserAgent> changeUserAgent;
-  ValueChanged<String> changeBaseUrl;
-  ValueChanged<AppTheme> changeTheme;
-  ValueChanged<AppLocale> changeLocale;
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  ViewModel();
+  String get baseUrl;
+  UserState get user;
+  AppTheme get theme;
+  AppLocale get locale;
+  UserAgent get userAgent;
+  Function() get logout;
+  ValueChanged<UserAgent> get changeUserAgent;
+  ValueChanged<String> get changeBaseUrl;
+  ValueChanged<AppTheme> get changeTheme;
+  ValueChanged<AppLocale> get changeLocale;
 
-  ViewModel.build({
-    @required this.baseUrl,
-    @required this.user,
-    @required this.theme,
-    @required this.locale,
-    @required this.logout,
-    @required this.userAgent,
-    @required this.changeBaseUrl,
-    @required this.changeTheme,
-    @required this.changeLocale,
-    @required this.changeUserAgent,
-  }) : super(equals: [theme, locale, baseUrl, user, userAgent]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      baseUrl: state.settings.baseUrl,
-      user: state.userState,
-      theme: state.settings.theme,
-      locale: state.settings.locale,
-      userAgent: state.settings.userAgent,
-      changeBaseUrl: (domain) => store.dispatch(ChangeBaseUrlAction(domain)),
-      logout: () => store.dispatch(LogoutAction()),
-      changeUserAgent: (userAgent) =>
-          store.dispatch(ChangeUserAgentAction(userAgent)),
-      changeTheme: (theme) => store.dispatch(ChangeThemeAction(theme)),
-      changeLocale: (locale) => store.dispatch(ChangeLocaleAction(locale)),
+  factory ViewModel.fromStore(Store<AppState> store) {
+    return ViewModel(
+      (b) => b
+        ..baseUrl = store.state.repository.baseUrl
+        ..user = store.state.userState
+        ..theme = store.state.settings.theme
+        ..locale = store.state.settings.locale
+        ..userAgent = store.state.settings.userAgent
+        ..changeBaseUrl =
+            ((domain) => store.dispatch(ChangeBaseUrlAction(domain)))
+        ..logout = (() => store.dispatch(LogoutAction()))
+        ..changeUserAgent =
+            ((userAgent) => store.dispatch(ChangeUserAgentAction(userAgent)))
+        ..changeTheme = ((theme) => store.dispatch(ChangeThemeAction(theme)))
+        ..changeLocale =
+            ((locale) => store.dispatch(ChangeLocaleAction(locale))),
     );
   }
 }

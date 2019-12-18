@@ -18,7 +18,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final store = Store<AppState>(
-    initialState: AppState.empty(),
+    initialState: AppState(),
     // actionObservers: [Log<AppState>.printer()],
     // modelObserver: DefaultModelObserver(),
   );
@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
     Widget screen;
     switch (settings.name) {
       case '/':
-        screen = HomePage();
+        screen = HomePageConnector();
         break;
       case '/c':
         screen = CategoryPageConnector(

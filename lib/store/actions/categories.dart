@@ -1,7 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 
 import 'package:ngnga/models/category.dart';
-import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
 
 import 'state_persist.dart';
@@ -13,14 +12,12 @@ class AddToPinnedAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      pinned: state.pinned..add(category),
-      categoryStates: state.categoryStates
-        ..update(
+    return state.rebuild(
+      (b) => b
+        ..pinned.add(category)
+        ..categoryStates.updateValue(
           category.id,
-          (categoryState) => categoryState is CategoryLoaded
-              ? categoryState.copyWith(isPinned: true)
-              : categoryState,
+          (categoryState) => categoryState.rebuild((b) => b.isPinned = true),
         ),
     );
   }
@@ -35,14 +32,12 @@ class RemoveFromPinnedAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    return state.copy(
-      pinned: state.pinned..removeWhere((c) => c.id == category.id),
-      categoryStates: state.categoryStates
-        ..update(
+    return state.rebuild(
+      (b) => b
+        ..pinned.remove(category)
+        ..categoryStates.updateValue(
           category.id,
-          (categoryState) => categoryState is CategoryLoaded
-              ? categoryState.copyWith(isPinned: false)
-              : categoryState,
+          (categoryState) => categoryState.rebuild((b) => b.isPinned = false),
         ),
     );
   }

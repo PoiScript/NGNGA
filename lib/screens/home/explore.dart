@@ -1,16 +1,14 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/models/category.dart';
-import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/categories.dart';
 
-class Explore extends StatelessWidget {
+class ExploreTab extends StatelessWidget {
   final List<Category> pinned;
 
-  Explore({
+  ExploreTab({
     @required this.pinned,
   }) : assert(pinned != null);
 
@@ -75,34 +73,5 @@ class Explore extends StatelessWidget {
           ),
       ],
     );
-  }
-}
-
-class ExploreConnector extends StatelessWidget {
-  ExploreConnector();
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
-      builder: (context, vm) => Explore(
-        pinned: vm.pinned,
-      ),
-    );
-  }
-}
-
-class ViewModel extends BaseModel<AppState> {
-  List<Category> pinned;
-
-  ViewModel();
-
-  ViewModel.build({
-    @required this.pinned,
-  }) : super(equals: [pinned]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(pinned: state.pinned);
   }
 }

@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ngnga/models/post.dart';
-
 import '../state.dart';
 
 class FetchReplyAction extends ReduxAction<AppState> {
@@ -20,20 +18,17 @@ class FetchReplyAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     int postId = this.postId == 0 ? 2 ^ 32 - topicId : this.postId;
 
-    if (state.posts.containsKey(postId) && state.posts[postId] is! Deleted) {
-      return null;
-    }
-
     final res = await state.repository.fetchReply(
       topicId: topicId,
       postId: postId,
     );
 
-    return state.copy(
-      users: state.users..addAll(res.users),
-      posts: state.posts
-        ..addEntries(res.posts.map((post) => MapEntry(post.id, post)))
-        ..addEntries(res.comments.map((post) => MapEntry(post.id, post))),
+    return state.rebuild(
+      (b) => b
+        ..topics[topicId] = res.topic
+        ..users.addAll(res.users)
+        ..posts.addEntries(res.posts.map((post) => MapEntry(post.id, post)))
+        ..posts.addEntries(res.comments.map((post) => MapEntry(post.id, post))),
     );
   }
 }

@@ -22,7 +22,7 @@ class PostDialog extends StatefulWidget {
   final int topicId;
   final int postId;
 
-  final Future<void> Function(int, int) fetchReply;
+  final Future<void> Function(int) fetchReply;
 
   PostDialog({
     @required this.topicId,
@@ -140,7 +140,7 @@ class _PostDialogState extends State<PostDialog> {
       setState(() => postIds.add(postId));
       if (!widget.posts.containsKey(postId) ||
           widget.posts[postId] is Deleted) {
-        await widget.fetchReply(widget.topicId, postId);
+        await widget.fetchReply(postId);
         setState(() {});
       }
     }

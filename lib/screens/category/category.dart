@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_value/built_value.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Builder;
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/category.dart';
@@ -17,10 +18,12 @@ import 'package:ngnga/widgets/topic_row.dart';
 
 import 'popup_menu.dart';
 
+part 'category.g.dart';
+
 final _numberFormatter = NumberFormat('#,###,###,###');
 
 class CategoryPage extends StatelessWidget {
-  final CategoryLoaded categoryState;
+  final CategoryState categoryState;
 
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
@@ -46,6 +49,10 @@ class CategoryPage extends StatelessWidget {
         super(key: key);
 
   Widget build(BuildContext context) {
+    if (!categoryState.initialized) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -97,7 +104,8 @@ class CategoryPage extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => index.isOdd
                       ? TopicRow(
-                          topic: topics[categoryState.topicIds[index ~/ 2]],
+                          topic: topics[
+                              categoryState.topicIds.elementAt(index ~/ 2)],
                         )
                       : Divider(height: 0),
                   childCount: categoryState.topicIds.length * 2 + 1,
@@ -135,7 +143,8 @@ class CategoryPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(
+      converter: (store) => ViewModel.fromStore(
+        store,
         categoryId: categoryId,
         isSubcategory: isSubcategory,
       ),
@@ -143,74 +152,51 @@ class CategoryPageConnector extends StatelessWidget {
         categoryId: categoryId,
         isSubcategory: isSubcategory,
       )),
-      builder: (context, vm) {
-        if (vm.categoryState is CategoryUninitialized) {
-          return Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-
-        return CategoryPage(
-          topics: vm.topics,
-          categoryState: vm.categoryState,
-          onRefresh: vm.onRefresh,
-          onLoad: vm.onLoad,
-          baseUrl: vm.baseUrl,
-          addToPinned: vm.addToPinned,
-          removeFromPinned: vm.removeFromPinned,
-        );
-      },
+      builder: (context, vm) => CategoryPage(
+        topics: vm.topics,
+        categoryState: vm.categoryState,
+        onRefresh: vm.onRefresh,
+        onLoad: vm.onLoad,
+        baseUrl: vm.baseUrl,
+        addToPinned: vm.addToPinned,
+        removeFromPinned: vm.removeFromPinned,
+      ),
     );
   }
 }
 
-class ViewModel extends BaseModel<AppState> {
-  final int categoryId;
-  final bool isSubcategory;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  CategoryState categoryState;
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  Map<int, Topic> topics;
+  CategoryState get categoryState;
+  Map<int, Topic> get topics;
+  Future<void> Function() get onRefresh;
+  Future<void> Function() get onLoad;
+  String get baseUrl;
+  Function(Category) get addToPinned;
+  Function(Category) get removeFromPinned;
 
-  Future<void> Function() onRefresh;
-  Future<void> Function() onLoad;
-
-  String baseUrl;
-  Function(Category) addToPinned;
-  Function(Category) removeFromPinned;
-
-  ViewModel({this.categoryId, this.isSubcategory});
-
-  ViewModel.build({
-    @required this.topics,
-    @required this.isSubcategory,
-    @required this.categoryId,
-    @required this.categoryState,
-    @required this.onRefresh,
-    @required this.onLoad,
-    @required this.baseUrl,
-    @required this.addToPinned,
-    @required this.removeFromPinned,
-  }) : super(equals: [topics, categoryId, categoryState]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      topics: state.topics,
-      categoryId: categoryId,
-      isSubcategory: isSubcategory,
-      categoryState:
-          state.categoryStates[categoryId] ?? CategoryUninitialized(),
-      onRefresh: () => dispatchFuture(RefreshTopicsAction(
-        categoryId: categoryId,
-        isSubcategory: isSubcategory,
-      )),
-      onLoad: () => dispatchFuture(FetchNextTopicsAction(
-        categoryId: categoryId,
-        isSubcategory: isSubcategory,
-      )),
-      baseUrl: state.settings.baseUrl,
-      addToPinned: (category) => dispatch(AddToPinnedAction(category)),
-      removeFromPinned: (category) =>
-          dispatch(RemoveFromPinnedAction(category)),
+  factory ViewModel.fromStore(
+    Store<AppState> store, {
+    int categoryId,
+    bool isSubcategory,
+  }) {
+    return ViewModel(
+      (b) => b
+        ..topics = store.state.topics.toMap()
+        ..baseUrl = store.state.repository.baseUrl
+        ..categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
+            CategoryStateBuilder()
+        ..onRefresh = (() => store.dispatchFuture(RefreshTopicsAction(
+            categoryId: categoryId, isSubcategory: isSubcategory)))
+        ..onLoad = (() => store.dispatchFuture(FetchNextTopicsAction(
+            categoryId: categoryId, isSubcategory: isSubcategory)))
+        ..addToPinned =
+            ((category) => store.dispatch(AddToPinnedAction(category)))
+        ..removeFromPinned =
+            ((category) => store.dispatch(RemoveFromPinnedAction(category))),
     );
   }
 }

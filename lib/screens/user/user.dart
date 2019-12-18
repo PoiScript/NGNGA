@@ -1,5 +1,6 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart';
+import 'package:built_value/built_value.dart';
+import 'package:flutter/material.dart' hide Builder;
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/bbcode/render.dart';
@@ -10,6 +11,8 @@ import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/user_avatar.dart';
 import 'package:ngnga/widgets/user_dialog.dart';
+
+part 'user.g.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -162,31 +165,19 @@ class UserPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(userId),
-      builder: (context, vm) => UserPage(
-        user: vm.user,
-      ),
+      converter: (store) => ViewModel.fromStore(store, userId: userId),
+      builder: (context, vm) => UserPage(user: vm.user),
     );
   }
 }
 
-class ViewModel extends BaseModel<AppState> {
-  final int userId;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  User user;
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  ViewModel(this.userId);
+  User get user;
 
-  ViewModel.build({
-    @required this.userId,
-    @required this.user,
-  }) : super(equals: [user]);
-
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      userId: userId,
-      user: state.users[userId],
-    );
-  }
+  factory ViewModel.fromStore(Store<AppState> store, {int userId}) =>
+      ViewModel((b) => b.user = store.state.users[userId]);
 }

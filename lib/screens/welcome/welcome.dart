@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/material.dart';
+import 'package:built_value/built_value.dart';
+import 'package:flutter/material.dart' hide Builder;
 import 'package:http/http.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
+
+part 'welcome.g.dart';
 
 class WelcomePage extends StatefulWidget {
   final Future<void> Function() loginAsGuest;
@@ -157,7 +160,7 @@ class WelcomePageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      model: ViewModel(),
+      converter: (store) => ViewModel.fromStore(store),
       builder: (context, vm) => WelcomePage(
         loginAsGuest: vm.loginAsGuest,
         logged: vm.login,
@@ -167,35 +170,31 @@ class WelcomePageConnector extends StatelessWidget {
   }
 }
 
-class ViewModel extends BaseModel<AppState> {
-  Future<void> Function() loginAsGuest;
-  Future<void> Function(int, String) login;
-  Future<bool> Function(int, String) validate;
+abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
+  ViewModel._();
 
-  ViewModel();
+  factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
-  ViewModel.build({
-    @required this.loginAsGuest,
-    @required this.login,
-    @required this.validate,
-  });
+  Future<void> Function() get loginAsGuest;
+  Future<void> Function(int, String) get login;
+  Future<bool> Function(int, String) get validate;
 
-  @override
-  ViewModel fromStore() {
-    return ViewModel.build(
-      loginAsGuest: () => dispatchFuture(LoginAsGuestAction()),
-      login: (int uid, String cid) =>
-          dispatchFuture(LoginAction(uid: uid, cid: cid)),
-      validate: (int uid, String cid) async {
-        final res = await get(
-          'https://ngabbs.com/nuke.php?__lib=noti&__act=if&__output=11',
-          headers: {'cookie': 'ngaPassportUid=$uid;ngaPassportCid=$cid;'},
-        );
+  factory ViewModel.fromStore(Store<AppState> store) {
+    return ViewModel(
+      (b) => b
+        ..loginAsGuest = (() => store.dispatchFuture(LoginAsGuestAction()))
+        ..login = ((int uid, String cid) =>
+            store.dispatchFuture(LoginAction(uid: uid, cid: cid)))
+        ..validate = (int uid, String cid) async {
+          final res = await get(
+            'https://ngabbs.com/nuke.php?__lib=noti&__act=if&__output=11',
+            headers: {'cookie': 'ngaPassportUid=$uid;ngaPassportCid=$cid;'},
+          );
 
-        final json = jsonDecode(res.body);
+          final json = jsonDecode(res.body);
 
-        return json['data'] != null;
-      },
+          return json['data'] != null;
+        },
     );
   }
 }

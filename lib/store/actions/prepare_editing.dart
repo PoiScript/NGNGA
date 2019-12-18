@@ -1,8 +1,8 @@
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/store/editing.dart';
 import 'package:ngnga/store/state.dart';
 
 class PrepareEditingAction extends ReduxAction<AppState> {
@@ -21,15 +21,13 @@ class PrepareEditingAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     if (action == EditorAction.noop) {
-      return state.copy(
-        editingState: EditingLoaded(
-          uploadAuthCode: '',
-          uploadUrl: '',
-          files: [],
-          attachments: [],
-          initialSubject: '',
-          initialContent: '',
-        ),
+      return state.rebuild(
+        (b) => b
+          ..editingState.initialized = true
+          ..editingState.uploadAuthCode = ''
+          ..editingState.uploadUrl = ''
+          ..editingState.initialSubject = ''
+          ..editingState.initialContent = '',
       );
     }
 
@@ -40,15 +38,14 @@ class PrepareEditingAction extends ReduxAction<AppState> {
       postId: postId,
     );
 
-    return state.copy(
-      editingState: EditingLoaded(
-        uploadUrl: res.uploadUrl,
-        attachments: res.attachs,
-        files: [],
-        initialContent: res.content ?? '',
-        initialSubject: res.subject ?? '',
-        uploadAuthCode: res.uploadAuthCode,
-      ),
+    return state.rebuild(
+      (b) => b
+        ..editingState.initialized = true
+        ..editingState.uploadUrl = res.uploadUrl
+        ..editingState.attachments = ListBuilder(res.attachs)
+        ..editingState.initialContent = res.content ?? ''
+        ..editingState.initialSubject = res.subject ?? ''
+        ..editingState.uploadAuthCode = res.uploadAuthCode,
     );
   }
 }

@@ -1,24 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
 
 import 'package:ngnga/models/notification.dart';
 
-abstract class InboxState {
-  const InboxState();
-}
+part 'inbox.g.dart';
 
-class InboxUninitialized extends InboxState {}
+abstract class InboxState implements Built<InboxState, InboxStateBuilder> {
+  InboxState._();
 
-class InboxLoaded extends InboxState {
-  final List<UserNotification> notifications;
+  factory InboxState([Function(InboxStateBuilder) updates]) = _$InboxState;
 
-  const InboxLoaded({
-    @required this.notifications,
-  });
+  bool get initialized;
+  BuiltList<UserNotification> get notifications;
 
-  InboxLoaded copyWith({
-    List<UserNotification> notifications,
-  }) =>
-      InboxLoaded(
-        notifications: notifications ?? this.notifications,
-      );
+  static void _initializeBuilder(InboxStateBuilder b) => b..initialized = false;
 }

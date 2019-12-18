@@ -1,54 +1,46 @@
-import 'package:flutter/widgets.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
 
 import 'package:ngnga/models/category.dart';
 
-abstract class CategoryState {
-  const CategoryState();
-}
+part 'category.g.dart';
 
-class CategoryUninitialized extends CategoryState {}
+abstract class CategoryState
+    implements Built<CategoryState, CategoryStateBuilder> {
+  CategoryState._() {
+    assert(0 <= firstPage && firstPage <= lastPage && lastPage <= maxPage);
+  }
 
-class CategoryLoaded extends CategoryState {
-  final Category category;
-  final int toppedTopicId;
-  final List<int> topicIds;
-  final bool isPinned;
+  factory CategoryState([Function(CategoryStateBuilder) updates]) =
+      _$CategoryState;
 
-  final int topicsCount;
+  bool get initialized;
 
-  final int lastPage;
-  final int maxPage;
+  @nullable
+  Category get category;
 
+  @nullable
+  int get toppedTopicId;
+
+  BuiltSet<int> get topicIds;
+
+  bool get isPinned;
+  int get topicsCount;
+  int get firstPage;
+  int get lastPage;
+  int get maxPage;
+
+  @memoized
+  bool get hasRechedMin => firstPage == 0;
+
+  @memoized
   bool get hasRechedMax => lastPage == maxPage;
 
-  const CategoryLoaded({
-    @required this.category,
-    @required this.toppedTopicId,
-    @required this.isPinned,
-    @required this.topicIds,
-    @required this.topicsCount,
-    @required this.lastPage,
-    @required this.maxPage,
-  })  : assert(topicIds != null),
-        assert(topicsCount >= 0),
-        assert(maxPage >= lastPage);
-
-  CategoryLoaded copyWith({
-    Category category,
-    int toppedTopicId,
-    bool isPinned,
-    List<int> topicIds,
-    int topicsCount,
-    int lastPage,
-    int maxPage,
-  }) =>
-      CategoryLoaded(
-        category: category ?? this.category,
-        toppedTopicId: toppedTopicId ?? this.toppedTopicId,
-        isPinned: isPinned ?? this.isPinned,
-        topicIds: topicIds ?? this.topicIds,
-        topicsCount: topicsCount ?? this.topicsCount,
-        lastPage: lastPage ?? this.lastPage,
-        maxPage: maxPage ?? this.maxPage,
-      );
+  static void _initializeBuilder(CategoryStateBuilder b) => b
+    ..initialized = false
+    ..isPinned = false
+    ..topicsCount = 0
+    ..firstPage = 0
+    ..lastPage = 0
+    ..maxPage = 0;
 }

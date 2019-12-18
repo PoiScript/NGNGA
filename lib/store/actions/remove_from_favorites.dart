@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/store/topic.dart';
 
 class RemoveFromFavoritesAction extends ReduxAction<AppState> {
   final int topicId;
@@ -18,14 +17,11 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
       topicId: topicId,
     );
 
-    return state.copy(
-      topicStates: state.topicStates
-        ..update(
-          topicId,
-          (topicState) => topicState is TopicLoaded
-              ? topicState.copyWith(isFavorited: false)
-              : topicState,
-        ),
+    return state.rebuild(
+      (b) => b.topicStates.updateValue(
+        topicId,
+        (topicState) => topicState.rebuild((b) => b.isFavorited = false),
+      ),
     );
   }
 

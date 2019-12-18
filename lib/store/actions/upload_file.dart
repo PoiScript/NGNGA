@@ -16,30 +16,23 @@ class UploadFileAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     EditingState editingState = state.editingState;
 
-    if (editingState is EditingLoaded) {
-      assert(editingState.files[index] is FileUploading);
+    assert(editingState.files[index] is FileUploading);
 
-      final res = await state.repository.uploadFile(
+    final res = await state.repository.uploadFile(
+      file: editingState.files[index].file,
+      uploadUrl: editingState.uploadUrl,
+      auth: editingState.uploadAuthCode,
+      categoryId: categoryId,
+    );
+
+    return state.rebuild(
+      (b) => b.editingState.files[index] = FileUploaded(
+        check: res.attachChecksum,
+        code: res.attachCode,
+        url: res.attachUrl,
         file: editingState.files[index].file,
-        uploadUrl: editingState.uploadUrl,
-        auth: editingState.uploadAuthCode,
-        categoryId: categoryId,
-      );
-
-      return state.copy(
-        editingState: editingState.copy(
-          files: editingState.files
-            ..[index] = FileUploaded(
-              check: res.attachChecksum,
-              code: res.attachCode,
-              url: res.attachUrl,
-              file: editingState.files[index].file,
-            ),
-        ),
-      );
-    }
-
-    return null;
+      ),
+    );
   }
 
   void before() => dispatch(SetFileUploadingAction(index));
@@ -54,18 +47,12 @@ class SetFileUploadingAction extends ReduxAction<AppState> {
   AppState reduce() {
     EditingState editingState = state.editingState;
 
-    if (editingState is EditingLoaded) {
-      assert(editingState.files[index] is FileSelected);
+    assert(editingState.files[index] is FileSelected);
 
-      return state.copy(
-        editingState: editingState.copy(
-          files: editingState.files
-            ..[index] = FileUploading(editingState.files[index].file),
-        ),
-      );
-    }
-
-    return null;
+    return state.rebuild(
+      (b) => b.editingState.files[index] =
+          FileUploading(editingState.files[index].file),
+    );
   }
 }
 
@@ -76,17 +63,9 @@ class SelectFileAction extends ReduxAction<AppState> {
 
   @override
   AppState reduce() {
-    EditingState editingState = state.editingState;
-
-    if (editingState is EditingLoaded) {
-      return state.copy(
-        editingState: editingState.copy(
-          files: editingState.files..add(FileSelected(file)),
-        ),
-      );
-    }
-
-    return null;
+    return state.rebuild(
+      (b) => b.editingState.files.add(FileSelected(file)),
+    );
   }
 }
 
@@ -99,16 +78,10 @@ class UnselectFileAction extends ReduxAction<AppState> {
   AppState reduce() {
     EditingState editingState = state.editingState;
 
-    if (editingState is EditingLoaded) {
-      assert(editingState.files[index] is FileSelected);
+    assert(editingState.files[index] is FileSelected);
 
-      return state.copy(
-        editingState: editingState.copy(
-          files: editingState.files..removeAt(index),
-        ),
-      );
-    }
-
-    return null;
+    return state.rebuild(
+      (b) => b.editingState.files.removeAt(index),
+    );
   }
 }

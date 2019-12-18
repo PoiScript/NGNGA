@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
@@ -12,46 +13,29 @@ import 'editing.dart';
 import 'inbox.dart';
 import 'topic.dart';
 
+part 'state.g.dart';
+
 enum AppTheme { white, black, grey, yellow }
 
 enum AppLocale { en, zh }
 
 enum UserAgent { none, osOnly, full }
 
-class SettingsState {
-  final String baseUrl;
-  final AppTheme theme;
-  final AppLocale locale;
-  final UserAgent userAgent;
+abstract class SettingsState
+    implements Built<SettingsState, SettingsStateBuilder> {
+  SettingsState._();
 
-  SettingsState({
-    @required this.baseUrl,
-    @required this.theme,
-    @required this.locale,
-    @required this.userAgent,
-  })  : assert(baseUrl != null),
-        assert(theme != null),
-        assert(locale != null),
-        assert(userAgent != null);
+  factory SettingsState([Function(SettingsStateBuilder) updates]) =
+      _$SettingsState;
 
-  SettingsState.empty()
-      : baseUrl = 'ngabbs.com',
-        theme = AppTheme.white,
-        locale = AppLocale.en,
-        userAgent = UserAgent.osOnly;
+  AppTheme get theme;
+  AppLocale get locale;
+  UserAgent get userAgent;
 
-  SettingsState copy({
-    String baseUrl,
-    AppTheme theme,
-    AppLocale locale,
-    UserAgent userAgent,
-  }) =>
-      SettingsState(
-        baseUrl: baseUrl ?? this.baseUrl,
-        theme: theme ?? this.theme,
-        locale: locale ?? this.locale,
-        userAgent: userAgent ?? this.userAgent,
-      );
+  static void _initializeBuilder(SettingsStateBuilder b) => b
+    ..theme = AppTheme.white
+    ..locale = AppLocale.en
+    ..userAgent = UserAgent.osOnly;
 }
 
 abstract class UserState {
@@ -76,90 +60,29 @@ class UserLogged extends UserState {
 //   bool isMe(int userId) => false;
 // }
 
-class AppState {
-  final SettingsState settings;
-  final UserState userState;
+abstract class AppState implements Built<AppState, AppStateBuilder> {
+  AppState._();
 
-  final List<Category> pinned;
+  factory AppState([Function(AppStateBuilder) updates]) = _$AppState;
 
-  final InboxState inboxState;
+  SettingsState get settings;
+  UserState get userState;
 
-  final Map<int, User> users;
-  final Map<int, Topic> topics;
-  final Map<int, PostItem> posts;
+  BuiltList<Category> get pinned;
 
-  final Map<int, CategoryState> categoryStates;
-  final Map<int, TopicState> topicStates;
-  final FavoriteState favoriteState;
-  final EditingState editingState;
+  InboxState get inboxState;
 
-  final Repository repository;
+  BuiltMap<int, User> get users;
+  BuiltMap<int, Topic> get topics;
+  BuiltMap<int, PostItem> get posts;
 
-  AppState({
-    @required this.repository,
-    @required this.categoryStates,
-    @required this.favoriteState,
-    @required this.inboxState,
-    @required this.pinned,
-    @required this.posts,
-    @required this.topics,
-    @required this.editingState,
-    @required this.settings,
-    @required this.topicStates,
-    @required this.users,
-    @required this.userState,
-  })  : assert(categoryStates != null),
-        assert(repository != null),
-        assert(favoriteState != null),
-        assert(inboxState != null),
-        assert(pinned != null),
-        assert(posts != null),
-        assert(editingState != null),
-        assert(settings != null),
-        assert(topicStates != null),
-        assert(users != null),
-        assert(userState != null);
+  BuiltMap<int, CategoryState> get categoryStates;
+  BuiltMap<int, TopicState> get topicStates;
+  FavoriteState get favoriteState;
+  EditingState get editingState;
 
-  AppState copy({
-    Repository repository,
-    UserState userState,
-    SettingsState settings,
-    FavoriteState favoriteState,
-    EditingState editingState,
-    List<Category> pinned,
-    InboxState inboxState,
-    Map<int, PostItem> posts,
-    Map<int, User> users,
-    Map<int, Topic> topics,
-    Map<int, CategoryState> categoryStates,
-    Map<int, TopicState> topicStates,
-  }) =>
-      AppState(
-        repository: repository ?? this.repository,
-        userState: userState ?? this.userState,
-        settings: settings ?? this.settings,
-        pinned: pinned ?? this.pinned,
-        inboxState: inboxState ?? this.inboxState,
-        favoriteState: favoriteState ?? this.favoriteState,
-        categoryStates: categoryStates ?? this.categoryStates,
-        topicStates: topicStates ?? this.topicStates,
-        users: users ?? this.users,
-        posts: posts ?? this.posts,
-        topics: topics ?? this.topics,
-        editingState: editingState ?? this.editingState,
-      );
+  Repository get repository;
 
-  AppState.empty()
-      : repository = Repository(),
-        userState = UserUninitialized(),
-        users = {},
-        posts = {},
-        topics = {},
-        settings = SettingsState.empty(),
-        inboxState = InboxUninitialized(),
-        pinned = [],
-        categoryStates = {},
-        topicStates = {},
-        favoriteState = FavoriteUninitialized(),
-        editingState = EditingUninitialized();
+  static void _initializeBuilder(AppStateBuilder b) =>
+      b.userState = UserUninitialized();
 }

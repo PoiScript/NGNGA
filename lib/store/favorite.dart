@@ -1,36 +1,24 @@
-abstract class FavoriteState {
-  const FavoriteState();
-}
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
 
-class FavoriteUninitialized extends FavoriteState {}
+part 'favorite.g.dart';
 
-class FavoriteLoaded extends FavoriteState {
-  final List<int> topicIds;
+abstract class FavoriteState
+    implements Built<FavoriteState, FavoriteStateBuilder> {
+  FavoriteState._();
 
-  final int topicsCount;
+  factory FavoriteState([Function(FavoriteStateBuilder) updates]) =
+      _$FavoriteState;
 
-  final int lastPage;
-  final int maxPage;
+  bool get initialized;
+  BuiltList<int> get topicIds;
+  int get topicsCount;
+  int get lastPage;
+  int get maxPage;
 
-  const FavoriteLoaded({
-    this.topicIds,
-    this.topicsCount,
-    this.lastPage,
-    this.maxPage,
-  })  : assert(topicIds != null),
-        assert(topicsCount >= 0),
-        assert(maxPage >= lastPage);
-
-  FavoriteLoaded copyWith({
-    List<int> topicIds,
-    int topicsCount,
-    int lastPage,
-    int maxPage,
-  }) =>
-      FavoriteLoaded(
-        topicIds: topicIds ?? this.topicIds,
-        topicsCount: topicsCount ?? this.topicsCount,
-        lastPage: lastPage ?? this.lastPage,
-        maxPage: maxPage ?? this.maxPage,
-      );
+  static void _initializeBuilder(FavoriteStateBuilder b) => b
+    ..initialized = false
+    ..topicsCount = 0
+    ..lastPage = 0
+    ..maxPage = 0;
 }

@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 
-import 'package:ngnga/store/favorite.dart';
-import 'package:ngnga/store/topic.dart';
-import '../state.dart';
+import 'package:ngnga/store/state.dart';
 
 class FetchFavoritesAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    if (state.favoriteState is FavoriteUninitialized) {
+    if (!state.favoriteState.initialized) {
       await dispatchFuture(RefreshFavoritesAction());
     }
 
@@ -24,21 +23,17 @@ class RefreshFavoritesAction extends ReduxAction<AppState> {
 
     List<int> favoriteIds = res.topics.map((t) => t.id).toList();
 
-    return state.copy(
-      favoriteState: FavoriteLoaded(
-        topicsCount: res.topicsCount,
-        topicIds: res.topics.map((t) => t.id).toList(),
-        maxPage: res.maxPage,
-        lastPage: 0,
-      ),
-      topics: state.topics
-        ..addEntries(res.topics.map((t) => MapEntry(t.id, t))),
-      topicStates: state.topicStates
-        ..updateAll(
-          (id, topicsState) =>
-              topicsState is TopicLoaded && favoriteIds.contains(id)
-                  ? topicsState.copyWith(isFavorited: true)
-                  : topicsState,
+    return state.rebuild(
+      (b) => b
+        ..favoriteState.initialized = true
+        ..favoriteState.topicsCount = res.topicsCount
+        ..favoriteState.topicIds = ListBuilder(res.topics.map((t) => t.id))
+        ..favoriteState.maxPage = res.maxPage
+        ..favoriteState.lastPage = 0
+        ..topics.addEntries(res.topics.map((t) => MapEntry(t.id, t)))
+        ..topicStates.updateAllValues(
+          (id, topicsState) => topicsState
+              .rebuild((b) => b.isFavorited = favoriteIds.contains(id)),
         ),
     );
   }

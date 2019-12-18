@@ -7,7 +7,7 @@ import 'package:ngnga/store/state.dart';
 
 void main() {
   testWidgets('Route to WelcomePage if given user is null', (tester) async {
-    final store = Store(initialState: AppState.empty());
+    final store = Store(initialState: AppState());
 
     await tester.pumpWidget(MyApp(store: store));
 

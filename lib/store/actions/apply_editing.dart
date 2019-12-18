@@ -28,24 +28,22 @@ class ApplyEditingAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     EditingState editingState = state.editingState;
 
-    if (editingState is EditingLoaded) {
-      await state.repository.applyEditing(
-        action: action,
-        categoryId: categoryId,
-        topicId: topicId,
-        postId: postId,
-        subject: subject,
-        content: content,
-        attachmentCode: editingState.files
-            .map((file) => file is FileUploaded ? file.code : '')
-            .where((code) => code.isNotEmpty)
-            .join('\t'),
-        attachmentChecksum: editingState.files
-            .map((file) => file is FileUploaded ? file.check : '')
-            .where((check) => check.isNotEmpty)
-            .join('\t'),
-      );
-    }
+    await state.repository.applyEditing(
+      action: action,
+      categoryId: categoryId,
+      topicId: topicId,
+      postId: postId,
+      subject: subject,
+      content: content,
+      attachmentCode: editingState.files
+          .map((file) => file is FileUploaded ? file.code : '')
+          .where((code) => code.isNotEmpty)
+          .join('\t'),
+      attachmentChecksum: editingState.files
+          .map((file) => file is FileUploaded ? file.check : '')
+          .where((check) => check.isNotEmpty)
+          .join('\t'),
+    );
 
     return null;
   }
