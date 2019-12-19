@@ -1,18 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/store/topic.dart';
-import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/widgets/distance_to_now.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
 final _numberFormatter = NumberFormat('#,###,###,###');
-
-final _everyMinutes = StreamController<DateTime>.broadcast()
-  ..addStream(
-    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
-  );
 
 class TopicRow extends StatelessWidget {
   final TopicState topic;
@@ -85,14 +78,7 @@ class TopicRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    StreamBuilder<DateTime>(
-                      initialData: DateTime.now(),
-                      stream: _everyMinutes.stream,
-                      builder: (context, snapshot) => Text(
-                        duration(snapshot.data, topic.topic.createdAt),
-                        style: Theme.of(context).textTheme.caption,
-                      ),
-                    ),
+                    DistanceToNow(topic.topic.createdAt),
                   ],
                 ),
               ),
@@ -116,14 +102,7 @@ class TopicRow extends StatelessWidget {
                           ),
                         ),
                       ),
-                      StreamBuilder<DateTime>(
-                        initialData: DateTime.now(),
-                        stream: _everyMinutes.stream,
-                        builder: (context, snapshot) => Text(
-                          duration(snapshot.data, topic.topic.lastPostedAt),
-                          style: Theme.of(context).textTheme.caption,
-                        ),
-                      ),
+                      DistanceToNow(topic.topic.lastPostedAt),
                     ],
                   ),
                 ),

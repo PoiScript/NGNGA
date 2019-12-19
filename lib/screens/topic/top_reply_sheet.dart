@@ -5,7 +5,7 @@ import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
-import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/widgets/distance_to_now.dart';
 
 class TopReplySheet extends StatelessWidget {
   final List<Post> posts;
@@ -72,13 +72,7 @@ class TopReplySheet extends StatelessWidget {
                               style: Theme.of(context).textTheme.caption,
                             ),
                           ),
-                          Text(
-                            duration(
-                              DateTime.now(),
-                              post.createdAt,
-                            ),
-                            style: Theme.of(context).textTheme.caption,
-                          ),
+                          DistanceToNow(post.createdAt),
                         ],
                       ),
                       BBCodeRender(

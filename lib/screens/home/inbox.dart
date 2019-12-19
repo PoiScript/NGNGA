@@ -1,18 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/models/notification.dart';
 import 'package:ngnga/store/inbox.dart';
-import 'package:ngnga/utils/duration.dart';
+import 'package:ngnga/widgets/distance_to_now.dart';
 import 'package:ngnga/widgets/refresh.dart';
-
-final _everyMinutes = StreamController<DateTime>.broadcast()
-  ..addStream(
-    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
-  );
 
 class InboxTab extends StatelessWidget {
   final InboxState inboxState;
@@ -74,14 +67,7 @@ class _NotificationItem extends StatelessWidget {
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
-                StreamBuilder<DateTime>(
-                  initialData: DateTime.now(),
-                  stream: _everyMinutes.stream,
-                  builder: (context, snapshot) => Text(
-                    duration(snapshot.data, notification.dateTime),
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ),
+                DistanceToNow(notification.dateTime),
               ],
             ),
             Container(

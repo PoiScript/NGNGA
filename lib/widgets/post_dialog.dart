@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:async_redux/async_redux.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
@@ -11,15 +9,10 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/state.dart';
-import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/open_link.dart';
+import 'package:ngnga/widgets/distance_to_now.dart';
 
 part 'post_dialog.g.dart';
-
-final _everyMinutes = StreamController<DateTime>.broadcast()
-  ..addStream(
-    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
-  );
 
 class PostDialog extends StatefulWidget {
   final BuiltMap<int, User> users;
@@ -99,14 +92,7 @@ class _PostDialogState extends State<PostDialog> {
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
-              StreamBuilder<DateTime>(
-                initialData: DateTime.now(),
-                stream: _everyMinutes.stream,
-                builder: (context, snapshot) => Text(
-                  duration(snapshot.data, post.createdAt),
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              ),
+              DistanceToNow(post.createdAt),
             ],
           ),
         ),

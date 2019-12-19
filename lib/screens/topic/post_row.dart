@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -10,17 +8,12 @@ import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/utils/vendor_icons.dart';
+import 'package:ngnga/widgets/distance_to_now.dart';
 import 'package:ngnga/widgets/user_avatar.dart';
 
 final _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-
-final _everyMinutes = StreamController<DateTime>.broadcast()
-  ..addStream(
-    Stream.periodic(Duration(minutes: 1), (_) => DateTime.now()),
-  );
 
 enum DisplayMode {
   bbCode,
@@ -228,14 +221,7 @@ class _MetaRow extends StatelessWidget {
                 '#$index',
                 style: Theme.of(context).textTheme.caption,
               ),
-            StreamBuilder<DateTime>(
-              initialData: DateTime.now(),
-              stream: _everyMinutes.stream,
-              builder: (context, snapshot) => Text(
-                duration(snapshot.data, createdAt),
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ),
+            DistanceToNow(createdAt),
           ],
         ),
       ),
