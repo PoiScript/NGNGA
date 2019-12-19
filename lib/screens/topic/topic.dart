@@ -254,11 +254,13 @@ class TopicPageConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
-      converter: (store) => ViewModel.fromStore(store, topicId),
-      onInit: (store) => store.dispatch(RefreshPostsAction(
-        topicId: topicId,
-        pageIndex: pageIndex,
-      )),
+      converter: (store) => ViewModel.fromStore(store, topicId, pageIndex),
+      onInit: (store) => store.dispatch(
+        RefreshPostsAction(topicId: topicId, pageIndex: pageIndex),
+      ),
+      onDispose: (store) => store.dispatch(
+        ClearTopicAction(topicId: topicId),
+      ),
       builder: (context, vm) => TopicPage(
         isMe: vm.isMe,
         baseUrl: vm.baseUrl,
@@ -299,11 +301,28 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   Future<void> Function(int) get upvotePost;
   Future<void> Function(int) get downvotePost;
 
-  factory ViewModel.fromStore(Store<AppState> store, int topicId) {
+  factory ViewModel.fromStore(
+      Store<AppState> store, int topicId, int pageIndex) {
+    final topicState =
+        store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder();
+
+    if (!topicState.initialized) {
+      if (topicState.firstPage == pageIndex &&
+          topicState.firstPagePostIds.isNotEmpty) {
+        topicState
+          ..initialized = true
+          ..postIds = topicState.firstPagePostIds;
+      } else if (topicState.lastPage == pageIndex &&
+          topicState.lastPagePostIds.isNotEmpty) {
+        topicState
+          ..initialized = true
+          ..postIds = topicState.lastPagePostIds;
+      }
+    }
+
     return ViewModel(
       (b) => b
-        ..topicState =
-            store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder()
+        ..topicState = topicState
         ..users = store.state.users.toBuilder()
         ..posts = store.state.posts.toBuilder()
         ..baseUrl = store.state.repository.baseUrl

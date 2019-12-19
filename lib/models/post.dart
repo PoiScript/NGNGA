@@ -43,7 +43,7 @@ abstract class Post extends PostItem implements Built<Post, PostBuilder> {
     ..vendor = Vendor.none
     ..vendorDetail = '';
 
-  factory Post.fromJson(Map<String, dynamic> json) {
+  static PostBuilder fromJson(Map<String, dynamic> json) {
     PostBuilder b = PostBuilder();
 
     if (json['alterinfo'] is String) {
@@ -130,7 +130,7 @@ abstract class Post extends PostItem implements Built<Post, PostBuilder> {
     b.vote = json['score'];
     b.index = json['lou'];
 
-    return b.build();
+    return b;
   }
 }
 
@@ -145,9 +145,9 @@ abstract class Comment extends PostItem
   int get postId;
   int get commentTo;
 
-  factory Comment.fromJson(Map<String, dynamic> json) => Comment((b) => b
+  static CommentBuilder fromJson(Map<String, dynamic> json) => CommentBuilder()
     ..index = json['lou']
     ..userId = json['authorid']
     ..postId = json['pid']
-    ..commentTo = json['comment_to_id']);
+    ..commentTo = json['comment_to_id'];
 }

@@ -252,14 +252,14 @@ class FetchPostsResponse {
 
     for (var value in List.from(json['data']['__R'])) {
       if (value['comment_to_id'] != null) {
-        posts.add(Comment.fromJson(value));
+        posts.add(Comment.fromJson(value).build());
       } else {
-        posts.add(Post.fromJson(value));
+        posts.add(Post.fromJson(value).build());
       }
 
       if (value['comment'] is List) {
         for (var value in List.of(value['comment'])) {
-          comments.add(Post.fromJson(value));
+          comments.add(Post.fromJson(value).build());
         }
       }
     }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:ngnga/models/topic.dart';
+import 'package:ngnga/store/topic.dart';
 import 'package:ngnga/utils/duration.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
@@ -15,7 +15,7 @@ final _everyMinutes = StreamController<DateTime>.broadcast()
   );
 
 class TopicRow extends StatelessWidget {
-  final Topic topic;
+  final TopicState topic;
 
   const TopicRow({
     @required this.topic,
@@ -23,18 +23,18 @@ class TopicRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (topic.category != null) {
+    if (topic.topic.category != null) {
       return InkWell(
         onTap: () => Navigator.pushNamed(context, '/c', arguments: {
-          'id': topic.category.id,
-          'isSubcategory': topic.category.isSubcategory,
+          'id': topic.topic.category.id,
+          'isSubcategory': topic.topic.category.isSubcategory,
         }),
         child: Padding(
           padding: EdgeInsets.all(8.0),
           child: Row(
             children: <Widget>[
               Expanded(
-                child: TitleColorize(topic),
+                child: TitleColorize(topic.topic),
               ),
               const Icon(Icons.keyboard_arrow_right)
             ],
@@ -48,12 +48,12 @@ class TopicRow extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () => Navigator.pushNamed(context, '/t', arguments: {
-            'id': topic.id,
+            'id': topic.topic.id,
             'page': 0,
           }),
           child: Padding(
             padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
-            child: TitleColorize(topic),
+            child: TitleColorize(topic.topic),
           ),
         ),
         Row(
@@ -63,7 +63,7 @@ class TopicRow extends StatelessWidget {
               width: 64,
               padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
               child: Text(
-                _numberFormatter.format(topic.postsCount),
+                _numberFormatter.format(topic.topic.postsCount),
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
@@ -77,7 +77,7 @@ class TopicRow extends StatelessWidget {
                       child: Padding(
                         padding: EdgeInsets.only(right: 4),
                         child: Text(
-                          topic.author,
+                          topic.topic.author,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
@@ -89,7 +89,7 @@ class TopicRow extends StatelessWidget {
                       initialData: DateTime.now(),
                       stream: _everyMinutes.stream,
                       builder: (context, snapshot) => Text(
-                        duration(snapshot.data, topic.createdAt),
+                        duration(snapshot.data, topic.topic.createdAt),
                         style: Theme.of(context).textTheme.caption,
                       ),
                     ),
@@ -108,7 +108,7 @@ class TopicRow extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(right: 4.0),
                           child: Text(
-                            topic.lastPoster,
+                            topic.topic.lastPoster,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
@@ -120,7 +120,7 @@ class TopicRow extends StatelessWidget {
                         initialData: DateTime.now(),
                         stream: _everyMinutes.stream,
                         builder: (context, snapshot) => Text(
-                          duration(snapshot.data, topic.lastPostedAt),
+                          duration(snapshot.data, topic.topic.lastPostedAt),
                           style: Theme.of(context).textTheme.caption,
                         ),
                       ),
@@ -128,8 +128,8 @@ class TopicRow extends StatelessWidget {
                   ),
                 ),
                 onTap: () => Navigator.pushNamed(context, '/t', arguments: {
-                  'id': topic.id,
-                  'page': topic.postsCount ~/ 20,
+                  'id': topic.topic.id,
+                  'page': topic.topic.postsCount ~/ 20,
                 }),
               ),
             ),

@@ -3,7 +3,6 @@ import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
-import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/store/favorite.dart';
 import 'package:ngnga/utils/repository.dart';
@@ -73,7 +72,6 @@ abstract class AppState implements Built<AppState, AppStateBuilder> {
   InboxState get inboxState;
 
   BuiltMap<int, User> get users;
-  BuiltMap<int, Topic> get topics;
   BuiltMap<int, Post> get posts;
 
   BuiltMap<int, CategoryState> get categoryStates;

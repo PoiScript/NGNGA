@@ -126,12 +126,13 @@ class RefreshPostsAction extends FetchPostsBaseAction {
             ..initialized = true
             ..topic = res.topic
             ..firstPage = pageIndex
+            ..firstPagePostIds = SetBuilder(res.postIds)
             ..lastPage = pageIndex
+            ..lastPagePostIds = SetBuilder(res.postIds)
             ..maxPage = res.maxPage
             ..postIds = SetBuilder(res.postIds)
             ..isFavorited = state.favoriteState.topicIds.contains(topicId),
         )
-        ..topics[topicId] = res.topic
         ..users.addAll(res.users)
         ..posts.addAll(res.posts),
     );
@@ -155,10 +156,11 @@ class RefreshLastPageAction extends FetchPostsBaseAction {
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
+            ..topic = res.topic
             ..maxPage = res.maxPage
-            ..postIds.addAll(res.postIds),
+            ..postIds.addAll(res.postIds)
+            ..lastPagePostIds = SetBuilder(res.postIds),
         )
-        ..topics[topicId] = res.topic
         ..users.addAll(res.users)
         ..posts.addAll(res.posts),
     );
@@ -183,11 +185,12 @@ class FetchPreviousPostsAction extends FetchPostsBaseAction {
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
+            ..topic = res.topic
             ..maxPage = res.maxPage
             ..firstPage = topicState.firstPage - 1
-            ..postIds = SetBuilder(res.postIds..addAll(topicState.postIds)),
+            ..firstPagePostIds = SetBuilder(res.postIds)
+            ..postIds = (SetBuilder(res.postIds)..addAll(topicState.postIds)),
         )
-        ..topics[topicId] = res.topic
         ..users.addAll(res.users)
         ..posts.addAll(res.posts),
     );
@@ -212,13 +215,41 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
-            ..lastPage = topicState.lastPage + 1
+            ..topic = res.topic
             ..maxPage = res.maxPage
+            ..lastPage = topicState.lastPage + 1
+            ..lastPagePostIds = SetBuilder(res.postIds)
             ..postIds.addAll(res.postIds),
         )
-        ..topics[topicId] = res.topic
         ..users.addAll(res.users)
         ..posts.addAll(res.posts),
+    );
+  }
+}
+
+class ClearTopicAction extends FetchPostsBaseAction {
+  final int topicId;
+
+  ClearTopicAction({this.topicId}) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    TopicState topicState = state.topicStates[topicId];
+
+    return state.rebuild(
+      (b) => b
+        ..posts.removeWhere((id, _) =>
+            !topicState.firstPagePostIds.contains(id) &&
+            !topicState.lastPagePostIds.contains(id) &&
+            topicState.postIds.contains(id))
+        ..topicStates.updateValue(
+          topicId,
+          (topicState) => topicState.rebuild(
+            (b) => b
+              ..initialized = false
+              ..postIds.clear(),
+          ),
+        ),
     );
   }
 }
@@ -240,10 +271,7 @@ class FetchReplyAction extends FetchPostsBaseAction {
     );
 
     return state.rebuild(
-      (b) => b
-        ..topics[topicId] = res.topic
-        ..users.addAll(res.users)
-        ..posts.addAll(res.posts),
+      (b) => b..users.addAll(res.users)..posts.addAll(res.posts),
     );
   }
 }

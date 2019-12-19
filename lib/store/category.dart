@@ -19,6 +19,9 @@ abstract class CategoryState
   @nullable
   Category get category;
 
+  BuiltList<int> get firstPagePostIds;
+  BuiltList<int> get lastPagePostIds;
+
   @nullable
   int get toppedTopicId;
 

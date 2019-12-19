@@ -4,11 +4,11 @@ import 'package:flutter/material.dart' hide Builder;
 
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/category.dart';
-import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/favorite.dart';
 import 'package:ngnga/store/inbox.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/topic.dart';
 
 import 'explore.dart';
 import 'favorites.dart';
@@ -19,7 +19,7 @@ part 'home.g.dart';
 
 class HomePage extends StatefulWidget {
   final FavoriteState favoriteState;
-  final Map<int, Topic> topics;
+  final Map<int, TopicState> topics;
   final Future<void> Function() fetchFavorites;
   final Future<void> Function() refreshFavorites;
   final List<Category> pinned;
@@ -131,7 +131,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
   FavoriteState get favoriteState;
-  Map<int, Topic> get topics;
+  Map<int, TopicState> get topics;
   Future<void> Function() get fetchFavorites;
   Future<void> Function() get refreshFavorites;
 
@@ -144,7 +144,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   factory ViewModel.fromStore(Store<AppState> store) => ViewModel((b) => b
     ..favoriteState =
         store.state.favoriteState.toBuilder() ?? FavoriteStateBuilder()
-    ..topics = store.state.topics.toMap()
+    ..topics = store.state.topicStates.toMap()
     ..fetchFavorites = (() => store.dispatchFuture(FetchFavoritesAction()))
     ..refreshFavorites = (() => store.dispatchFuture(RefreshFavoritesAction()))
     ..pinned = store.state.pinned.toList()

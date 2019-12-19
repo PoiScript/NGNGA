@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-import 'package:ngnga/models/topic.dart';
 
 import 'package:ngnga/store/favorite.dart';
+import 'package:ngnga/store/topic.dart';
 import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 
 class FavoritesTab extends StatelessWidget {
   final FavoriteState favoriteState;
 
-  final Map<int, Topic> topics;
+  final Map<int, TopicState> topics;
 
   final Future<void> Function() refreshFavorites;
 

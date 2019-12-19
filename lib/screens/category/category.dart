@@ -8,11 +8,11 @@ import 'package:flutter/material.dart' hide Builder;
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/category.dart';
-import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/store/actions.dart';
 import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
+import 'package:ngnga/store/topic.dart';
 import 'package:ngnga/widgets/refresh.dart';
 import 'package:ngnga/widgets/topic_row.dart';
 
@@ -28,7 +28,7 @@ class CategoryPage extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoad;
 
-  final Map<int, Topic> topics;
+  final Map<int, TopicState> topics;
 
   final String baseUrl;
   final Function(Category) addToPinned;
@@ -168,7 +168,7 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
   CategoryState get categoryState;
-  Map<int, Topic> get topics;
+  Map<int, TopicState> get topics;
   Future<void> Function() get onRefresh;
   Future<void> Function() get onLoad;
   String get baseUrl;
@@ -180,12 +180,14 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
     int categoryId,
     bool isSubcategory,
   }) {
+    final categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
+        CategoryStateBuilder();
+
     return ViewModel(
       (b) => b
-        ..topics = store.state.topics.toMap()
+        ..topics = store.state.topicStates.toMap()
         ..baseUrl = store.state.repository.baseUrl
-        ..categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
-            CategoryStateBuilder()
+        ..categoryState = categoryState
         ..onRefresh = (() => store.dispatchFuture(RefreshTopicsAction(
             categoryId: categoryId, isSubcategory: isSubcategory)))
         ..onLoad = (() => store.dispatchFuture(FetchNextTopicsAction(

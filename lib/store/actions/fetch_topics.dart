@@ -5,6 +5,7 @@ import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/models/post.dart';
+import 'package:ngnga/models/topic.dart';
 import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
@@ -69,7 +70,12 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
               ..category = category
               ..isPinned = state.pinned.contains(category),
           )
-          ..topics.addEntries(res0.topics.map((t) => MapEntry(t.id, t))),
+          ..topicStates.update((b) {
+            for (Topic topic in res0.topics) {
+              b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                  ifAbsent: () => TopicState((b) => b.topic = topic));
+            }
+          }),
       );
     } else {
       final res1 = await state.repository
@@ -95,12 +101,20 @@ class RefreshTopicsAction extends ReduxAction<AppState> {
               ..toppedTopicId = res0.toppedTopicId
               ..isPinned = state.pinned.contains(category),
           )
-          ..topics.addEntries(res0.topics.map((t) => MapEntry(t.id, t)))
+          ..topicStates.update((b) {
+            for (Topic topic in res0.topics) {
+              b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                  ifAbsent: () => TopicState((b) => b.topic = topic));
+            }
+          })
           ..topicStates[res0.toppedTopicId] = TopicState(
             (b) => b
               ..initialized = true
               ..topic = res1.topic
-              ..maxPage = res1.maxPage
+              ..firstPage = 0
+              ..firstPagePostIds = SetBuilder(posts.map((p) => p.id))
+              ..lastPage = 0
+              ..lastPagePostIds = SetBuilder(posts.map((p) => p.id))
               ..postIds = SetBuilder(posts.map((p) => p.id)),
           )
           ..users.addAll(res1.users)
@@ -140,7 +154,12 @@ class FetchNextTopicsAction extends ReduxAction<AppState> {
             ..lastPage = categoryState.lastPage + 1
             ..maxPage = res.maxPage,
         )
-        ..topics.addEntries(res.topics.map((t) => MapEntry(t.id, t))),
+        ..topicStates.update((b) {
+          for (Topic topic in res.topics) {
+            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                ifAbsent: () => TopicState((b) => b.topic = topic));
+          }
+        }),
     );
   }
 }

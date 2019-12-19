@@ -122,7 +122,6 @@ class _PostDialogState extends State<PostDialog> {
 
   _fetchReply(int topicId, int postId) async {
     int fixedPostId = (postId == 0 ? 2 ^ 32 - topicId : postId);
-    print('fixedPostId: $fixedPostId');
     if (!isLoading && !postIds.contains(fixedPostId)) {
       if (!widget.posts.containsKey(fixedPostId)) {
         setState(() => isLoading = true);
