@@ -32,109 +32,130 @@ class JumpToPageAction extends CategoryBaseAction {
   Future<AppState> reduce() async {
     assert(categoryState == null || !categoryState.initialized);
 
-    print(categoryId);
-    print(isSubcategory);
-    print(pageIndex);
-
     final res0 = await state.repository.fetchCategoryTopics(
       categoryId: categoryId,
       isSubcategory: isSubcategory,
-      page: 0,
+      page: pageIndex,
     );
 
     if (isSubcategory) {
-      Category category = Category(
-        id: categoryId,
-        title: res0.topics.first.title,
-        isSubcategory: isSubcategory,
-      );
+      if (state.categoryStates.containsKey(categoryId)) {
+        return state.rebuild(
+          (b) => b
+            ..categoryStates[categoryId] = CategoryState(
+              (b) => b
+                ..initialized = true
+                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                ..topicsCount = res0.topicCount
+                ..maxPage = res0.maxPage
+                ..firstPage = pageIndex
+                ..lastPage = pageIndex,
+            )
+            ..topicStates.update((b) {
+              for (Topic topic in res0.topics) {
+                b.updateValue(
+                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                    ifAbsent: () => TopicState((b) => b.topic = topic));
+              }
+            }),
+        );
+      } else {
+        Category category = Category(
+          id: categoryId,
+          title: res0.topics.first.title,
+          isSubcategory: isSubcategory,
+        );
 
-      return state.rebuild(
-        (b) => b
-          ..categoryStates[categoryId] = CategoryState(
-            (b) => b
-              ..initialized = true
-              ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
-              ..topicsCount = res0.topicCount
-              ..maxPage = res0.maxPage
-              ..firstPage = pageIndex
-              ..lastPage = pageIndex
-              ..category = category
-              ..isPinned = state.pinned.contains(category),
-          )
-          ..topicStates.update((b) {
-            for (Topic topic in res0.topics) {
-              b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                  ifAbsent: () => TopicState((b) => b.topic = topic));
-            }
-          }),
-      );
-    } else if (state.categoryStates.containsKey(categoryId)) {
-      return state.rebuild((b) => b
-        ..categoryStates.updateValue(
-          categoryId,
-          (categoryState) => categoryState.rebuild(
-            (b) => b
-              ..initialized = true
-              ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
-              ..topicsCount = res0.topicCount
-              ..maxPage = res0.maxPage
-              ..firstPage = pageIndex
-              ..lastPage = pageIndex
-              ..toppedTopicId = res0.toppedTopicId
-              ..isPinned = state.pinned.contains(b.category),
-          ),
-        )
-        ..topicStates.update((b) {
-          for (Topic topic in res0.topics) {
-            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                ifAbsent: () => TopicState((b) => b.topic = topic));
-          }
-        }));
+        return state.rebuild(
+          (b) => b
+            ..categoryStates[categoryId] = CategoryState(
+              (b) => b
+                ..initialized = true
+                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                ..topicsCount = res0.topicCount
+                ..maxPage = res0.maxPage
+                ..firstPage = pageIndex
+                ..lastPage = pageIndex
+                ..category = category
+                ..isPinned = state.pinned.contains(category),
+            )
+            ..topicStates.update((b) {
+              for (Topic topic in res0.topics) {
+                b.updateValue(
+                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                    ifAbsent: () => TopicState((b) => b.topic = topic));
+              }
+            }),
+        );
+      }
     } else {
-      final res1 = await state.repository
-          .fetchTopicPosts(topicId: res0.toppedTopicId, page: 0);
-
-      Category category = Category(
-        id: categoryId,
-        title: res1.forumName,
-        isSubcategory: isSubcategory,
-      );
-
-      List<Post> posts = res1.posts.whereType<Post>().toList(growable: false);
-
-      return state.rebuild(
-        (b) => b
-          ..categoryStates[categoryId] = CategoryState(
-            (b) => b
-              ..initialized = true
-              ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
-              ..topicsCount = res0.topicCount
-              ..firstPage = pageIndex
-              ..lastPage = pageIndex
-              ..maxPage = res0.maxPage
-              ..category = category
-              ..toppedTopicId = res0.toppedTopicId
-              ..isPinned = state.pinned.contains(category),
+      if (state.categoryStates.containsKey(categoryId)) {
+        return state.rebuild((b) => b
+          ..categoryStates.updateValue(
+            categoryId,
+            (categoryState) => categoryState.rebuild(
+              (b) => b
+                ..initialized = true
+                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                ..topicsCount = res0.topicCount
+                ..maxPage = res0.maxPage
+                ..firstPage = pageIndex
+                ..lastPage = pageIndex
+                ..toppedTopicId = res0.toppedTopicId,
+            ),
           )
           ..topicStates.update((b) {
             for (Topic topic in res0.topics) {
               b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
                   ifAbsent: () => TopicState((b) => b.topic = topic));
             }
-          })
-          ..topicStates[res0.toppedTopicId] = TopicState(
-            (b) => b
-              ..initialized = true
-              ..topic = res1.topic
-              ..firstPage = 0
-              ..lastPage = 0
-              ..postIds = SetBuilder(posts.map((p) => p.id)),
-          )
-          ..users.addAll(res1.users)
-          ..posts.addEntries(posts.map((p) => MapEntry(p.id, p)))
-          ..posts.addEntries(res1.comments.map((p) => MapEntry(p.id, p))),
-      );
+          }));
+      } else {
+        final res1 = await state.repository
+            .fetchTopicPosts(topicId: res0.toppedTopicId, page: 0);
+
+        Category category = Category(
+          id: categoryId,
+          title: res1.forumName,
+          isSubcategory: isSubcategory,
+        );
+
+        List<Post> posts = res1.posts.whereType<Post>().toList(growable: false);
+
+        return state.rebuild(
+          (b) => b
+            ..categoryStates[categoryId] = CategoryState(
+              (b) => b
+                ..initialized = true
+                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                ..topicsCount = res0.topicCount
+                ..firstPage = pageIndex
+                ..lastPage = pageIndex
+                ..maxPage = res0.maxPage
+                ..category = category
+                ..toppedTopicId = res0.toppedTopicId
+                ..isPinned = state.pinned.contains(category),
+            )
+            ..topicStates.update((b) {
+              for (Topic topic in res0.topics) {
+                b.updateValue(
+                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
+                    ifAbsent: () => TopicState((b) => b.topic = topic));
+              }
+            })
+            ..topicStates[res0.toppedTopicId] = TopicState(
+              (b) => b
+                ..initialized = true
+                ..topic = res1.topic
+                ..firstPage = 0
+                ..lastPage = 0
+                ..postIds = SetBuilder(posts.map((p) => p.id)),
+            )
+            ..users.addAll(res1.users)
+            ..posts.addEntries(posts.map((p) => MapEntry(p.id, p)))
+            ..posts.addEntries(res1.comments.map((p) => MapEntry(p.id, p))),
+        );
+      }
     }
   }
 
