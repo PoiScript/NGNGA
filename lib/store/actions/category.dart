@@ -42,22 +42,19 @@ class JumpToPageAction extends CategoryBaseAction {
       if (state.categoryStates.containsKey(categoryId)) {
         return state.rebuild(
           (b) => b
-            ..categoryStates[categoryId] = CategoryState(
-              (b) => b
-                ..initialized = true
-                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
-                ..topicsCount = res0.topicCount
-                ..maxPage = res0.maxPage
-                ..firstPage = pageIndex
-                ..lastPage = pageIndex,
+            ..categoryStates.updateValue(
+              categoryId,
+              (categoryState) => categoryState.rebuild(
+                (b) => b
+                  ..initialized = true
+                  ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                  ..topicsCount = res0.topicCount
+                  ..maxPage = res0.maxPage
+                  ..firstPage = pageIndex
+                  ..lastPage = pageIndex,
+              ),
             )
-            ..topicStates.update((b) {
-              for (Topic topic in res0.topics) {
-                b.updateValue(
-                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                    ifAbsent: () => TopicState((b) => b.topic = topic));
-              }
-            }),
+            ..topicStates.update(_udpateTopicState(res0.topics)),
         );
       } else {
         Category category = Category(
@@ -79,40 +76,33 @@ class JumpToPageAction extends CategoryBaseAction {
                 ..category = category
                 ..isPinned = state.pinned.contains(category),
             )
-            ..topicStates.update((b) {
-              for (Topic topic in res0.topics) {
-                b.updateValue(
-                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                    ifAbsent: () => TopicState((b) => b.topic = topic));
-              }
-            }),
+            ..topicStates.update(_udpateTopicState(res0.topics)),
         );
       }
     } else {
       if (state.categoryStates.containsKey(categoryId)) {
-        return state.rebuild((b) => b
-          ..categoryStates.updateValue(
-            categoryId,
-            (categoryState) => categoryState.rebuild(
-              (b) => b
-                ..initialized = true
-                ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
-                ..topicsCount = res0.topicCount
-                ..maxPage = res0.maxPage
-                ..firstPage = pageIndex
-                ..lastPage = pageIndex
-                ..toppedTopicId = res0.toppedTopicId,
-            ),
-          )
-          ..topicStates.update((b) {
-            for (Topic topic in res0.topics) {
-              b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                  ifAbsent: () => TopicState((b) => b.topic = topic));
-            }
-          }));
+        return state.rebuild(
+          (b) => b
+            ..categoryStates.updateValue(
+              categoryId,
+              (categoryState) => categoryState.rebuild(
+                (b) => b
+                  ..initialized = true
+                  ..topicIds = SetBuilder(res0.topics.map((t) => t.id))
+                  ..topicsCount = res0.topicCount
+                  ..maxPage = res0.maxPage
+                  ..firstPage = pageIndex
+                  ..lastPage = pageIndex
+                  ..toppedTopicId = res0.toppedTopicId,
+              ),
+            )
+            ..topicStates.update(_udpateTopicState(res0.topics)),
+        );
       } else {
-        final res1 = await state.repository
-            .fetchTopicPosts(topicId: res0.toppedTopicId, page: 0);
+        final res1 = await state.repository.fetchTopicPosts(
+          topicId: res0.toppedTopicId,
+          page: 0,
+        );
 
         Category category = Category(
           id: categoryId,
@@ -136,13 +126,7 @@ class JumpToPageAction extends CategoryBaseAction {
                 ..toppedTopicId = res0.toppedTopicId
                 ..isPinned = state.pinned.contains(category),
             )
-            ..topicStates.update((b) {
-              for (Topic topic in res0.topics) {
-                b.updateValue(
-                    topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                    ifAbsent: () => TopicState((b) => b.topic = topic));
-              }
-            })
+            ..topicStates.update(_udpateTopicState(res0.topics))
             ..topicStates[res0.toppedTopicId] = TopicState(
               (b) => b
                 ..initialized = true
@@ -173,8 +157,9 @@ class _SetUninitialized extends CategoryBaseAction {
       return state.rebuild(
         (b) => b.categoryStates.updateValue(
           categoryId,
-          (categoryState) =>
-              categoryState.rebuild((b) => b.initialized = false),
+          (categoryState) => categoryState.rebuild(
+            (b) => b.initialized = false,
+          ),
         ),
       );
     } else {
@@ -213,12 +198,7 @@ class RefreshFirstPageAction extends CategoryBaseAction {
             ..maxPage = res.maxPage
             ..firstPage = 0,
         )
-        ..topicStates.update((b) {
-          for (Topic topic in res.topics) {
-            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                ifAbsent: () => TopicState((b) => b.topic = topic));
-          }
-        }),
+        ..topicStates.update(_udpateTopicState(res.topics)),
     );
   }
 }
@@ -254,12 +234,7 @@ class LoadPreviousPageAction extends CategoryBaseAction {
             ..firstPage = categoryState.firstPage - 1
             ..maxPage = res.maxPage,
         )
-        ..topicStates.update((b) {
-          for (Topic topic in res.topics) {
-            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                ifAbsent: () => TopicState((b) => b.topic = topic));
-          }
-        }),
+        ..topicStates.update(_udpateTopicState(res.topics)),
     );
   }
 }
@@ -294,12 +269,20 @@ class LoadNextPageAction extends CategoryBaseAction {
             ..lastPage = categoryState.lastPage + 1
             ..maxPage = res.maxPage,
         )
-        ..topicStates.update((b) {
-          for (Topic topic in res.topics) {
-            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                ifAbsent: () => TopicState((b) => b.topic = topic));
-          }
-        }),
+        ..topicStates.update(_udpateTopicState(res.topics)),
     );
   }
 }
+
+_udpateTopicState(List<Topic> topics) {
+  return (MapBuilder<int, TopicState> b) {
+    for (Topic topic in topics) {
+      b.updateValue(
+        topic.id,
+        (topicState) => topicState.rebuild((b) => b.topic = topic),
+        ifAbsent: () => TopicState((b) => b.topic = topic),
+      );
+    }
+  };
+}
+
