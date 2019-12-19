@@ -98,7 +98,9 @@ class CategoryPage extends StatelessWidget {
       ),
       body: Scrollbar(
         child: EasyRefresh.builder(
-          header: PreviousPageHeader(context, categoryState.firstPage),
+          header: categoryState.hasRechedMin
+              ? RefreshHeader(context)
+              : PreviousPageHeader(context, categoryState.firstPage),
           footer: NextPageHeader(context),
           onRefresh: categoryState.hasRechedMin ? refreshFirst : loadPrevious,
           onLoad: loadNext,

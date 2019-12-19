@@ -121,7 +121,9 @@ class _TopicPageState extends State<TopicPage> {
 
   Widget _buildBody(BuildContext context) {
     return EasyRefresh.builder(
-      header: PreviousPageHeader(context, widget.topicState.firstPage),
+      header: widget.topicState.hasRechedMin
+          ? RefreshHeader(context)
+          : PreviousPageHeader(context, widget.topicState.firstPage),
       footer: NextPageHeader(context),
       onRefresh: widget.topicState.hasRechedMin
           ? widget.refreshFirst
