@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ngnga/store/topic.dart';
+import 'package:ngnga/utils/category_icons.dart';
 import 'package:ngnga/widgets/distance_to_now.dart';
 import 'package:ngnga/widgets/title_colorize.dart';
 
@@ -28,6 +30,16 @@ class TopicRow extends StatelessWidget {
 
     if (topic.topic.category != null) {
       return ListTile(
+        leading: CircleAvatar(
+          maxRadius: 16,
+          backgroundColor: Colors.transparent,
+          backgroundImage: CachedNetworkImageProvider(
+            categoryIconUrl(
+              topic.topic.category.id,
+              isSubcategory: topic.topic.category.isSubcategory,
+            ),
+          ),
+        ),
         title: TitleColorize(topic.topic, displayLabel: false),
         subtitle: topic.topic.label != null
             ? Text(

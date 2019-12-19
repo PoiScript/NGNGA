@@ -1,10 +1,12 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:ngnga/localizations.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/utils/categories.dart';
+import 'package:ngnga/utils/category_icons.dart';
 
 class ExploreTab extends StatelessWidget {
   final BuiltList<Category> pinned;
@@ -34,6 +36,16 @@ class ExploreTab extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) => ListTile(
+                leading: CircleAvatar(
+                  maxRadius: 16,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: CachedNetworkImageProvider(
+                    categoryIconUrl(
+                      pinned[index].id,
+                      isSubcategory: pinned[index].isSubcategory,
+                    ),
+                  ),
+                ),
                 title: Text(pinned[index].title),
                 trailing: const Icon(Icons.keyboard_arrow_right),
                 onTap: () => Navigator.pushNamed(context, '/c', arguments: {
@@ -62,6 +74,16 @@ class ExploreTab extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => ListTile(
+                  leading: CircleAvatar(
+                    maxRadius: 16,
+                    backgroundColor: Colors.transparent,
+                    backgroundImage: CachedNetworkImageProvider(
+                      categoryIconUrl(
+                        group.categories[index].id,
+                        isSubcategory: group.categories[index].isSubcategory,
+                      ),
+                    ),
+                  ),
                   title: Text(group.categories[index].title),
                   trailing: const Icon(Icons.keyboard_arrow_right),
                   onTap: () => Navigator.pushNamed(context, '/c', arguments: {
