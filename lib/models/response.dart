@@ -90,7 +90,7 @@ class FetchCategoryTopicsResponse {
     return FetchCategoryTopicsResponse(
       topics: topics,
       topicCount: json['data']['__ROWS'],
-      maxPage: json['data']['__ROWS'] ~/ json['data']['__T__ROWS_PAGE'],
+      maxPage: (json['data']['__ROWS'] - 1) ~/ json['data']['__T__ROWS_PAGE'],
       toppedTopicId: json['data']['__F']['topped_topic'],
     );
   }
