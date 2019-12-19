@@ -30,33 +30,20 @@ class DistanceToNow extends StatelessWidget {
   String _distance(DateTime left, DateTime right) {
     Duration difference = left.difference(right);
     if (difference.inDays > 10) {
-      switch (right.month) {
-        case DateTime.january:
-          return 'Jan \'${right.day}';
-        case DateTime.february:
-          return 'Feb \'${right.day}';
-        case DateTime.march:
-          return 'Mar \'${right.day}';
-        case DateTime.april:
-          return 'Apr \'${right.day}';
-        case DateTime.may:
-          return 'May \'${right.day}';
-        case DateTime.june:
-          return 'Jun \'${right.day}';
-        case DateTime.july:
-          return 'Jul \'${right.day}';
-        case DateTime.august:
-          return 'Aug \'${right.day}';
-        case DateTime.september:
-          return 'Sep \'${right.day}';
-        case DateTime.october:
-          return 'Oct \'${right.day}';
-        case DateTime.november:
-          return 'Nov \'${right.day}';
-        case DateTime.december:
-          return 'Dec \'${right.day}';
-      }
-      return '${right.day}';
+      return {
+        DateTime.january: () => 'Jan \'${right.day}',
+        DateTime.february: () => 'Feb \'${right.day}',
+        DateTime.march: () => 'Mar \'${right.day}',
+        DateTime.april: () => 'Apr \'${right.day}',
+        DateTime.may: () => 'May \'${right.day}',
+        DateTime.june: () => 'Jun \'${right.day}',
+        DateTime.july: () => 'Jul \'${right.day}',
+        DateTime.august: () => 'Aug \'${right.day}',
+        DateTime.september: () => 'Sep \'${right.day}',
+        DateTime.october: () => 'Oct \'${right.day}',
+        DateTime.november: () => 'Nov \'${right.day}',
+        DateTime.december: () => 'Dec \'${right.day}',
+      }[right.month]();
     } else if (difference.inDays > 0) {
       if (difference.inDays < 2) {
         return '${difference.inDays}d${difference.inHours % 24}h';

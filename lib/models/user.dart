@@ -68,10 +68,11 @@ String parseAvatar(String avatar) {
   String path = int.parse(
     avatar.substring(3, avatar.indexOf('_')),
   ).toRadixString(16).padLeft(9, '0');
+  path = path.substring(path.length - 9);
 
-  String a = path.substring(path.length - 3, path.length);
-  String b = path.substring(path.length - 6, path.length - 3);
-  String c = path.substring(path.length - 9, path.length - 6);
+  String a = path.substring(6);
+  String b = path.substring(3, 6);
+  String c = path.substring(0, 3);
 
   return 'http://img.nga.cn/avatars/2002/$a/$b/$c/${avatar.substring(3)}';
 }

@@ -46,6 +46,7 @@ class UserAvatar extends StatelessWidget {
         imageBuilder: (context, imageProvider) => CircleAvatar(
           radius: size / 2,
           backgroundImage: imageProvider,
+          backgroundColor: Colors.transparent,
         ),
         errorWidget: (context, url, error) => letterAvatar,
       ),
