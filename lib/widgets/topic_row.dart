@@ -14,24 +14,33 @@ class TopicRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (topic.topic.error != null) {
+      return ListTile(
+        title: Text(
+          topic.topic.error,
+          style: Theme.of(context)
+              .textTheme
+              .subhead
+              .copyWith(color: Theme.of(context).errorColor),
+        ),
+      );
+    }
+
     if (topic.topic.category != null) {
-      return InkWell(
+      return ListTile(
+        title: TitleColorize(topic.topic, displayLabel: false),
+        subtitle: topic.topic.label != null
+            ? Text(
+                topic.topic.label,
+                style: Theme.of(context).textTheme.caption,
+              )
+            : null,
+        trailing: const Icon(Icons.keyboard_arrow_right),
         onTap: () => Navigator.pushNamed(context, '/c', arguments: {
           'id': topic.topic.category.id,
           'isSubcategory': topic.topic.category.isSubcategory,
           'page': 0,
         }),
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: TitleColorize(topic.topic),
-              ),
-              const Icon(Icons.keyboard_arrow_right)
-            ],
-          ),
-        ),
       );
     }
 

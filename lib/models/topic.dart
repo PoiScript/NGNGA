@@ -65,6 +65,8 @@ class Topic extends TopicItem {
 
   final Category category;
 
+  final String error;
+
   Topic({
     this.id,
     this.categoryId,
@@ -77,6 +79,7 @@ class Topic extends TopicItem {
     this.author,
     this.lastPoster,
     this.category,
+    this.error,
   })  : assert(id != null),
         assert(title != null),
         assert(decorations != null),
@@ -156,6 +159,7 @@ class Topic extends TopicItem {
       lastPoster: json['lastposter'],
       decorations: decorations,
       category: category,
+      error: json['error'],
     );
   }
 }
