@@ -285,4 +285,3 @@ _udpateTopicState(List<Topic> topics) {
     }
   };
 }
-
