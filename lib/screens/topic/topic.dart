@@ -220,7 +220,7 @@ class _TopicPageState extends State<TopicPage> {
       context: context,
       builder: (context) => CommentSheet(
         users: widget.users,
-        posts: commentIds.map((id) => widget.posts[id]).toList(),
+        posts: commentIds.map((id) => widget.posts[id]).toList(growable: false),
       ),
     );
   }
@@ -230,7 +230,8 @@ class _TopicPageState extends State<TopicPage> {
       context: context,
       builder: (context) => TopReplySheet(
         users: widget.users,
-        posts: topReplyIds.map((id) => widget.posts[id]).toList(),
+        posts:
+            topReplyIds.map((id) => widget.posts[id]).toList(growable: false),
       ),
     );
   }
@@ -307,6 +308,8 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
 
   factory ViewModel.fromStore(
       Store<AppState> store, int topicId, int pageIndex) {
+    UserState userState = store.state.userState;
+
     return ViewModel(
       (b) => b
         ..topicState =
@@ -327,9 +330,8 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
             store.dispatchFuture(RemoveFromFavoritesAction(topicId: topicId)))
         ..changePage = ((pageIndex) => store.dispatchFuture(
             JumpToPageAction(topicId: topicId, pageIndex: pageIndex)))
-        ..isMe = ((userId) =>
-            store.state.userState is UserLogged &&
-            (store.state.userState as UserLogged).uid == userId)
+        ..isMe =
+            ((userId) => userState is UserLogged && userState.uid == userId)
         ..upvotePost = ((postId) => store
             .dispatchFuture(UpvotePostAction(topicId: topicId, postId: postId)))
         ..downvotePost = ((postId) => store.dispatchFuture(

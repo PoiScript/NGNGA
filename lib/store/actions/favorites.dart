@@ -24,7 +24,7 @@ class RefreshFavoritesAction extends ReduxAction<AppState> {
   Future<AppState> reduce() async {
     final res = await state.repository.fetchFavorTopics(page: 0);
 
-    List<int> favoriteIds = res.topics.map((t) => t.id).toList();
+    List<int> favoriteIds = res.topics.map((t) => t.id).toList(growable: false);
 
     return state.rebuild(
       (b) => b
