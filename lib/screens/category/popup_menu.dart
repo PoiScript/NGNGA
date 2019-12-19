@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:ngnga/localizations.dart';
+import 'package:ngnga/screens/topic/page_picker.dart';
 
 enum Choice {
   copyLinkToClipboard,
   addToPinned,
   removeFromPinned,
   viewToppedTopic,
+  jumpToPage,
 }
 
 class PopupMenu extends StatelessWidget {
@@ -17,12 +19,19 @@ class PopupMenu extends StatelessWidget {
 
   final int toppedTopicId;
 
+  final int firstPage;
+  final int maxPage;
+  final Future<void> Function(int) changePage;
+
   final bool isPinned;
   final VoidCallback addToPinned;
   final VoidCallback removeFromPinned;
 
   const PopupMenu({
     Key key,
+    @required this.firstPage,
+    @required this.maxPage,
+    @required this.changePage,
     @required this.categoryId,
     @required this.isSubcategory,
     @required this.baseUrl,
@@ -73,6 +82,13 @@ class PopupMenu extends StatelessWidget {
               style: Theme.of(context).textTheme.body1,
             ),
           ),
+        PopupMenuItem<Choice>(
+          value: Choice.jumpToPage,
+          child: Text(
+            AppLocalizations.of(context).jumpToPage,
+            style: Theme.of(context).textTheme.body1,
+          ),
+        ),
       ],
       onSelected: (choice) async {
         switch (choice) {
@@ -110,6 +126,18 @@ class PopupMenu extends StatelessWidget {
               'id': toppedTopicId,
               'page': 0,
             });
+            break;
+          case Choice.jumpToPage:
+            int page = await showDialog<int>(
+              context: context,
+              builder: (BuildContext context) => PagePicker(
+                initialPage: firstPage,
+                maxPage: maxPage,
+              ),
+            );
+            if (page != null) {
+              changePage(page);
+            }
             break;
         }
       },

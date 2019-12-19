@@ -7,7 +7,7 @@ import 'package:ngnga/bbcode/render.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/topic.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/utils/open_link.dart';
 import 'package:ngnga/widgets/distance_to_now.dart';

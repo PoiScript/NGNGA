@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:ngnga/localizations.dart';
@@ -6,7 +7,7 @@ import 'package:ngnga/models/category.dart';
 import 'package:ngnga/utils/categories.dart';
 
 class ExploreTab extends StatelessWidget {
-  final List<Category> pinned;
+  final BuiltList<Category> pinned;
 
   const ExploreTab({
     @required this.pinned,
@@ -38,6 +39,7 @@ class ExploreTab extends StatelessWidget {
                 onTap: () => Navigator.pushNamed(context, '/c', arguments: {
                   'id': pinned[index].id,
                   'isSubcategory': pinned[index].isSubcategory,
+                  'page': 0,
                 }),
               ),
               childCount: pinned.length,
@@ -65,6 +67,7 @@ class ExploreTab extends StatelessWidget {
                   onTap: () => Navigator.pushNamed(context, '/c', arguments: {
                     'id': group.categories[index].id,
                     'isSubcategory': group.categories[index].isSubcategory,
+                    'page': 0,
                   }),
                 ),
                 childCount: group.categories.length,

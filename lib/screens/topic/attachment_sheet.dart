@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -7,7 +8,7 @@ import 'package:ngnga/models/attachment.dart';
 import 'attach_viewer.dart';
 
 class AttachmentSheet extends StatelessWidget {
-  final List<Attachment> attachments;
+  final BuiltList<Attachment> attachments;
 
   const AttachmentSheet({
     Key key,

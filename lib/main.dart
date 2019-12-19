@@ -10,7 +10,7 @@ import 'package:ngnga/screens/settings/settings.dart';
 import 'package:ngnga/screens/topic/topic.dart';
 import 'package:ngnga/screens/user/user.dart';
 import 'package:ngnga/screens/welcome/welcome.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/state_persist.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/style.dart';
 
@@ -90,6 +90,7 @@ class MyApp extends StatelessWidget {
         screen = CategoryPageConnector(
           categoryId: arguments['id'],
           isSubcategory: arguments['isSubcategory'],
+          pageIndex: arguments['page'],
         );
         break;
       case '/t':

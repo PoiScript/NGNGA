@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -30,9 +31,9 @@ class PostRow extends StatefulWidget {
   final Future<void> Function() downvote;
 
   final Function(int, int) openPost;
-  final Function(List<Attachment>) openAttachmentSheet;
-  final Function(List<int>) openCommentSheet;
-  final Function(List<int>) openTopReplySheet;
+  final Function(BuiltList<Attachment>) openAttachmentSheet;
+  final Function(BuiltList<int>) openCommentSheet;
+  final Function(BuiltList<int>) openTopReplySheet;
 
   const PostRow({
     @required this.post,
@@ -93,11 +94,11 @@ class _PostRowState extends State<PostRow> {
                   widget.openPost(topicId, postId),
             ),
           _Footer(
-            attachments: widget.post.attachments.toList(),
+            attachments: widget.post.attachments,
             openAttachmentSheet: widget.openAttachmentSheet,
-            commentIds: widget.post.commentIds.toList(),
+            commentIds: widget.post.commentIds,
             openCommentSheet: widget.openCommentSheet,
-            topReplyIds: widget.post.topReplyIds.toList(),
+            topReplyIds: widget.post.topReplyIds,
             openTopReplySheet: widget.openTopReplySheet,
             vote: widget.post.vote,
             upvote: widget.upvote,
@@ -440,14 +441,14 @@ class _PopupMenuButton extends StatelessWidget {
 }
 
 class _Footer extends StatelessWidget {
-  final List<Attachment> attachments;
-  final Function(List<Attachment>) openAttachmentSheet;
+  final BuiltList<Attachment> attachments;
+  final Function(BuiltList<Attachment>) openAttachmentSheet;
 
-  final List<int> topReplyIds;
-  final Function(List<int>) openTopReplySheet;
+  final BuiltList<int> topReplyIds;
+  final Function(BuiltList<int>) openTopReplySheet;
 
-  final List<int> commentIds;
-  final Function(List<int>) openCommentSheet;
+  final BuiltList<int> commentIds;
+  final Function(BuiltList<int>) openCommentSheet;
 
   final int vote;
   final VoidCallback upvote;

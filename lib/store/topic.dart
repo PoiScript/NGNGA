@@ -15,10 +15,8 @@ class PostVoted {
 
 abstract class TopicState implements Built<TopicState, TopicStateBuilder> {
   TopicState._() {
+    if (initialized) assert(topic != null);
     assert(0 <= firstPage && firstPage <= lastPage && lastPage <= maxPage);
-    if (initialized) {
-      assert(firstPagePostIds.isNotEmpty && lastPagePostIds.isNotEmpty);
-    }
   }
 
   factory TopicState([Function(TopicStateBuilder) updates]) = _$TopicState;
@@ -27,9 +25,6 @@ abstract class TopicState implements Built<TopicState, TopicStateBuilder> {
 
   @nullable
   Topic get topic;
-
-  BuiltSet<int> get firstPagePostIds;
-  BuiltSet<int> get lastPagePostIds;
 
   BuiltSet<int> get postIds;
   Event<String> get snackBarEvt;

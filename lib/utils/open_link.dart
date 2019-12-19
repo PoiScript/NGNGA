@@ -31,6 +31,7 @@ void openLink(BuildContext context, String url) {
       Navigator.pushNamed(context, '/c', arguments: {
         'id': int.parse(uri.queryParameters['fid']),
         'isSubcategory': false,
+        'page': int.tryParse(uri.queryParameters['page'] ?? '') ?? 0,
       });
       return;
     }
@@ -41,6 +42,7 @@ void openLink(BuildContext context, String url) {
       Navigator.pushNamed(context, '/c', arguments: {
         'id': int.parse(uri.queryParameters['stid']),
         'isSubcategory': true,
+        'page': int.tryParse(uri.queryParameters['page'] ?? '') ?? 0,
       });
       return;
     }

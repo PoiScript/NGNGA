@@ -10,9 +10,7 @@ final _numberFormatter = NumberFormat('#,###,###,###');
 class TopicRow extends StatelessWidget {
   final TopicState topic;
 
-  const TopicRow({
-    @required this.topic,
-  }) : assert(topic != null);
+  const TopicRow(this.topic) : assert(topic != null);
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +19,7 @@ class TopicRow extends StatelessWidget {
         onTap: () => Navigator.pushNamed(context, '/c', arguments: {
           'id': topic.topic.category.id,
           'isSubcategory': topic.topic.category.isSubcategory,
+          'page': 0,
         }),
         child: Padding(
           padding: EdgeInsets.all(8.0),

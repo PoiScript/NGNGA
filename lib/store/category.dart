@@ -8,6 +8,7 @@ part 'category.g.dart';
 abstract class CategoryState
     implements Built<CategoryState, CategoryStateBuilder> {
   CategoryState._() {
+    if (initialized) assert(category != null);
     assert(0 <= firstPage && firstPage <= lastPage && lastPage <= maxPage);
   }
 
@@ -18,9 +19,6 @@ abstract class CategoryState
 
   @nullable
   Category get category;
-
-  BuiltList<int> get firstPagePostIds;
-  BuiltList<int> get lastPagePostIds;
 
   @nullable
   int get toppedTopicId;

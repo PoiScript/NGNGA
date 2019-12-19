@@ -28,7 +28,11 @@ class FetchPostsResult {
   });
 }
 
-abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
+abstract class TopicBaseAction extends ReduxAction<AppState> {
+  int get topicId;
+
+  TopicState get topicState => state.topicStates[topicId];
+
   Future<FetchPostsResult> fetchPosts({
     @required int topicId,
     int page,
@@ -105,18 +109,19 @@ abstract class FetchPostsBaseAction extends ReduxAction<AppState> {
   }
 }
 
-class RefreshPostsAction extends FetchPostsBaseAction {
+class JumpToPageAction extends TopicBaseAction {
   final int topicId;
   final int pageIndex;
 
-  RefreshPostsAction({
+  JumpToPageAction({
     @required this.topicId,
     @required this.pageIndex,
-  })  : assert(topicId != null),
-        assert(pageIndex >= 0);
+  });
 
   @override
   Future<AppState> reduce() async {
+    assert(topicState == null || !topicState.initialized);
+
     final res = await fetchPosts(topicId: topicId, page: pageIndex);
 
     return state.rebuild(
@@ -126,9 +131,7 @@ class RefreshPostsAction extends FetchPostsBaseAction {
             ..initialized = true
             ..topic = res.topic
             ..firstPage = pageIndex
-            ..firstPagePostIds = SetBuilder(res.postIds)
             ..lastPage = pageIndex
-            ..lastPagePostIds = SetBuilder(res.postIds)
             ..maxPage = res.maxPage
             ..postIds = SetBuilder(res.postIds)
             ..isFavorited = state.favoriteState.topicIds.contains(topicId),
@@ -137,17 +140,70 @@ class RefreshPostsAction extends FetchPostsBaseAction {
         ..posts.addAll(res.posts),
     );
   }
+
+  void before() => dispatch(_SetUninitialized(topicId));
 }
 
-class RefreshLastPageAction extends FetchPostsBaseAction {
+class _SetUninitialized extends ReduxAction<AppState> {
+  final int topicId;
+
+  _SetUninitialized(this.topicId);
+
+  @override
+  FutureOr<AppState> reduce() {
+    if (state.topicStates.containsKey(topicId)) {
+      return state.rebuild(
+        (b) => b.topicStates.updateValue(
+          topicId,
+          (topicState) => topicState.rebuild((b) => b.initialized = false),
+        ),
+      );
+    } else {
+      return null;
+    }
+  }
+}
+
+class RefreshFirstPageAction extends TopicBaseAction {
+  final int topicId;
+
+  RefreshFirstPageAction({
+    @required this.topicId,
+  }) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    assert(topicState.initialized);
+    assert(topicState.firstPage == 0);
+
+    final res = await fetchPosts(
+      topicId: topicId,
+      page: 0,
+    );
+
+    return state.rebuild(
+      (b) => b
+        ..topicStates[topicId] = topicState.rebuild(
+          (b) => b
+            ..topic = res.topic
+            ..lastPage = 0
+            ..maxPage = res.maxPage
+            ..postIds = SetBuilder(res.postIds),
+        )
+        ..users.addAll(res.users)
+        ..posts.addAll(res.posts),
+    );
+  }
+}
+
+class RefreshLastPageAction extends TopicBaseAction {
   final int topicId;
 
   RefreshLastPageAction(this.topicId) : assert(topicId != null);
 
   @override
   Future<AppState> reduce() async {
-    TopicState topicState = state.topicStates[topicId];
-
+    assert(topicState.initialized);
     assert(topicState.hasRechedMax);
 
     final res = await fetchPosts(topicId: topicId, page: topicState.lastPage);
@@ -158,67 +214,6 @@ class RefreshLastPageAction extends FetchPostsBaseAction {
           (b) => b
             ..topic = res.topic
             ..maxPage = res.maxPage
-            ..postIds.addAll(res.postIds)
-            ..lastPagePostIds = SetBuilder(res.postIds),
-        )
-        ..users.addAll(res.users)
-        ..posts.addAll(res.posts),
-    );
-  }
-}
-
-class FetchPreviousPostsAction extends FetchPostsBaseAction {
-  final int topicId;
-
-  FetchPreviousPostsAction(this.topicId) : assert(topicId != null);
-
-  @override
-  Future<AppState> reduce() async {
-    TopicState topicState = state.topicStates[topicId];
-
-    assert(!topicState.hasRechedMin);
-
-    final res =
-        await fetchPosts(topicId: topicId, page: topicState.firstPage - 1);
-
-    return state.rebuild(
-      (b) => b
-        ..topicStates[topicId] = topicState.rebuild(
-          (b) => b
-            ..topic = res.topic
-            ..maxPage = res.maxPage
-            ..firstPage = topicState.firstPage - 1
-            ..firstPagePostIds = SetBuilder(res.postIds)
-            ..postIds = (SetBuilder(res.postIds)..addAll(topicState.postIds)),
-        )
-        ..users.addAll(res.users)
-        ..posts.addAll(res.posts),
-    );
-  }
-}
-
-class FetchNextPostsAction extends FetchPostsBaseAction {
-  final int topicId;
-
-  FetchNextPostsAction(this.topicId) : assert(topicId != null);
-
-  @override
-  Future<AppState> reduce() async {
-    TopicState topicState = state.topicStates[topicId];
-
-    assert(!state.topicStates[topicId].hasRechedMax);
-
-    final res =
-        await fetchPosts(topicId: topicId, page: topicState.lastPage + 1);
-
-    return state.rebuild(
-      (b) => b
-        ..topicStates[topicId] = topicState.rebuild(
-          (b) => b
-            ..topic = res.topic
-            ..maxPage = res.maxPage
-            ..lastPage = topicState.lastPage + 1
-            ..lastPagePostIds = SetBuilder(res.postIds)
             ..postIds.addAll(res.postIds),
         )
         ..users.addAll(res.users)
@@ -227,34 +222,67 @@ class FetchNextPostsAction extends FetchPostsBaseAction {
   }
 }
 
-class ClearTopicAction extends FetchPostsBaseAction {
+class LoadPreviousPageAction extends TopicBaseAction {
   final int topicId;
 
-  ClearTopicAction({this.topicId}) : assert(topicId != null);
+  LoadPreviousPageAction(this.topicId) : assert(topicId != null);
 
   @override
   Future<AppState> reduce() async {
-    TopicState topicState = state.topicStates[topicId];
+    assert(topicState.initialized);
+    assert(!topicState.hasRechedMin);
+
+    final res = await fetchPosts(
+      topicId: topicId,
+      page: topicState.firstPage - 1,
+    );
 
     return state.rebuild(
       (b) => b
-        ..posts.removeWhere((id, _) =>
-            !topicState.firstPagePostIds.contains(id) &&
-            !topicState.lastPagePostIds.contains(id) &&
-            topicState.postIds.contains(id))
-        ..topicStates.updateValue(
-          topicId,
-          (topicState) => topicState.rebuild(
-            (b) => b
-              ..initialized = false
-              ..postIds.clear(),
-          ),
-        ),
+        ..topicStates[topicId] = topicState.rebuild(
+          (b) => b
+            ..topic = res.topic
+            ..maxPage = res.maxPage
+            ..firstPage = topicState.firstPage - 1
+            ..postIds = (SetBuilder(res.postIds)..addAll(topicState.postIds)),
+        )
+        ..users.addAll(res.users)
+        ..posts.addAll(res.posts),
     );
   }
 }
 
-class FetchReplyAction extends FetchPostsBaseAction {
+class LoadNextPageAction extends TopicBaseAction {
+  final int topicId;
+
+  LoadNextPageAction(this.topicId) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    assert(topicState.initialized);
+    assert(!topicState.hasRechedMax);
+
+    final res = await fetchPosts(
+      topicId: topicId,
+      page: topicState.lastPage + 1,
+    );
+
+    return state.rebuild(
+      (b) => b
+        ..topicStates[topicId] = topicState.rebuild(
+          (b) => b
+            ..topic = res.topic
+            ..maxPage = res.maxPage
+            ..lastPage = topicState.lastPage + 1
+            ..postIds.addAll(res.postIds),
+        )
+        ..users.addAll(res.users)
+        ..posts.addAll(res.posts),
+    );
+  }
+}
+
+class FetchReplyAction extends TopicBaseAction {
   final int topicId;
   final int postId;
 
@@ -272,6 +300,29 @@ class FetchReplyAction extends FetchPostsBaseAction {
 
     return state.rebuild(
       (b) => b..users.addAll(res.users)..posts.addAll(res.posts),
+    );
+  }
+}
+
+class ClearTopicAction extends TopicBaseAction {
+  final int topicId;
+
+  ClearTopicAction({this.topicId}) : assert(topicId != null);
+
+  @override
+  Future<AppState> reduce() async {
+    return state.rebuild(
+      (b) => b
+        ..posts.removeWhere((id, _) => topicState.postIds.contains(id))
+        ..topicStates.updateValue(
+          topicId,
+          (topicState) => topicState.rebuild(
+            (b) => b
+              ..initialized = false
+              ..postIds.clear(),
+          ),
+          ifAbsent: () => TopicState(),
+        ),
     );
   }
 }

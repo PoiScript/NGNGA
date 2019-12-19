@@ -7,7 +7,8 @@ import 'package:flutter/material.dart' hide Builder;
 
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/main.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/settings.dart';
+import 'package:ngnga/store/actions/user.dart';
 import 'package:ngnga/store/state.dart';
 
 import 'about.dart';

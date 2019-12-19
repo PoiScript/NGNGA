@@ -7,31 +7,45 @@ import 'package:ngnga/store/inbox.dart';
 import 'package:ngnga/widgets/distance_to_now.dart';
 import 'package:ngnga/widgets/refresh.dart';
 
-class InboxTab extends StatelessWidget {
+class InboxTab extends StatefulWidget {
   final InboxState inboxState;
 
   final Future<void> Function() refreshInbox;
+  final Future<void> Function() maybeRefreshInbox;
 
   const InboxTab({
     Key key,
-    @required this.refreshInbox,
     @required this.inboxState,
+    @required this.refreshInbox,
+    @required this.maybeRefreshInbox,
   }) : super(key: key);
 
   @override
+  _InboxTabState createState() => _InboxTabState();
+}
+
+class _InboxTabState extends State<InboxTab> {
+  @override
+  void initState() {
+    widget.maybeRefreshInbox();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!inboxState.initialized) {
+    if (!widget.inboxState.initialized) {
       return Center(child: CircularProgressIndicator());
     }
 
     return EasyRefresh(
       header: RefreshHeader(context),
-      onRefresh: refreshInbox,
+      onRefresh: widget.refreshInbox,
       child: ListView.separated(
         separatorBuilder: (context, inex) => Divider(height: 0.0),
-        itemCount: inboxState.notifications.length,
-        itemBuilder: (context, index) =>
-            _NotificationItem(notification: inboxState.notifications[index]),
+        itemCount: widget.inboxState.notifications.length,
+        itemBuilder: (context, index) => _NotificationItem(
+          notification: widget.inboxState.notifications[index],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,7 +8,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:ngnga/models/attachment.dart';
 
 class AttachViewer extends StatelessWidget {
-  final List<Attachment> attachs;
+  final BuiltList<Attachment> attachs;
   final int initialPage;
 
   const AttachViewer({

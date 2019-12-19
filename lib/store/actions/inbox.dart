@@ -5,7 +5,7 @@ import 'package:built_collection/built_collection.dart';
 
 import 'package:ngnga/store/state.dart';
 
-class FetchNotificationsAction extends ReduxAction<AppState> {
+class MaybeRefreshNotificationsAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     if (!state.inboxState.initialized) {

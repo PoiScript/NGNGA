@@ -5,7 +5,7 @@ import 'package:built_value/built_value.dart';
 import 'package:flutter/material.dart' hide Builder;
 import 'package:http/http.dart';
 
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/user.dart';
 import 'package:ngnga/store/state.dart';
 
 part 'welcome.g.dart';

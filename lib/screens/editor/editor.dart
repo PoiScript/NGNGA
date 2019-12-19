@@ -6,7 +6,7 @@ import 'package:flutter/material.dart' hide Builder;
 import 'package:flutter/services.dart';
 
 import 'package:ngnga/localizations.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/editing.dart';
 import 'package:ngnga/store/editing.dart';
 import 'package:ngnga/store/state.dart';
 
@@ -139,6 +139,7 @@ class _EditorPageState extends State<EditorPage> {
           child: Icon(Icons.send),
         ),
         bottomSheet: BottomAppBar(
+          color: Theme.of(context).scaffoldBackgroundColor,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -273,8 +274,8 @@ class _EditorPageState extends State<EditorPage> {
         );
       case DisplayToolbar.attachs:
         return EditorAttachs(
-          files: widget.editingState.files.toList(growable: false),
-          attachments: widget.editingState.attachments.toList(growable: false),
+          files: widget.editingState.files,
+          attachments: widget.editingState.attachments,
           selectFile: widget.selectFile,
           unselectFile: widget.unselectFile,
           uploadFile: widget.uploadFile,

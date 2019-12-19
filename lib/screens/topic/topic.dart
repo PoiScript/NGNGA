@@ -12,7 +12,9 @@ import 'package:ngnga/models/post.dart';
 import 'package:ngnga/models/user.dart';
 import 'package:ngnga/screens/editor/editor.dart';
 import 'package:ngnga/screens/topic/top_reply_sheet.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/favorites.dart';
+import 'package:ngnga/store/actions/topic.dart';
+import 'package:ngnga/store/actions/vote.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
 import 'package:ngnga/widgets/post_dialog.dart';
@@ -202,7 +204,7 @@ class _TopicPageState extends State<TopicPage> {
     );
   }
 
-  _openAttachmentSheet(List<Attachment> attachments) {
+  _openAttachmentSheet(BuiltList<Attachment> attachments) {
     showModalBottomSheet(
       context: context,
       builder: (context) => AttachmentSheet(
@@ -211,21 +213,21 @@ class _TopicPageState extends State<TopicPage> {
     );
   }
 
-  _openCommentSheet(List<int> commentIds) {
+  _openCommentSheet(BuiltList<int> commentIds) {
     showModalBottomSheet(
       context: context,
       builder: (context) => CommentSheet(
-        users: widget.users.toMap(),
+        users: widget.users,
         posts: commentIds.map((id) => widget.posts[id]).toList(),
       ),
     );
   }
 
-  _openTopReplySheet(List<int> topReplyIds) {
+  _openTopReplySheet(BuiltList<int> topReplyIds) {
     showModalBottomSheet(
       context: context,
       builder: (context) => TopReplySheet(
-        users: widget.users.toMap(),
+        users: widget.users,
         posts: topReplyIds.map((id) => widget.posts[id]).toList(),
       ),
     );
@@ -256,7 +258,7 @@ class TopicPageConnector extends StatelessWidget {
     return StoreConnector<AppState, ViewModel>(
       converter: (store) => ViewModel.fromStore(store, topicId, pageIndex),
       onInit: (store) => store.dispatch(
-        RefreshPostsAction(topicId: topicId, pageIndex: pageIndex),
+        JumpToPageAction(topicId: topicId, pageIndex: pageIndex),
       ),
       onDispose: (store) => store.dispatch(
         ClearTopicAction(topicId: topicId),
@@ -303,42 +305,26 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
 
   factory ViewModel.fromStore(
       Store<AppState> store, int topicId, int pageIndex) {
-    final topicState =
-        store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder();
-
-    if (!topicState.initialized) {
-      if (topicState.firstPage == pageIndex &&
-          topicState.firstPagePostIds.isNotEmpty) {
-        topicState
-          ..initialized = true
-          ..postIds = topicState.firstPagePostIds;
-      } else if (topicState.lastPage == pageIndex &&
-          topicState.lastPagePostIds.isNotEmpty) {
-        topicState
-          ..initialized = true
-          ..postIds = topicState.lastPagePostIds;
-      }
-    }
-
     return ViewModel(
       (b) => b
-        ..topicState = topicState
+        ..topicState =
+            store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder()
         ..users = store.state.users.toBuilder()
         ..posts = store.state.posts.toBuilder()
         ..baseUrl = store.state.repository.baseUrl
-        ..refreshFirst = (() => store
-            .dispatchFuture(RefreshPostsAction(topicId: topicId, pageIndex: 0)))
+        ..refreshFirst = (() =>
+            store.dispatchFuture(RefreshFirstPageAction(topicId: topicId)))
         ..refreshLast =
             (() => store.dispatchFuture(RefreshLastPageAction(topicId)))
         ..loadPrevious =
-            (() => store.dispatchFuture(FetchPreviousPostsAction(topicId)))
-        ..loadNext = (() => store.dispatchFuture(FetchNextPostsAction(topicId)))
+            (() => store.dispatchFuture(LoadPreviousPageAction(topicId)))
+        ..loadNext = (() => store.dispatchFuture(LoadNextPageAction(topicId)))
         ..addToFavorites =
             (() => store.dispatchFuture(AddToFavoritesAction(topicId: topicId)))
         ..removeFromFavorites = (() =>
             store.dispatchFuture(RemoveFromFavoritesAction(topicId: topicId)))
         ..changePage = ((pageIndex) => store.dispatchFuture(
-            RefreshPostsAction(topicId: topicId, pageIndex: pageIndex)))
+            JumpToPageAction(topicId: topicId, pageIndex: pageIndex)))
         ..isMe = ((userId) =>
             store.state.userState is UserLogged &&
             (store.state.userState as UserLogged).uid == userId)

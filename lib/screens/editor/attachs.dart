@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:built_collection/built_collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,8 +12,8 @@ import 'package:ngnga/models/attachment.dart';
 import 'package:ngnga/store/editing.dart';
 
 class EditorAttachs extends StatelessWidget {
-  final List<Attachment> attachments;
-  final List<UploadFile> files;
+  final BuiltList<Attachment> attachments;
+  final BuiltList<UploadFile> files;
   final Function(File) selectFile;
   final Function(int) unselectFile;
   final Future<void> Function(int) uploadFile;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -9,7 +10,8 @@ import 'package:intl/intl.dart';
 
 import 'package:ngnga/models/category.dart';
 import 'package:ngnga/screens/editor/editor.dart';
-import 'package:ngnga/store/actions.dart';
+import 'package:ngnga/store/actions/category.dart';
+import 'package:ngnga/store/actions/pinned.dart';
 import 'package:ngnga/store/category.dart';
 import 'package:ngnga/store/state.dart';
 import 'package:ngnga/store/topic.dart';
@@ -25,10 +27,12 @@ final _numberFormatter = NumberFormat('#,###,###,###');
 class CategoryPage extends StatelessWidget {
   final CategoryState categoryState;
 
-  final Future<void> Function() onRefresh;
-  final Future<void> Function() onLoad;
+  final Future<void> Function() refreshFirst;
+  final Future<void> Function() loadPrevious;
+  final Future<void> Function() loadNext;
+  final Future<void> Function(int) changePage;
 
-  final Map<int, TopicState> topics;
+  final BuiltMap<int, TopicState> topics;
 
   final String baseUrl;
   final Function(Category) addToPinned;
@@ -38,8 +42,10 @@ class CategoryPage extends StatelessWidget {
     Key key,
     @required this.topics,
     @required this.categoryState,
-    @required this.onRefresh,
-    @required this.onLoad,
+    @required this.refreshFirst,
+    @required this.loadPrevious,
+    @required this.loadNext,
+    @required this.changePage,
     @required this.baseUrl,
     @required this.addToPinned,
     @required this.removeFromPinned,
@@ -67,6 +73,9 @@ class CategoryPage extends StatelessWidget {
             isPinned: categoryState.isPinned,
             addToPinned: () => addToPinned(categoryState.category),
             removeFromPinned: () => removeFromPinned(categoryState.category),
+            changePage: changePage,
+            firstPage: categoryState.firstPage,
+            maxPage: categoryState.maxPage,
           ),
         ],
         title: Column(
@@ -80,7 +89,7 @@ class CategoryPage extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              '${_numberFormatter.format(categoryState.topicsCount)} topics',
+              '${_numberFormatter.format(categoryState.topicsCount)} topics${categoryState.isPinned ? ' ‎· pinned' : ''}',
               style: Theme.of(context).textTheme.caption,
             ),
           ],
@@ -89,10 +98,10 @@ class CategoryPage extends StatelessWidget {
       ),
       body: Scrollbar(
         child: EasyRefresh.builder(
-          header: RefreshHeader(context),
+          header: PreviousPageHeader(context, categoryState.firstPage),
           footer: NextPageHeader(context),
-          onRefresh: onRefresh,
-          onLoad: onLoad,
+          onRefresh: categoryState.hasRechedMin ? refreshFirst : loadPrevious,
+          onLoad: loadNext,
           builder: (context, physics, header, footer) => CustomScrollView(
             physics: physics,
             slivers: <Widget>[
@@ -101,8 +110,7 @@ class CategoryPage extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => index.isOdd
                       ? TopicRow(
-                          topic: topics[
-                              categoryState.topicIds.elementAt(index ~/ 2)],
+                          topics[categoryState.topicIds.elementAt(index ~/ 2)],
                         )
                       : Divider(height: 0),
                   childCount: categoryState.topicIds.length * 2 + 1,
@@ -131,10 +139,12 @@ class CategoryPage extends StatelessWidget {
 class CategoryPageConnector extends StatelessWidget {
   final int categoryId;
   final bool isSubcategory;
+  final int pageIndex;
 
   CategoryPageConnector({
     @required this.categoryId,
     @required this.isSubcategory,
+    @required this.pageIndex,
   });
 
   @override
@@ -144,16 +154,20 @@ class CategoryPageConnector extends StatelessWidget {
         store,
         categoryId: categoryId,
         isSubcategory: isSubcategory,
+        pageIndex: pageIndex,
       ),
-      onInit: (store) => store.dispatch(FetchTopicsAction(
+      onInit: (store) => store.dispatch(JumpToPageAction(
         categoryId: categoryId,
         isSubcategory: isSubcategory,
+        pageIndex: pageIndex,
       )),
       builder: (context, vm) => CategoryPage(
         topics: vm.topics,
         categoryState: vm.categoryState,
-        onRefresh: vm.onRefresh,
-        onLoad: vm.onLoad,
+        refreshFirst: vm.refreshFirst,
+        loadPrevious: vm.loadPrevious,
+        loadNext: vm.loadNext,
+        changePage: vm.changePage,
         baseUrl: vm.baseUrl,
         addToPinned: vm.addToPinned,
         removeFromPinned: vm.removeFromPinned,
@@ -168,9 +182,11 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
   factory ViewModel([Function(ViewModelBuilder) updates]) = _$ViewModel;
 
   CategoryState get categoryState;
-  Map<int, TopicState> get topics;
-  Future<void> Function() get onRefresh;
-  Future<void> Function() get onLoad;
+  BuiltMap<int, TopicState> get topics;
+  Future<void> Function() get refreshFirst;
+  Future<void> Function() get loadPrevious;
+  Future<void> Function() get loadNext;
+  Future<void> Function(int) get changePage;
   String get baseUrl;
   Function(Category) get addToPinned;
   Function(Category) get removeFromPinned;
@@ -179,19 +195,27 @@ abstract class ViewModel implements Built<ViewModel, ViewModelBuilder> {
     Store<AppState> store, {
     int categoryId,
     bool isSubcategory,
+    int pageIndex,
   }) {
-    final categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
-        CategoryStateBuilder();
-
     return ViewModel(
       (b) => b
-        ..topics = store.state.topicStates.toMap()
+        ..topics = store.state.topicStates.toBuilder()
         ..baseUrl = store.state.repository.baseUrl
-        ..categoryState = categoryState
-        ..onRefresh = (() => store.dispatchFuture(RefreshTopicsAction(
+        ..categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
+            CategoryStateBuilder()
+        ..refreshFirst = (() => store.dispatchFuture(RefreshFirstPageAction(
+              categoryId: categoryId,
+              isSubcategory: isSubcategory,
+            )))
+        ..loadPrevious = (() => store.dispatchFuture(LoadPreviousPageAction(
             categoryId: categoryId, isSubcategory: isSubcategory)))
-        ..onLoad = (() => store.dispatchFuture(FetchNextTopicsAction(
+        ..loadNext = (() => store.dispatchFuture(LoadNextPageAction(
             categoryId: categoryId, isSubcategory: isSubcategory)))
+        ..changePage = ((pageIndex) => store.dispatchFuture(JumpToPageAction(
+              categoryId: categoryId,
+              isSubcategory: isSubcategory,
+              pageIndex: pageIndex,
+            )))
         ..addToPinned =
             ((category) => store.dispatch(AddToPinnedAction(category)))
         ..removeFromPinned =

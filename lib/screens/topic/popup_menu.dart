@@ -116,17 +116,16 @@ class PopupMenu extends StatelessWidget {
               ));
             break;
           case Choice.jumpToPage:
-            showDialog<int>(
+            int page = await showDialog<int>(
               context: context,
               builder: (BuildContext context) => PagePicker(
                 initialPage: firstPage,
                 maxPage: maxPage,
               ),
-            ).then((page) {
-              if (page != null) {
-                changePage(page);
-              }
-            });
+            );
+            if (page != null) {
+              changePage(page);
+            }
             break;
         }
       },

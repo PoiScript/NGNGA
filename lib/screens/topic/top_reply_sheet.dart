@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
@@ -9,7 +10,7 @@ import 'package:ngnga/widgets/distance_to_now.dart';
 
 class TopReplySheet extends StatelessWidget {
   final List<Post> posts;
-  final Map<int, User> users;
+  final BuiltMap<int, User> users;
 
   const TopReplySheet({
     Key key,
