@@ -21,8 +21,20 @@ jobs:
         with:
           flutter-version: 1.12.13+hotfix.5
 
-      - run: flutter pub get
-      - run: flutter packages pub run build_runner build
-      - run: flutter format --set-exit-if-changed lib/ test/
-      - run: flutter analyze
-      - run: flutter test
+      - name: test business
+        run: |
+          cd ${{ github.workspace }}/business
+          flutter pub get
+          flutter packages pub run build_runner build
+          flutter format --set-exit-if-changed lib/ test/
+          flutter analyze
+          flutter test
+
+      - name: test client
+        run: |
+          cd ${{ github.workspace }}/client
+          flutter pub get
+          flutter packages pub run build_runner build
+          flutter format --set-exit-if-changed lib/ test/
+          flutter analyze
+          flutter test
