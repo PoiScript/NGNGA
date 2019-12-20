@@ -14,5 +14,5 @@ class ChangeLocaleAction extends ReduxAction<AppState> {
     return state.rebuild((b) => b.settings.locale = locale);
   }
 
-    void after() => dispatch(PersistStateAction());
+  void after() => dispatch(PersistStateAction());
 }
