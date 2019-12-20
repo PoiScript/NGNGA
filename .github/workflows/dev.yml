@@ -11,10 +11,10 @@ jobs:
 
       - name: Download fonts
         run: |
-          wget -q -O assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
-          wget -q -O assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
-          wget -q -O assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
-          wget -q -O assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
+          wget -q -O client/assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
+          wget -q -O client/assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
+          wget -q -O client/assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+          wget -q -O client/assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
 
       - name: Install flutter
         uses: subosito/flutter-action@v1
