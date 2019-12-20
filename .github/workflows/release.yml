@@ -12,26 +12,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@master
 
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
       - name: Download fonts
         run: |
-          wget -q -O assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
-          wget -q -O assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
-          wget -q -O assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
-          wget -q -O assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
+          wget -q -O ${{ github.workspace }}/client/assets/fonts/Roboto-Regular.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Regular.ttf
+          wget -q -O ${{ github.workspace }}/client/assets/fonts/Roboto-Medium.ttf https://github.com/google/fonts/raw/master/apache/roboto/Roboto-Medium.ttf
+          wget -q -O ${{ github.workspace }}/client/assets/fonts/NotoSansCJKsc-Regular.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Regular.otf
+          wget -q -O ${{ github.workspace }}/client/assets/fonts/NotoSansCJKsc-Medium.otf https://github.com/googlefonts/noto-cjk/raw/master/NotoSansCJKsc-Medium.otf
 
       - name: Install flutter
         uses: subosito/flutter-action@v1
         with:
           flutter-version: 1.12.13+hotfix.5
 
-      - name: Build project
+      - name: Build business
+        run: |
+          cd ${{ github.workspace }}/business
+          flutter pub get
+          flutter packages pub run build_runner build
+          flutter format --set-exit-if-changed lib/ test/
+          flutter analyze
+          flutter test
+
+      - name: Build client
         env:
           NGNGA_SIGN_KEY_PASSWORD: ${{ secrets.ANDROID_SIGN_KEY_PASSWORD }}
-          # relative to android/app/build.gradle
-          NGNGA_SIGN_STORE_FILE: ../../key.jks
+          NGNGA_SIGN_STORE_FILE: ${{ github.workspace }}/client/key.jks
           NGNGA_SIGN_STORE_PASSWORD: ${{ secrets.ANDROID_SIGN_STORE_PASSWORD }}
           NGNGA_SIGN_STORE_BASE64: ${{ secrets.ANDROID_SIGN_STORE_BASE64 }}
         run: |
+          cd ${{ github.workspace }}/client
           echo $NGNGA_SIGN_STORE_BASE64 | base64 -d > key.jks
           flutter pub get
           flutter packages pub run build_runner build
@@ -57,8 +70,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/apk/release/app-armeabi-v7a-release.apk
-          asset_name: NGNGA-${{ github.ref }}-armeabi-v7a.apk
+          asset_path: ${{ github.workspace }}/client/build/app/outputs/apk/release/app-armeabi-v7a-release.apk
+          asset_name: NGNGA-${{ steps.get_version.outputs.VERSION }}-armeabi-v7a.apk
           asset_content_type: application/zip
 
       - name: Upload arm64-v8a apk
@@ -67,6 +80,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/apk/release/app-arm64-v8a-release.apk
-          asset_name: NGNGA-${{ github.ref }}-arm64-v8a.apk
+          asset_path: ${{ github.workspace }}/client/build/app/outputs/apk/release/app-arm64-v8a-release.apk
+          asset_name: NGNGA-${{ steps.get_version.outputs.VERSION }}-arm64-v8a.apk
           asset_content_type: application/zip
