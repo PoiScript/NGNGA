@@ -2,6 +2,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:built_value/built_value.dart';
 import 'package:flutter/widgets.dart' hide Builder;
 
+import 'package:business/user/models/user_state.dart';
 import 'package:business/settings/actions/change_base_url_action.dart';
 import 'package:business/settings/actions/change_locale_action.dart';
 import 'package:business/settings/actions/change_theme_action.dart';
@@ -49,7 +50,7 @@ abstract class _ViewModel implements Built<_ViewModel, _ViewModelBuilder> {
   factory _ViewModel.fromStore(Store<AppState> store) {
     return _ViewModel(
       (b) => b
-        ..baseUrl = store.state.repository.baseUrl
+        ..baseUrl = store.state.settings.baseUrl
         ..user = store.state.userState
         ..theme = store.state.settings.theme
         ..locale = store.state.settings.locale

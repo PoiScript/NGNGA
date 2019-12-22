@@ -13,6 +13,8 @@ class UploadFileAction extends EditingBaseAction {
     assert(editingState.files[index].isUploading);
 
     final res = await state.repository.uploadFile(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
       file: editingState.files[index].file,
       uploadUrl: editingState.uploadUrl,
       auth: editingState.uploadAuthCode,

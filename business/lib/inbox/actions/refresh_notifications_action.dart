@@ -19,7 +19,10 @@ class MaybeRefreshNotificationsAction extends ReduxAction<AppState> {
 class RefreshNotificationsAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    final res = await state.repository.fetchNotifications();
+    final res = await state.repository.fetchNotifications(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
+    );
 
     return state.rebuild(
       (b) => b

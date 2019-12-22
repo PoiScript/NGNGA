@@ -20,7 +20,11 @@ class MaybeRefreshFavoritesAction extends ReduxAction<AppState> {
 class RefreshFavoritesAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
-    final res = await state.repository.fetchFavorTopics(page: 0);
+    final res = await state.repository.fetchFavorTopics(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
+      page: 0,
+    );
 
     List<int> favoriteIds = res.topics.map((t) => t.id).toList(growable: false);
 

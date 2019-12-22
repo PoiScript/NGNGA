@@ -13,7 +13,11 @@ class RemoveFromFavoritesAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    await state.repository.removeFromFavorites(topicId: topicId);
+    await state.repository.removeFromFavorites(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
+      topicId: topicId,
+    );
 
     return null;
   }

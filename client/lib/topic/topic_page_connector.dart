@@ -83,15 +83,13 @@ abstract class _ViewModel implements Built<_ViewModel, _ViewModelBuilder> {
 
   factory _ViewModel.fromStore(
       Store<AppState> store, int topicId, int pageIndex) {
-    UserState userState = store.state.userState;
-
     return _ViewModel(
       (b) => b
         ..topicState =
             store.state.topicStates[topicId]?.toBuilder() ?? TopicStateBuilder()
         ..users = store.state.users.toBuilder()
         ..posts = store.state.posts.toBuilder()
-        ..baseUrl = store.state.repository.baseUrl
+        ..baseUrl = store.state.settings.baseUrl
         ..refreshFirst = (() =>
             store.dispatchFuture(RefreshFirstPageAction(topicId: topicId)))
         ..refreshLast = (() =>
@@ -106,8 +104,7 @@ abstract class _ViewModel implements Built<_ViewModel, _ViewModelBuilder> {
             store.dispatchFuture(RemoveFromFavoritesAction(topicId: topicId)))
         ..changePage = ((pageIndex) => store.dispatchFuture(
             JumpToPageAction(topicId: topicId, pageIndex: pageIndex)))
-        ..isMe =
-            ((userId) => userState is UserLogged && userState.uid == userId)
+        ..isMe = ((userId) => store.state.userState.uid == userId)
         ..upvotePost = ((postId) => store
             .dispatchFuture(UpvotePostAction(topicId: topicId, postId: postId)))
         ..downvotePost = ((postId) => store.dispatchFuture(

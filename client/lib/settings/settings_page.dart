@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' hide Builder;
 
-import 'package:business/app_state.dart';
 import 'package:business/settings/models/settings_state.dart';
+import 'package:business/user/models/user_state.dart';
 
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/main.dart';
@@ -81,11 +81,10 @@ class SettingsPage extends StatelessWidget {
             ),
             onTap: () => _changeLocale(context),
           ),
-          if (userState is UserLogged)
-            ListTile(
-              title: Text(AppLocalizations.of(context).logout),
-              onTap: () => _logout(context),
-            ),
+          ListTile(
+            title: Text(AppLocalizations.of(context).logout),
+            onTap: () => _logout(context),
+          ),
           ListTile(
             title: Text(AppLocalizations.of(context).about),
             trailing: Icon(Icons.keyboard_arrow_right),

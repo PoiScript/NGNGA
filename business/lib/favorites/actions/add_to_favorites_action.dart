@@ -13,7 +13,11 @@ class AddToFavoritesAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState> reduce() async {
-    await state.repository.addToFavorites(topicId: topicId);
+    await state.repository.addToFavorites(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
+      topicId: topicId,
+    );
 
     return null;
   }

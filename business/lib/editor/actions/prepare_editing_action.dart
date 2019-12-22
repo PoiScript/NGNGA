@@ -36,6 +36,8 @@ class PrepareEditingAction extends EditingBaseAction {
     }
 
     final res = await state.repository.prepareEditing(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
       action: action,
       categoryId: categoryId,
       topicId: topicId,

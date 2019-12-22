@@ -84,7 +84,7 @@ abstract class _ViewModel implements Built<_ViewModel, _ViewModelBuilder> {
     return _ViewModel(
       (b) => b
         ..topics = store.state.topicStates.toBuilder()
-        ..baseUrl = store.state.repository.baseUrl
+        ..baseUrl = store.state.settings.baseUrl
         ..categoryState = store.state.categoryStates[categoryId]?.toBuilder() ??
             CategoryStateBuilder()
         ..refreshFirst = (() => store.dispatchFuture(RefreshFirstPageAction(

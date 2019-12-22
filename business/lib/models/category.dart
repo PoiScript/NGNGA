@@ -1,26 +1,19 @@
-import 'package:flutter/foundation.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 
-class Category {
-  final int id;
-  final String title;
-  final bool isSubcategory;
+part 'category.g.dart';
 
-  const Category({
-    @required this.id,
-    @required this.title,
-    this.isSubcategory = false,
-  })  : assert(id != null),
-        assert(title != null),
-        assert(isSubcategory != null);
+abstract class Category implements Built<Category, CategoryBuilder> {
+  static Serializer<Category> get serializer => _$categorySerializer;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is Category &&
-        id == other.id &&
-        isSubcategory == other.isSubcategory;
-  }
+  Category._();
 
-  @override
-  int get hashCode => id.hashCode ^ isSubcategory.hashCode;
+  factory Category([Function(CategoryBuilder) updates]) = _$Category;
+
+  int get id;
+  @BuiltValueField(compare: false)
+  String get title;
+  bool get isSubcategory;
+
+  static void _initializeBuilder(CategoryBuilder b) => b.isSubcategory = false;
 }

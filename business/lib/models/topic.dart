@@ -113,9 +113,10 @@ class Topic extends TopicItem {
     if (topicMisc.containsKey('3')) {
       int bits = topicMisc['3'];
       category = Category(
-        id: bits,
-        title: json['subject'],
-        isSubcategory: false,
+        (b) => b
+          ..id = bits
+          ..title = json['subject']
+          ..isSubcategory = false,
       );
     }
 
@@ -129,9 +130,10 @@ class Topic extends TopicItem {
     }
     if (type & _subcategoryMask == _subcategoryMask) {
       category = Category(
-        id: json['tid'],
-        title: json['subject'],
-        isSubcategory: true,
+        (b) => b
+          ..id = json['tid']
+          ..title = json['subject']
+          ..isSubcategory = true,
       );
       decorations.add(TopicDecoration.subcategory);
     }

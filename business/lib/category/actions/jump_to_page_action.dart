@@ -23,10 +23,10 @@ class JumpToPageAction extends CategoryBaseAction {
   Future<AppState> reduce() async {
     assert(categoryState == null || !categoryState.initialized);
 
-    final res0 = await state.repository.fetchCategoryTopics(
+    final res0 = await fetchCategoryTopics(
       categoryId: categoryId,
       isSubcategory: isSubcategory,
-      page: pageIndex,
+      pageIndex: pageIndex,
     );
 
     if (isSubcategory) {
@@ -48,11 +48,10 @@ class JumpToPageAction extends CategoryBaseAction {
             ..topicStates.update(udpateTopicState(res0.topics)),
         );
       } else {
-        Category category = Category(
-          id: categoryId,
-          title: res0.topics.first.title,
-          isSubcategory: isSubcategory,
-        );
+        Category category = Category((b) => b
+          ..id = categoryId
+          ..title = res0.topics.first.title
+          ..isSubcategory = isSubcategory);
 
         return state.rebuild(
           (b) => b
@@ -64,7 +63,7 @@ class JumpToPageAction extends CategoryBaseAction {
                 ..maxPage = res0.maxPage
                 ..firstPage = pageIndex
                 ..lastPage = pageIndex
-                ..category = category
+                ..category = category.toBuilder()
                 ..isPinned = state.pinned.contains(category),
             )
             ..topicStates.update(udpateTopicState(res0.topics)),
@@ -90,16 +89,15 @@ class JumpToPageAction extends CategoryBaseAction {
             ..topicStates.update(udpateTopicState(res0.topics)),
         );
       } else {
-        final res1 = await state.repository.fetchTopicPosts(
+        final res1 = await fetchTopicPosts(
           topicId: res0.toppedTopicId,
-          page: 0,
+          pageIndex: 0,
         );
 
-        Category category = Category(
-          id: categoryId,
-          title: res1.forumName,
-          isSubcategory: isSubcategory,
-        );
+        Category category = Category((b) => b
+          ..id = categoryId
+          ..title = res1.forumName
+          ..isSubcategory = isSubcategory);
 
         List<Post> posts = res1.posts.whereType<Post>().toList(growable: false);
 
@@ -113,7 +111,7 @@ class JumpToPageAction extends CategoryBaseAction {
                 ..firstPage = pageIndex
                 ..lastPage = pageIndex
                 ..maxPage = res0.maxPage
-                ..category = category
+                ..category = category.toBuilder()
                 ..toppedTopicId = res0.toppedTopicId
                 ..isPinned = state.pinned.contains(category),
             )

@@ -18,6 +18,8 @@ class ApplyEditingAction extends EditingBaseAction {
     assert(editingState.initialized);
 
     await state.repository.applyEditing(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
       action: editingState.editorAction,
       categoryId: editingState.categoryId,
       topicId: editingState.topicId,

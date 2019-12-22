@@ -46,10 +46,14 @@ abstract class TopicBaseAction extends ReduxAction<AppState> {
 
     final res = page != null
         ? await state.repository.fetchTopicPosts(
+            cookie: state.userState.cookie,
+            baseUrl: state.settings.baseUrl,
             topicId: topicId,
             page: page,
           )
         : await state.repository.fetchReply(
+            cookie: state.userState.cookie,
+            baseUrl: state.settings.baseUrl,
             topicId: topicId,
             postId: postId,
           );

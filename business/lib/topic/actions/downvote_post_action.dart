@@ -15,6 +15,8 @@ class DownvotePostAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     final res = await state.repository.votePost(
+      cookie: state.userState.cookie,
+      baseUrl: state.settings.baseUrl,
       value: -1,
       topicId: topicId,
       postId: postId,

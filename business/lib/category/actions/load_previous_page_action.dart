@@ -19,9 +19,9 @@ class LoadPreviousPageAction extends CategoryBaseAction {
     assert(categoryState.initialized);
     assert(!categoryState.hasRechedMin);
 
-    final res = await state.repository.fetchCategoryTopics(
+    final res = await fetchCategoryTopics(
       categoryId: categoryId,
-      page: categoryState.firstPage - 1,
+      pageIndex: categoryState.firstPage - 1,
       isSubcategory: isSubcategory,
     );
 

@@ -4,7 +4,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:business/app_state.dart';
 import 'package:business/settings/models/settings_state.dart';
-import 'package:business/state_persistor/load_state_action.dart';
 import 'package:ngnga/localizations.dart';
 import 'package:ngnga/category/category_page_connector.dart';
 import 'package:ngnga/editor/editor_page_connector.dart';
@@ -19,12 +18,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final store = Store<AppState>(
-    initialState: AppState(),
+    initialState: await AppState.load(),
     // actionObservers: [Log<AppState>.printer()],
     // modelObserver: DefaultModelObserver(),
   );
-
-  await store.dispatchFuture(LoadStateAction());
 
   return runApp(MyApp(store: store));
 }
@@ -36,11 +33,6 @@ final Map<AppTheme, ThemeData> themeDataMap = {
   AppTheme.yellow: yellowTheme,
 };
 
-const Map<AppLocale, Locale> localeMap = {
-  AppLocale.en: Locale('en', ''),
-  AppLocale.zh: Locale('zh', ''),
-};
-
 class MyApp extends StatelessWidget {
   final Store<AppState> store;
 
@@ -48,21 +40,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _navigatorKey = GlobalKey<NavigatorState>();
-
-    NavigateAction.setNavigatorKey(_navigatorKey);
-
     return StoreProvider<AppState>(
       store: store,
       child: StoreConnector<AppState, _ViewModel>(
         model: _ViewModel(),
         builder: (context, vm) => MaterialApp(
           onGenerateRoute: _routes,
-          navigatorKey: _navigatorKey,
           theme: themeDataMap[vm.theme],
-          initialRoute:
-              store.state.userState is UserUninitialized ? 'welcome' : '/',
-          locale: localeMap[vm.locale],
+          initialRoute: store.state.userState.isLogged ? '/' : 'welcome',
+          locale: vm.locale.toLocale(),
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,

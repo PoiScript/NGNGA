@@ -19,10 +19,10 @@ class RefreshFirstPageAction extends CategoryBaseAction {
     assert(categoryState.initialized);
     assert(categoryState.firstPage == 0);
 
-    final res = await state.repository.fetchCategoryTopics(
+    final res = await fetchCategoryTopics(
       categoryId: categoryId,
       isSubcategory: isSubcategory,
-      page: 0,
+      pageIndex: 0,
     );
 
     return state.rebuild(

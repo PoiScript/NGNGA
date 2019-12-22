@@ -1,14 +1,28 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 import 'package:html_unescape/html_unescape.dart';
+
+part 'notification.g.dart';
 
 final _unescape = HtmlUnescape();
 
-enum NotificationType {
-  postOnYourTopic,
-  replyOnYourPost,
-  commentOnYourTopic,
-  commentOnYourPost,
-  metionOnTopic,
-  metionOnReply,
+class NotificationType extends EnumClass {
+  static Serializer<NotificationType> get serializer =>
+      _$notificationTypeSerializer;
+
+  static const NotificationType postOnYourTopic = _$postOnYourTopic;
+  static const NotificationType replyOnYourPost = _$replyOnYourPost;
+  static const NotificationType commentOnYourTopic = _$commentOnYourTopic;
+  static const NotificationType commentOnYourPost = _$commentOnYourPost;
+  static const NotificationType metionOnTopic = _$metionOnTopic;
+  static const NotificationType metionOnReply = _$metionOnReply;
+  static const NotificationType unknown = _$unknown;
+
+  const NotificationType._(String name) : super(name);
+
+  static BuiltSet<NotificationType> get values => _$tyValues;
+  static NotificationType valueOf(String name) => _$tyValueOf(name);
 }
 
 class UserNotification {
