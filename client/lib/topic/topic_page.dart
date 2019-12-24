@@ -132,7 +132,6 @@ class _TopicPageState extends State<TopicPage> {
                 widget.topicState.topic,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                displayLabel: false,
               ),
               floating: true,
               titleSpacing: 0.0,

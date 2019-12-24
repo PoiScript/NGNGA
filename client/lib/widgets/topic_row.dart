@@ -33,7 +33,7 @@ class TopicRow extends StatelessWidget {
       return ListTile(
         leading: CircleAvatar(
           maxRadius: 16,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).cardColor,
           backgroundImage: CachedNetworkImageProvider(
             categoryIconUrl(
               topic.topic.category.id,
@@ -41,13 +41,7 @@ class TopicRow extends StatelessWidget {
             ),
           ),
         ),
-        title: TitleColorize(topic.topic, displayLabel: false),
-        subtitle: topic.topic.label != null
-            ? Text(
-                topic.topic.label,
-                style: Theme.of(context).textTheme.caption,
-              )
-            : null,
+        title: Text(topic.topic.category.title),
         trailing: const Icon(Icons.keyboard_arrow_right),
         onTap: () => Navigator.pushNamed(context, '/c', arguments: {
           'id': topic.topic.category.id,
@@ -83,9 +77,10 @@ class TopicRow extends StatelessWidget {
             ),
             Expanded(
               child: Container(
-                padding: EdgeInsets.only(top: 4, bottom: 8),
+                padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
                       child: Padding(
@@ -110,6 +105,7 @@ class TopicRow extends StatelessWidget {
                   padding: EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       Expanded(
                         child: Padding(

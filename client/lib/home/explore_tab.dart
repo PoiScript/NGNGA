@@ -38,7 +38,7 @@ class ExploreTab extends StatelessWidget {
               (context, index) => ListTile(
                 leading: CircleAvatar(
                   maxRadius: 16,
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: Theme.of(context).cardColor,
                   backgroundImage: CachedNetworkImageProvider(
                     categoryIconUrl(
                       pinned[index].id,
@@ -76,7 +76,7 @@ class ExploreTab extends StatelessWidget {
                 (context, index) => ListTile(
                   leading: CircleAvatar(
                     maxRadius: 16,
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: Theme.of(context).cardColor,
                     backgroundImage: CachedNetworkImageProvider(
                       categoryIconUrl(
                         group.categories[index].id,
