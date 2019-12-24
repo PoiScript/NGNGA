@@ -60,7 +60,7 @@ class RawPost {
       lou: json['lou'],
       attachs: json['attachs'],
       s17: json['17'] ?? '',
-      commentId: List<String>.from(json['comment_id']?? []) ,
+      commentId: List<String>.from(json['comment_id'] ?? []),
       commentToId: json['comment_to_id'],
     );
   }
