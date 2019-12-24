@@ -19,8 +19,9 @@ abstract class CategoryBaseAction extends ReduxAction<AppState> {
       for (Topic topic in topics) {
         b.updateValue(
           topic.id,
-          (topicState) => topicState.rebuild((b) => b.topic = topic),
-          ifAbsent: () => TopicState((b) => b.topic = topic),
+          (topicState) =>
+              topicState.rebuild((b) => b.topic = topic.toBuilder()),
+          ifAbsent: () => TopicState((b) => b.topic = topic.toBuilder()),
         );
       }
     };

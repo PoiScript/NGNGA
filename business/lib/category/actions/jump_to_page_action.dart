@@ -99,7 +99,8 @@ class JumpToPageAction extends CategoryBaseAction {
           ..title = res1.forumName
           ..isSubcategory = isSubcategory);
 
-        List<Post> posts = res1.posts.whereType<Post>().toList(growable: false);
+        List<Post> posts =
+            res1.posts.map((c) => Post.fromRaw(c)).toList(growable: false);
 
         return state.rebuild(
           (b) => b
@@ -119,14 +120,16 @@ class JumpToPageAction extends CategoryBaseAction {
             ..topicStates[res0.toppedTopicId] = TopicState(
               (b) => b
                 ..initialized = true
-                ..topic = res1.topic
+                ..topic = res1.topic.toBuilder()
                 ..firstPage = 0
                 ..lastPage = 0
                 ..postIds = SetBuilder(posts.map((p) => p.id)),
             )
             ..users.addAll(res1.users)
             ..posts.addEntries(posts.map((p) => MapEntry(p.id, p)))
-            ..posts.addEntries(res1.comments.map((p) => MapEntry(p.id, p))),
+            ..posts.addEntries(res1.comments
+                .map((c) => Post.fromRaw(c))
+                .map((p) => MapEntry(p.id, p))),
         );
       }
     }

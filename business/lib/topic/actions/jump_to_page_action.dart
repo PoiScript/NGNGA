@@ -26,7 +26,7 @@ class JumpToPageAction extends TopicBaseAction {
         ..topicStates[topicId] = TopicState(
           (b) => b
             ..initialized = true
-            ..topic = res.topic
+            ..topic = res.topic.toBuilder()
             ..firstPage = pageIndex
             ..lastPage = pageIndex
             ..maxPage = res.maxPage

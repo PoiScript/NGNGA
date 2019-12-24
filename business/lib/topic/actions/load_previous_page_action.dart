@@ -25,7 +25,7 @@ class LoadPreviousPageAction extends TopicBaseAction {
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
-            ..topic = res.topic
+            ..topic = res.topic.toBuilder()
             ..maxPage = res.maxPage
             ..firstPage = topicState.firstPage - 1
             ..postIds = (SetBuilder(res.postIds)..addAll(topicState.postIds)),

@@ -58,47 +58,38 @@ abstract class TopicBaseAction extends ReduxAction<AppState> {
             postId: postId,
           );
 
-    posts.addEntries(res.comments.map(((c) => MapEntry(c.id, c))));
+    posts.addEntries(
+        res.comments.map((c) => Post.fromRaw(c)).map((c) => MapEntry(c.id, c)));
 
-    for (PostItem post in res.posts) {
-      if (post is Post) {
-        postIds.add(post.id);
-        posts[post.id] = post;
-        for (int replyId in post.topReplyIds) {
-          if (res.posts
-                      .indexWhere((p) => p is Post ? p.id == replyId : false) ==
-                  -1 &&
-              res.comments.indexWhere((p) => p.postId == replyId) == -1 &&
-              !state.posts.containsKey(replyId)) {
-            await dispatchFuture(FetchReplyAction(
-              topicId: topicId,
-              postId: replyId,
-            ));
-          }
+    for (Post post in res.posts.map((c) => Post.fromRaw(c))) {
+      postIds.add(post.id);
+      posts[post.id] = post;
+
+      for (int replyId in post.topReplyIds) {
+        if (res.posts.indexWhere((p) => p.pid == replyId) == -1 &&
+            res.comments.indexWhere((p) => p.pid == replyId) == -1 &&
+            !state.posts.containsKey(replyId)) {
+          await dispatchFuture(
+              FetchReplyAction(topicId: topicId, postId: replyId));
         }
       }
 
-      if (post is Comment) {
-        postIds.add(post.postId);
+      if (post.commentTo != null) {
+        int index = res.comments.indexWhere((c) => c.pid == post.id);
 
-        int index = res.comments.indexWhere((c) => c.id == post.postId);
         if (index != -1) {
-          posts[post.postId] = (res.comments[index].toBuilder()
-                ..commentTo = post.commentTo
-                ..index = post.index)
-              .build();
+          posts[post.id].rebuild((b) => b
+            ..commentTo = post.commentTo
+            ..index = post.index);
         } else {
-          if (!state.posts.containsKey(post.postId)) {
-            await dispatchFuture(FetchReplyAction(
-              topicId: topicId,
-              postId: post.commentTo,
-            ));
+          if (!state.posts.containsKey(post.id)) {
+            await dispatchFuture(
+                FetchReplyAction(topicId: topicId, postId: post.commentTo));
           }
 
-          posts[post.postId] = (state.posts[post.postId].toBuilder()
-                ..commentTo = post.commentTo
-                ..index = post.index)
-              .build();
+          posts[post.id] = (state.posts[post.id].rebuild((b) => b
+            ..commentTo = post.commentTo
+            ..index = post.index));
         }
       }
     }

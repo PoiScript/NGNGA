@@ -18,13 +18,11 @@ class FetchCategoryTopicsResponse {
 
     if (json['data']['__T'] is List) {
       for (var value in List.from(json['data']['__T'])) {
-        Topic topic = Topic.fromJson(value);
-        topics.add(topic);
+        topics.add(Topic.fromRaw(RawTopic.fromJson(value)));
       }
     } else {
       for (var value in Map.from(json['data']['__T']).values) {
-        Topic topic = Topic.fromJson(value);
-        topics.add(topic);
+        topics.add(Topic.fromRaw(RawTopic.fromJson(value)));
       }
     }
 

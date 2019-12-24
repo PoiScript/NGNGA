@@ -7,147 +7,149 @@ part 'post.g.dart';
 
 enum Vendor { android, apple, windows, none }
 
-abstract class PostItem {}
+class RawPost {
+  final String alterinfo;
+  final String fromClient;
+  final int pid;
+  final int tid;
+  final int fid;
+  final int authorid;
+  final int replyTo;
+  final int postdatetimestamp;
+  final String subject;
+  final String content;
+  final int score;
+  final int lou;
+  final Object attachs;
+  final String s17;
+  final List<String> commentId;
+  final int commentToId;
 
-abstract class Post extends PostItem implements Built<Post, PostBuilder> {
+  RawPost({
+    this.alterinfo,
+    this.fromClient,
+    this.pid,
+    this.tid,
+    this.fid,
+    this.authorid,
+    this.replyTo,
+    this.postdatetimestamp,
+    this.subject,
+    this.content,
+    this.score,
+    this.lou,
+    this.attachs,
+    this.s17,
+    this.commentId,
+    this.commentToId,
+  });
+
+  factory RawPost.fromJson(Map<String, dynamic> json) {
+    return RawPost(
+      alterinfo: json['alterinfo'] ?? '',
+      fromClient: json['from_client'] ?? '',
+      pid: json['pid'],
+      tid: json['tid'] ?? -1,
+      fid: json['fid'] ?? -1,
+      authorid: json['authorid'],
+      replyTo: json['reply_to'],
+      postdatetimestamp: json['postdatetimestamp'] ?? 0,
+      subject: json['subject'] ?? '',
+      content: json['content'] ?? '',
+      score: json['score'] ?? 0,
+      lou: json['lou'],
+      attachs: json['attachs'],
+      s17: json['17'] ?? '',
+      commentId: List<String>.from(json['comment_id']?? []) ,
+      commentToId: json['comment_to_id'],
+    );
+  }
+}
+
+abstract class Post implements Built<Post, PostBuilder> {
   Post._();
 
   factory Post([Function(PostBuilder) updates]) = _$Post;
 
-  int get id => postId == 0 ? 2 ^ 32 - topicId : postId;
+  int get id;
 
-  int get postId;
   int get index;
+
   int get categoryId;
+
   int get topicId;
+
   int get userId;
+
   @nullable
   int get replyTo;
-  @nullable
-  int get commentTo;
+
   DateTime get createdAt;
+
   @nullable
   DateTime get editedAt;
+
   @nullable
   String get editedBy;
+
   String get content;
+
   String get subject;
+
   Vendor get vendor;
+
   String get vendorDetail;
+
   int get vote;
+
   BuiltList<Attachment> get attachments;
+
   BuiltList<int> get commentIds;
-  BuiltList<int> get topReplyIds;
 
-  static void _initializeBuilder(PostBuilder b) => b
-    ..vendor = Vendor.none
-    ..vendorDetail = '';
-
-  static PostBuilder fromJson(Map<String, dynamic> json) {
-    PostBuilder b = PostBuilder();
-
-    if (json['alterinfo'] is String) {
-      for (var info in (json['alterinfo'] as String)
-          .split('\\t')
-          .map((s) => s.trim())
-          .where((s) => s.length >= 2)
-          .map((s) => s.substring(1, s.length - 1))) {
-        var words = info.split(' ');
-        if (words.first.startsWith('E')) {
-          var timestamp = int.tryParse(words.first.substring(1));
-          if (timestamp != null) {
-            b.editedAt = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-          }
-          if (words.last != '0') {
-            b.editedBy = words.last;
-          }
-        }
-      }
-    }
-
-    if (json['from_client'] is String && json['from_client'].isNotEmpty) {
-      var space = json['from_client'].indexOf(' ');
-      if (space != -1) {
-        switch (int.parse(json['from_client'].substring(0, space))) {
-          case 7:
-          case 101:
-            b.vendor = Vendor.apple;
-            b.vendorDetail = json['from_client'].substring(space + 1).trim();
-            break;
-          case 8:
-          case 100:
-            b.vendor = Vendor.android;
-            b.vendorDetail = json['from_client'].substring(space + 1).trim();
-            break;
-          case 9:
-          case 103:
-            b.vendor = Vendor.windows;
-            b.vendorDetail = json['from_client'].substring(space + 1).trim();
-            break;
-          default:
-            break;
-        }
-      }
-    }
-
-    if (json['attachs'] is List) {
-      b.attachments.addAll(
-        List.of(json['attachs']).map((value) => Attachment.fromJson(value)),
-      );
-    } else if (json['attachs'] is Map) {
-      b.attachments.addAll(
-        Map.of(json['attachs'])
-            .values
-            .map((value) => Attachment.fromJson(value)),
-      );
-    }
-
-    if (json['comment_id'] is List) {
-      for (String id in json['comment_id']) {
-        b.commentIds.add(int.parse(id));
-      }
-    }
-
-    if (json['comment_to_id'] is int) {
-      b.commentTo = json['comment_to_id'];
-    }
-
-    b.topReplyIds.addAll(((json['17'] ?? '') as String)
-        .split(',')
-        .where((i) => i.isNotEmpty)
-        .map(int.parse));
-
-    b.postId = json['pid'];
-    b.topicId = json['tid'];
-    b.categoryId = json['fid'];
-    b.userId = json['authorid'];
-    b.replyTo = json['reply_to'];
-    b.createdAt = DateTime.fromMillisecondsSinceEpoch(
-      (json['postdatetimestamp'] ?? 0) * 1000,
-    );
-    b.subject = json['subject'] ?? '';
-    b.content = json['content'];
-    b.vote = json['score'];
-    b.index = json['lou'];
-
-    return b;
-  }
-}
-
-abstract class Comment extends PostItem
-    implements Built<Comment, CommentBuilder> {
-  Comment._();
-
-  factory Comment([Function(CommentBuilder) updates]) = _$Comment;
-
-  int get index;
-  int get userId;
-  int get postId;
+  @nullable
   int get commentTo;
 
-  static CommentBuilder fromJson(Map<String, dynamic> json) => CommentBuilder()
-    ..index = json['lou']
-    ..userId = json['authorid']
-    ..postId = json['pid']
-    ..commentTo = json['comment_to_id'];
+  BuiltList<int> get topReplyIds;
+
+  factory Post.fromRaw(RawPost raw) => Post(
+        (b) => b
+          ..id = raw.pid == 0 ? 2 ^ 32 - raw.tid : raw.pid
+          ..index = raw.lou
+          ..vendor = raw.fromClient.startsWith('7 ') || raw.fromClient.startsWith('101 ')
+              ? Vendor.apple
+              : raw.fromClient.startsWith('8 ') || raw.fromClient.startsWith('100 ')
+                  ? Vendor.android
+                  : raw.fromClient.startsWith('9 ') || raw.fromClient.startsWith('103 ')
+                      ? Vendor.windows
+                      : Vendor.none
+          ..categoryId = raw.fid
+          ..topicId = raw.tid
+          ..userId = raw.authorid
+          ..replyTo = raw.replyTo
+          ..createdAt =
+              DateTime.fromMillisecondsSinceEpoch(raw.postdatetimestamp * 1000)
+          ..content = raw.content
+          ..subject = raw.subject
+          ..vendorDetail = raw.fromClient.startsWith('7 ') ||
+                  raw.fromClient.startsWith('8 ') ||
+                  raw.fromClient.startsWith('9 ')
+              ? raw.fromClient.substring(2)
+              : raw.fromClient.startsWith('100 ') ||
+                      raw.fromClient.startsWith('101 ') ||
+                      raw.fromClient.startsWith('103 ')
+                  ? raw.fromClient.substring(4)
+                  : ''
+          ..vote = raw.score
+          ..attachments = ListBuilder(raw.attachs is List
+              ? List.of(raw.attachs).map((v) => Attachment.fromJson(v))
+              : raw.attachs is Map
+                  ? Map.of(raw.attachs)
+                      .values
+                      .map((v) => Attachment.fromJson(v))
+                  : [])
+          ..commentIds = ListBuilder(raw.commentId.map(int.parse))
+          ..commentTo = raw.commentToId
+          ..topReplyIds =
+              ListBuilder(raw.s17.split(',').where((i) => i.isNotEmpty).map(int.parse)),
+      );
 }

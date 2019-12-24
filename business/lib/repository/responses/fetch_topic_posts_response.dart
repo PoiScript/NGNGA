@@ -4,8 +4,8 @@ import '../../models/user.dart';
 
 class FetchTopicPostsResponse {
   final Topic topic;
-  final List<PostItem> posts;
-  final List<Post> comments;
+  final List<RawPost> posts;
+  final List<RawPost> comments;
   final Map<int, User> users;
   final String forumName;
 
@@ -31,8 +31,8 @@ class FetchTopicPostsResponse {
     }
 
     Map<int, User> users = {};
-    List<PostItem> posts = [];
-    List<Post> comments = [];
+    List<RawPost> posts = [];
+    List<RawPost> comments = [];
 
     for (var entry in Map.from(json['data']['__U']).entries) {
       if (entry.key == '__MEDALS' ||
@@ -43,21 +43,17 @@ class FetchTopicPostsResponse {
     }
 
     for (var value in List.from(json['data']['__R'])) {
-      if (value['comment_to_id'] != null) {
-        posts.add(Comment.fromJson(value).build());
-      } else {
-        posts.add(Post.fromJson(value).build());
-      }
+      posts.add(RawPost.fromJson(value));
 
       if (value['comment'] is List) {
         for (var value in List.of(value['comment'])) {
-          comments.add(Post.fromJson(value).build());
+          comments.add(RawPost.fromJson(value));
         }
       }
     }
 
     return FetchTopicPostsResponse(
-      topic: Topic.fromJson(json['data']['__T']),
+      topic: Topic.fromRaw(RawTopic.fromJson(json['data']['__T'])),
       posts: posts,
       comments: comments,
       users: users,

@@ -51,7 +51,7 @@ abstract class _ViewModel implements Built<_ViewModel, _ViewModelBuilder> {
     return _ViewModel(
       (b) => b
         ..baseUrl = store.state.settings.baseUrl
-        ..user = store.state.userState
+        ..user = store.state.userState.toBuilder()
         ..theme = store.state.settings.theme
         ..locale = store.state.settings.locale
         ..changeBaseUrl =

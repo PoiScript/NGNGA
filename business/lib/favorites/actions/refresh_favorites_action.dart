@@ -37,8 +37,9 @@ class RefreshFavoritesAction extends ReduxAction<AppState> {
         ..favoriteState.lastPage = 0
         ..topicStates.update((b) {
           for (Topic topic in res.topics) {
-            b.updateValue(topic.id, (s) => s.rebuild((b) => b.topic = topic),
-                ifAbsent: () => TopicState((b) => b.topic = topic));
+            b.updateValue(
+                topic.id, (s) => s.rebuild((b) => b.topic = topic.toBuilder()),
+                ifAbsent: () => TopicState((b) => b.topic = topic.toBuilder()));
           }
         })
         ..topicStates.updateAllValues((id, topicsState) => topicsState

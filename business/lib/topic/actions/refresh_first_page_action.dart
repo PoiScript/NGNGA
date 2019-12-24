@@ -25,7 +25,7 @@ class RefreshFirstPageAction extends TopicBaseAction {
       (b) => b
         ..topicStates[topicId] = topicState.rebuild(
           (b) => b
-            ..topic = res.topic
+            ..topic = res.topic.toBuilder()
             ..lastPage = 0
             ..maxPage = res.maxPage
             ..postIds = SetBuilder(res.postIds),

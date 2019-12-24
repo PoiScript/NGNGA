@@ -17,13 +17,13 @@ class FetchFavoriteTopicsResponse {
     if (json['data'][0][0] is List) {
       favorites = List.of(json['data'][0][0])
           .where((value) => value['__P'] == null)
-          .map((value) => Topic.fromJson(value))
+          .map((raw) => Topic.fromRaw(RawTopic.fromJson(raw)))
           .toList(growable: false);
     } else if (json['data'][0][0] is Map) {
       favorites = Map.of(json['data'][0][0])
           .values
           .where((value) => value['__P'] == null)
-          .map((value) => Topic.fromJson(value))
+          .map((raw) => Topic.fromRaw(RawTopic.fromJson(raw)))
           .toList(growable: false);
     }
 

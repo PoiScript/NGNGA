@@ -1,12 +1,17 @@
 import 'dart:convert';
 
+import 'package:built_value/built_value.dart';
+import 'package:flutter/widgets.dart' hide Builder;
+
 import 'category.dart';
+
+part 'topic.g.dart';
 
 // used for `type`
 const int _lockedMask = 1024;
 const int _attachmentMask = 8192;
 const int _subcategoryMask = 32768;
-const int _categoryMask = 2097152;
+// const int _categoryMask = 2097152;
 
 // used for `topic_misc`
 const int _colorRedMask = 1;
@@ -24,147 +29,149 @@ const int _allHideenMask = 33554432;
 const int _singleReplyMask = 1073741824;
 const int _reverseOrderMask = 262144;
 
-abstract class TopicItem {}
+enum TopicTitleColor { red, blue, green, orang, sliver, none }
 
-enum TopicDecoration {
-  redColor,
-  blueColor,
-  greenColor,
-  orangeColor,
-  silverColor,
-  boldStyle,
-  italicStyle,
-  underlineStyle,
-  locked,
-  attachment,
-  subcategory,
-  category,
-  allAnonymous,
-  allHideen,
-  singleReply,
-  reverseOrder,
-}
-
-class Topic extends TopicItem {
-  final int id;
-  final int categoryId;
-
-  final String title;
-
-  final List<TopicDecoration> decorations;
-
+class RawTopic {
+  final int tid;
+  final int fid;
+  final String subject;
+  final int authorid;
   final String author;
-  final DateTime createdAt;
-
-  final String lastPoster;
-  final DateTime lastPostedAt;
-
-  final int postsCount;
-
-  final String label;
-
-  final Category category;
-
+  final int postdate;
+  final String lastposter;
+  final int lastpost;
+  final int replies;
   final String error;
+  final int type;
+  final Map<String, int> topicMisc;
 
-  Topic({
-    this.id,
-    this.categoryId,
-    this.title,
-    this.decorations,
-    this.createdAt,
-    this.lastPostedAt,
-    this.postsCount,
-    this.label,
-    this.author,
-    this.lastPoster,
-    this.category,
-    this.error,
-  })  : assert(id != null),
-        assert(title != null),
-        assert(decorations != null),
-        assert(createdAt != null),
-        assert(lastPostedAt != null),
-        assert(postsCount != null);
+  RawTopic({
+    @required this.tid,
+    @required this.fid,
+    @required this.subject,
+    @required this.authorid,
+    @required this.author,
+    @required this.postdate,
+    @required this.lastposter,
+    @required this.lastpost,
+    @required this.replies,
+    @required this.error,
+    @required this.type,
+    @required this.topicMisc,
+  });
 
-  factory Topic.fromJson(Map<String, dynamic> json) {
-    String label;
-
-    if (json['parent'] is List) {
-      label = json['parent'].last;
-    } else if (json['parent'] is Map) {
-      label = json['parent']['2'];
-    }
-
-    Category category;
-    List<TopicDecoration> decorations = [];
-
-    Map<String, int> topicMisc =
-        _decodeTopicMiscString(json['topic_misc'] ?? '')
-          ..addAll(json['topic_misc_var'] is Map
-              ? Map<String, int>.from(json['topic_misc_var'])
-              : {});
-
-    if (topicMisc.containsKey('1')) {
-      int bits = topicMisc['1'];
-      _parseTopicMiscBits(bits, decorations);
-    }
-
-    if (topicMisc.containsKey('3')) {
-      int bits = topicMisc['3'];
-      category = Category(
-        (b) => b
-          ..id = bits
-          ..title = json['subject']
-          ..isSubcategory = false,
-      );
-    }
-
-    int type = json['type'];
-
-    if (type & _lockedMask == _lockedMask) {
-      decorations.add(TopicDecoration.locked);
-    }
-    if (type & _attachmentMask == _attachmentMask) {
-      decorations.add(TopicDecoration.attachment);
-    }
-    if (type & _subcategoryMask == _subcategoryMask) {
-      category = Category(
-        (b) => b
-          ..id = json['tid']
-          ..title = json['subject']
-          ..isSubcategory = true,
-      );
-      decorations.add(TopicDecoration.subcategory);
-    }
-    if (type & _categoryMask == _categoryMask) {
-      decorations.add(TopicDecoration.category);
-    }
-
-    return Topic(
-      id: json['tid'],
-      categoryId: json['fid'],
-      title: json['subject'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-        json['postdate'] * 1000,
-      ),
-      lastPostedAt: DateTime.fromMillisecondsSinceEpoch(
-        json['lastpost'] * 1000,
-      ),
-      postsCount: json['replies'],
-      label: label,
-      author: json['authorid'] is int
-          ? (json['author'] is String
-              ? json['author']
-              : 'UID${json['authorid']}')
-          : '#ANONYMOUS#',
-      lastPoster: json['lastposter'],
-      decorations: decorations,
-      category: category,
+  factory RawTopic.fromJson(Map<String, dynamic> json) {
+    return RawTopic(
+      tid: json['tid'],
+      fid: json['fid'],
+      subject: json['subject'],
+      authorid: json['authorid'] is int ? json['authorid'] : -1,
+      author: json['author'],
+      postdate: json['postdate'],
+      lastposter: json['lastposter'],
+      lastpost: json['lastpost'],
+      replies: json['replies'],
       error: json['error'],
+      type: json['type'],
+      topicMisc: _decodeTopicMiscString(json['topic_misc'] ?? '')
+        ..addAll(Map<String, int>.from(json['topic_misc_var'] ?? {})),
     );
   }
 }
+
+abstract class Topic implements Built<Topic, TopicBuilder> {
+  Topic._();
+
+  factory Topic([Function(TopicBuilder) updates]) = _$Topic;
+
+  int get id;
+
+  int get categoryId;
+
+  String get title;
+
+  String get author;
+
+  DateTime get createdAt;
+
+  String get lastPoster;
+
+  DateTime get lastPostedAt;
+
+  int get postsCount;
+
+  @nullable
+  String get error;
+
+  bool get isLocked;
+
+  bool get hasAttachment;
+
+  bool get isBold;
+
+  bool get isItalic;
+
+  bool get isUnderline;
+
+  bool get allHideen;
+
+  bool get singleReply;
+
+  bool get reverseOrder;
+
+  TopicTitleColor get titleColor;
+
+  @nullable
+  Category get category;
+
+  factory Topic.fromRaw(RawTopic raw) => Topic(
+        (b) => b
+          ..id = raw.tid
+          ..categoryId = raw.fid
+          ..title = raw.subject
+          ..author = raw.authorid != null
+              ? (raw.author != null ? raw.author : 'UID${raw.authorid}')
+              : '#ANONYMOUS#'
+          ..createdAt = DateTime.fromMillisecondsSinceEpoch(raw.postdate * 1000)
+          ..lastPoster = raw.lastposter
+          ..lastPostedAt =
+              DateTime.fromMillisecondsSinceEpoch(raw.lastpost * 1000)
+          ..postsCount = raw.replies
+          ..error = raw.error
+          ..isLocked = _isSet(raw.type, _lockedMask)
+          ..hasAttachment = _isSet(raw.type, _attachmentMask)
+          ..isBold = _isSet(raw.topicMisc['1'], _styleBoldMask)
+          ..isItalic = _isSet(raw.topicMisc['1'], _styleItalicMask)
+          ..isUnderline = _isSet(raw.topicMisc['1'], _styleUnderlineMask)
+          ..allHideen = _isSet(raw.topicMisc['1'], _allHideenMask)
+          ..singleReply = _isSet(raw.topicMisc['1'], _singleReplyMask)
+          ..reverseOrder = _isSet(raw.topicMisc['1'], _reverseOrderMask)
+          ..titleColor = _isSet(raw.topicMisc['1'], _colorRedMask)
+              ? TopicTitleColor.red
+              : _isSet(raw.topicMisc['1'], _colorBlueMask)
+                  ? TopicTitleColor.blue
+                  : _isSet(raw.topicMisc['1'], _colorGreenMask)
+                      ? TopicTitleColor.green
+                      : _isSet(raw.topicMisc['1'], _colorOrangeMas)
+                          ? TopicTitleColor.orang
+                          : _isSet(raw.topicMisc['1'], _colorSliverMask)
+                              ? TopicTitleColor.sliver
+                              : TopicTitleColor.none
+          ..category = _isSet(raw.type, _subcategoryMask)
+              ? (CategoryBuilder()
+                ..id = raw.tid
+                ..title = raw.subject
+                ..isSubcategory = true)
+              : raw.topicMisc.containsKey('3')
+                  ? (CategoryBuilder()
+                    ..id = raw.topicMisc['3']
+                    ..title = raw.subject
+                    ..isSubcategory = false)
+                  : null,
+      );
+}
+
+bool _isSet(int bits, int mask) => bits != null && bits & mask == mask;
 
 Map<String, int> _decodeTopicMiscString(String topicMsic) {
   Map<String, int> map = {};
@@ -194,43 +201,4 @@ Map<String, int> _decodeTopicMiscString(String topicMsic) {
     }
   }
   return map;
-}
-
-_parseTopicMiscBits(int bits, List<TopicDecoration> decorations) {
-  if (bits & _colorRedMask == _colorRedMask) {
-    decorations.add(TopicDecoration.redColor);
-  }
-  if (bits & _colorBlueMask == _colorBlueMask) {
-    decorations.add(TopicDecoration.blueColor);
-  }
-  if (bits & _colorGreenMask == _colorGreenMask) {
-    decorations.add(TopicDecoration.greenColor);
-  }
-  if (bits & _colorOrangeMas == _colorOrangeMas) {
-    decorations.add(TopicDecoration.orangeColor);
-  }
-  if (bits & _colorSliverMask == _colorSliverMask) {
-    decorations.add(TopicDecoration.silverColor);
-  }
-  if (bits & _styleBoldMask == _styleBoldMask) {
-    decorations.add(TopicDecoration.boldStyle);
-  }
-  if (bits & _styleItalicMask == _styleItalicMask) {
-    decorations.add(TopicDecoration.italicStyle);
-  }
-  if (bits & _styleUnderlineMask == _styleUnderlineMask) {
-    decorations.add(TopicDecoration.underlineStyle);
-  }
-  // if (bits & _allAnonymousMask == _allAnonymousMask) {
-  //   decorations.add(TopicDecoration.allAnonymous);
-  // }
-  if (bits & _allHideenMask == _allHideenMask) {
-    decorations.add(TopicDecoration.allHideen);
-  }
-  if (bits & _singleReplyMask == _singleReplyMask) {
-    decorations.add(TopicDecoration.singleReply);
-  }
-  if (bits & _reverseOrderMask == _reverseOrderMask) {
-    decorations.add(TopicDecoration.reverseOrder);
-  }
 }
