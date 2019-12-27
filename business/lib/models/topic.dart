@@ -66,7 +66,7 @@ class RawTopic {
       fid: json['fid'],
       subject: json['subject'],
       authorid: json['authorid'] is int ? json['authorid'] : -1,
-      author: json['author'],
+      author: json['author'] is String ? json['author'] : null,
       postdate: json['postdate'],
       lastposter: json['lastposter'],
       lastpost: json['lastpost'],
