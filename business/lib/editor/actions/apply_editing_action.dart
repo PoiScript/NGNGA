@@ -27,10 +27,12 @@ class ApplyEditingAction extends EditingBaseAction {
       subject: subject,
       content: content,
       attachmentCode: editingState.files
-          .where((file) => file.code?.isNotEmpty ?? false)
+          .where((file) => file.uploaded)
+          .map((file) => file.code)
           .join('\t'),
       attachmentChecksum: editingState.files
-          .where((file) => file.code?.isNotEmpty ?? false)
+          .where((file) => file.uploaded)
+          .map((file) => file.check)
           .join('\t'),
     );
 
